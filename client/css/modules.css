@@ -1,0 +1,356 @@
+/* Обучающая панель */
+.learn-panel {
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  backdrop-filter: blur(12px);
+}
+
+.tab-controls {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(0, 0, 0, 0.1);
+  padding: 4px 8px;
+  gap: 5px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 9px 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.tab-btn.active {
+  color: #fff;
+  background: var(--neon-gradient);
+  box-shadow: var(--neon-red-glow);
+}
+
+.tab-content {
+  padding: 22px;
+  overflow-y: auto;
+  flex: 1;
+  line-height: 1.65;
+}
+
+.tab-content h3 {
+  color: var(--text-primary);
+  margin-bottom: 14px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.tab-content p {
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+  font-size: 0.94rem;
+}
+
+/* ИСПРАВЛЕНИЕ: Блочный вывод без искажения flexbox */
+.tab-content ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab-content ul li {
+  position: relative;
+  background: var(--bg-card);
+  padding: 14px 16px 14px 22px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  display: block; /* Исправлено: не flex */
+  line-height: 1.6;
+}
+
+.tab-content ul li::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 4px;
+  background: var(--neon-gradient);
+  box-shadow: var(--neon-red-glow);
+}
+
+.tab-content ul li:hover {
+  transform: translateX(4px);
+  background: var(--bg-card-hover);
+  border-color: var(--border-neon);
+}
+
+.tab-content ol {
+  list-style: none;
+  counter-reset: quest-counter;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tab-content ol li {
+  counter-increment: quest-counter;
+  position: relative;
+  background: var(--bg-card);
+  padding: 14px 16px 14px 54px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  display: block;
+  line-height: 1.6;
+}
+
+.tab-content ol li::before {
+  content: "0" counter(quest-counter);
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  font-family: 'Fira Code', monospace;
+  font-weight: 800;
+  font-size: 0.74rem;
+  background: var(--neon-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 2px 6px;
+  border: 1px solid var(--border-neon);
+  border-radius: 6px;
+}
+
+.code-inline {
+  background: var(--bg-card);
+  color: var(--neon-red);
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.88em;
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Квиз */
+.quiz-box {
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+}
+
+.quiz-question {
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quiz-btn {
+  text-align: left;
+  padding: 13px 16px;
+  border-radius: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quiz-btn:hover {
+  border-color: var(--neon-red);
+  background: var(--bg-card-hover);
+  transform: translateX(4px);
+}
+
+.quiz-feedback {
+  margin-top: 16px;
+  font-size: 0.88rem;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.quiz-feedback.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.quiz-feedback.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+/* Визуализатор памяти */
+.memory-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.memory-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mem-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mem-title h4 {
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--text-primary);
+}
+
+.memory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.mem-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 280px;
+}
+
+.mem-section-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border-subtle);
+}
+
+.mem-tag {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.mem-tag.stack {
+  background: rgba(255, 42, 85, 0.15);
+  color: var(--neon-red);
+  border: 1px solid var(--border-neon);
+}
+
+.mem-tag.heap {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.mem-sub {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+}
+
+.stack-display, .heap-display {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.stack-frame {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-neon);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stack-frame-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-family: 'Fira Code', monospace;
+  color: var(--neon-red);
+}
+
+.stack-frame-vars {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.74rem;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.heap-block {
+  background: var(--bg-surface);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heap-block-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-family: 'Fira Code', monospace;
+  color: var(--success);
+}
+
+.heap-block-content {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.74rem;
+  color: var(--text-primary);
+}

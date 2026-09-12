@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Java-Zero — Neon Quest Lab</title>
+  <!-- Модульные стили -->
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/modules.css" />
+  <link rel="stylesheet" href="css/terminal.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Шрифты -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="ambient-glow glow-top"></div>
+  <div class="ambient-glow glow-bottom"></div>
+
+  <!-- Всплывающий тост получения ачивки -->
+  <div class="achievement-toast hidden" id="achievement-toast">
+    <div class="toast-icon" id="toast-icon">🏆</div>
+    <div class="toast-content">
+      <span class="toast-tag">НОВОЕ ДОСТИЖЕНИЕ!</span>
+      <h4 class="toast-title" id="toast-title">Первый шаг</h4>
+      <p class="toast-desc" id="toast-desc">Успешно скомпилирован базовый класс</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- Сайдбар HUD -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo-badge">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            <h2>JAVA-ZERO</h2>
+            <span class="hud-tag">PRO</span>
+          </div>
+          <span class="sub">CYBER TRAINING LAB</span>
+        </div>
+      </div>
+
+      <!-- Селектор квестов -->
+      <div class="track-card">
+        <div class="track-header">
+          <svg class="icon-svg xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+            <line x1="4" y1="22" x2="4" y2="15"></line>
+          </svg>
+          <span>ТЕКУЩИЙ КВЕСТ</span>
+        </div>
+
+        <div class="custom-dropdown" id="track-dropdown">
+          <button class="dropdown-trigger" id="dropdown-trigger" type="button">
+            <div class="trigger-content">
+              <span class="trigger-num" id="dropdown-selected-num">00</span>
+              <span class="trigger-label" id="dropdown-selected-label">Фундамент Java: Переменные и память</span>
+            </div>
+            <svg class="icon-svg xs dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+
+          <div class="dropdown-menu hidden" id="dropdown-menu">
+            <div class="dropdown-item active" data-val="basics" id="quest-item-basics">
+              <div class="dropdown-item-left">
+                <span class="dropdown-item-num">00</span>
+                <div>
+                  <div class="dropdown-item-title">Фундамент Java</div>
+                  <div class="dropdown-item-sub">Память, типы, переменные</div>
+                </div>
+              </div>
+              <span class="quest-status status-active" id="quest-badge-basics">АКТИВЕН</span>
+            </div>
+
+            <div class="dropdown-item locked" data-val="calc" id="quest-item-calc">
+              <div class="dropdown-item-left">
+                <span class="dropdown-item-num">01</span>
+                <div>
+                  <div class="dropdown-item-title">Калькулятор</div>
+                  <div class="dropdown-item-sub">Массивы, switch, рекурсия</div>
+                </div>
+              </div>
+              <span class="quest-status status-locked" id="quest-badge-calc">
+                <svg class="icon-svg xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                НУЖЕН КВЕСТ 00
+              </span>
+            </div>
+
+            <div class="dropdown-item locked" data-val="oop">
+              <div class="dropdown-item-left">
+                <span class="dropdown-item-num">02</span>
+                <div>
+                  <div class="dropdown-item-title">ООП Рейд</div>
+                  <div class="dropdown-item-sub">Классы, объекты и полиморфизм</div>
+                </div>
+              </div>
+              <span class="quest-status status-locked">СКОРО</span>
+            </div>
+
+            <div class="dropdown-item locked" data-val="collections">
+              <div class="dropdown-item-left">
+                <span class="dropdown-item-num">03</span>
+                <div>
+                  <div class="dropdown-item-title">Подземелье Коллекций</div>
+                  <div class="dropdown-item-sub">List, Map, Set структуры</div>
+                </div>
+              </div>
+              <span class="quest-status status-locked">СКОРО</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Прогресс XP квеста -->
+      <div class="xp-card">
+        <div class="xp-labels">
+          <span class="xp-title">
+            <svg class="icon-svg xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            ПРОГРЕСС КВЕСТА
+          </span>
+          <span id="progress-percent" class="xp-val">0%</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Сайдбар-навигация по этапам -->
+      <nav class="module-nav" id="module-nav"></nav>
+
+      <!-- Футер сайдбара -->
+      <div class="sidebar-footer">
+        <button id="btn-export-code" class="btn-action-glow" title="Скачать готовый Java-файл">
+          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span id="btn-export-label">Экспорт Basics.java</span>
+        </button>
+
+        <button id="btn-reset" class="btn-ghost">
+          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          <span>Сбросить прогресс</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Основная рабочая зона -->
+    <main class="workspace">
+      <header class="workspace-header">
+        <div class="header-titles">
+          <div class="badge-row">
+            <span class="module-badge" id="module-badge">ЭТАП 01</span>
+            <span class="status-pill" id="stage-status-pill">
+              <span class="pulse-dot" id="stage-pulse-dot"></span>
+              <span id="stage-status-text">ГОТОВ К СТАРТУ</span>
+            </span>
+            <span class="streak-badge" id="streak-badge" title="Серия решений без единой ошибки">
+              <span class="streak-icon">🔥</span>
+              <span id="streak-count">0</span> STREAK
+            </span>
+          </div>
+          <h1 id="module-title">Загрузка данных...</h1>
+        </div>
+
+        <div class="header-actions">
+          <!-- Кнопка вызова AI Ментора -->
+          <button id="btn-ai-tutor" class="btn-hud btn-ai-pulse" title="Cyber AI Наставник">
+            <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>AI Ментор</span>
+          </button>
+
+          <!-- Шпаргалка -->
+          <button id="btn-cheatsheet" class="btn-hud" title="Шпаргалка: типы данных, шорткаты и формулы">
+            <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span>Справка</span>
+          </button>
+
+          <!-- Компактный Lo-Fi переключатель -->
+          <button id="btn-ambient" class="btn-hud btn-lofi-compact" title="Lo-Fi Synth Ambient">
+            <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+            <span class="lofi-dot" id="lofi-dot"></span>
+            <span>Lo-Fi</span>
+          </button>
+
+          <!-- Ачивки -->
+          <button id="btn-achievements" class="btn-hud" title="Трофеи и ачивки">
+            <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="8" r="7"></circle>
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+            </svg>
+            <span>Ачивки</span>
+            <span class="achieve-counter" id="achieve-counter">0/7</span>
+          </button>
+
+          <!-- Звук -->
+          <button id="btn-sound" class="btn-hud" title="Звуковые эффекты">
+            <span id="sound-icon-slot">
+              <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              </svg>
+            </span>
+            <span id="sound-text">Звук</span>
+          </button>
+
+          <!-- Смена темы -->
+          <button id="btn-theme" class="btn-theme" title="Сменить тему">
+            <span id="theme-icon-slot"></span>
+            <span id="theme-text">Светлая тема</span>
+          </button>
+
+          <button id="btn-prev" class="btn-nav" disabled>
+            <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>Назад</span>
+          </button>
+
+          <button id="btn-next" class="btn-nav">
+            <span>Вперед</span>
+            <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace-body">
+        <!-- Обучающая панель -->
+        <section class="learn-panel">
+          <div class="tab-controls">
+            <button class="tab-btn active" data-tab="theory">
+              <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+              <span>Теория</span>
+            </button>
+
+            <button class="tab-btn" data-tab="pitfalls">
+              <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>Грабли</span>
+            </button>
+
+            <button class="tab-btn" data-tab="quiz">
+              <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>Квиз</span>
+            </button>
+
+            <button class="tab-btn" data-tab="exam">
+              <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+              </svg>
+              <span>Защита</span>
+            </button>
+
+            <button class="tab-btn" data-tab="memory">
+              <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+              </svg>
+              <span>Память RAM</span>
+            </button>
+          </div>
+
+          <div class="tab-content anim-fade-in" id="tab-theory"></div>
+          <div class="tab-content hidden anim-fade-in" id="tab-pitfalls"></div>
+          <div class="tab-content hidden anim-fade-in" id="tab-quiz">
+            <div class="quiz-box" id="quiz-container"></div>
+          </div>
+
+          <!-- Вкладка интерактивной защиты с тестами и аналитикой -->
+          <div class="tab-content hidden anim-fade-in" id="tab-exam">
+            <div class="exam-arena-card">
+              <div class="exam-arena-header">
+                <div>
+                  <span class="arena-tag">ЭКЗАМЕНАЦИОННЫЙ СИМУЛЯТОР</span>
+                  <h4>Интерактивная защита у преподавателя</h4>
+                  <p>Ответьте на тестовые вопросы с выбором вариантов. Система посчитает результат, разберет ошибки и выдаст персональную рекомендацию.</p>
+                </div>
+                <button class="btn-challenge-exam" id="btn-exam-challenge">
+                  <span>⚡ БРОСИТЬ ВЫЗОВ</span>
+                </button>
+              </div>
+
+              <!-- Контейнер интерактивного тестирования защиты -->
+              <div class="exam-duel-box hidden" id="exam-duel-box">
+                <div class="duel-meta">
+                  <span class="duel-status-badge" id="duel-question-counter">ВОПРОС 1 ИЗ 2</span>
+                  <span class="duel-timer" id="duel-timer">⏱️ 30 сек</span>
+                </div>
+                <h3 class="duel-question-text" id="duel-question-text">Загрузка вопроса...</h3>
+
+                <div class="duel-options-list" id="duel-options-list"></div>
+
+                <!-- Карточка разбора результата -->
+                <div class="duel-feedback-box hidden" id="duel-feedback-box">
+                  <div class="duel-feedback-header" id="duel-feedback-header"></div>
+                  <div class="duel-feedback-explain" id="duel-feedback-explain"></div>
+                  <button class="btn-primary" id="btn-duel-next">Следующий вопрос →</button>
+                </div>
+              </div>
+
+              <!-- Итоговый экран аналитики защиты -->
+              <div class="exam-summary-card hidden" id="exam-summary-card">
+                <div class="summary-score-row">
+                  <div class="summary-score-badge" id="summary-score-badge">0/0</div>
+                  <div>
+                    <h3 id="summary-verdict-title">Результаты защиты</h3>
+                    <p id="summary-verdict-subtitle">Анализ ответов</p>
+                  </div>
+                </div>
+                <div class="summary-advice-box" id="summary-advice-box"></div>
+                <button class="btn-secondary" id="btn-restart-exam">Попробовать еще раз</button>
+              </div>
+            </div>
+
+            <div class="exam-static-list-header">
+              <h4>Все вопросы и шпаргалка этапа для закрепления</h4>
+            </div>
+            <div id="exam-static-list"></div>
+          </div>
+
+          <!-- Контент визуализатора памяти -->
+          <div class="tab-content hidden anim-fade-in" id="tab-memory">
+            <div class="memory-inspector" id="memory-inspector">
+              <div class="memory-header-row">
+                <div class="mem-title">
+                  <span class="pulse-dot"></span>
+                  <h4>ВИЗУАЛИЗАТОР ОПЕРАТИВНОЙ ПАМЯТИ (JVM RAM)</h4>
+                </div>
+                <button class="btn-term-action" id="btn-refresh-memory">Синхронизировать</button>
+              </div>
+
+              <div class="memory-grid">
+                <div class="mem-section">
+                  <div class="mem-section-title">
+                    <span class="mem-tag stack">STACK (Быстрая память)</span>
+                    <span class="mem-sub">Фреймы вызовов и примитивы</span>
+                  </div>
+                  <div class="stack-display" id="stack-display"></div>
+                </div>
+
+                <div class="mem-section">
+                  <div class="mem-section-title">
+                    <span class="mem-tag heap">HEAP (Куча)</span>
+                    <span class="mem-sub">Массивы и объекты</span>
+                  </div>
+                  <div class="heap-display" id="heap-display"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Панель редактора -->
+        <section class="editor-panel" id="editor-panel">
+          <div class="editor-toolbar">
+            <div class="editor-title">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+              <span class="file-name" id="editor-file-name">Basics.java</span>
+            </div>
+
+            <div class="toolbar-btns">
+              <button id="btn-solution" class="btn-solution locked" title="Решение недоступно">
+                <span id="solution-icon">
+                  <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </span>
+                <span id="solution-text">Решение</span>
+              </button>
+
+              <button id="btn-format" class="btn-secondary" title="Автоматически выровнять отступы">
+                <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+                <span>Формат</span>
+              </button>
+
+              <button id="btn-hint" class="btn-secondary">
+                <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18h6"></path>
+                  <path d="M10 22h4"></path>
+                  <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+                </svg>
+                <span>Хинт</span>
+              </button>
+
+              <button id="btn-run" class="btn-primary" title="Запустить стресс-тесты">
+                <svg class="icon-svg sm" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="6 4 20 12 6 20 6 4"></polygon>
+                </svg>
+                <span>Запустить тесты</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Редактор с оверлеем старта -->
+          <div class="editor-wrapper" id="editor-wrapper">
+            <div class="line-numbers" id="line-numbers">1</div>
+            <textarea id="code-editor" spellcheck="false" placeholder="// Введи решение..."></textarea>
+
+            <div class="stage-gate-overlay hidden" id="stage-gate-overlay">
+              <div class="gate-card">
+                <div class="gate-icon">⚡</div>
+                <h3 id="gate-stage-title">Этап готов к началу</h3>
+                <p id="gate-stage-desc">Изучите теорию слева, затем нажмите «Начать этап», чтобы активировать редактор кода и стресс-тесты.</p>
+                <button class="btn-start-stage-big" id="btn-start-stage-overlay">
+                  <span>▶ НАЧАТЬ ЭТАП</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="hint-box hidden" id="hint-box"></div>
+
+          <!-- Терминал и Инспектор расхождений -->
+          <div class="terminal" id="terminal-block">
+            <div class="terminal-header">
+              <div class="terminal-title">
+                <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="4 17 10 11 4 5"></polyline>
+                  <line x1="12" y1="19" x2="20" y2="19"></line>
+                </svg>
+                <span>CYBER TERMINAL // JDK 21</span>
+                <span class="term-status-badge idle" id="term-status-badge">IDLE</span>
+              </div>
+
+              <div class="terminal-actions">
+                <button id="btn-toggle-diff" class="btn-term-action hidden" title="Показать детальное сравнение Expected vs Actual">
+                  <svg class="icon-svg xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                  </svg>
+                  <span>Diff Сравнение</span>
+                </button>
+
+                <button id="btn-interactive-run" class="btn-term-action" title="Запустить с клавиатурным вводом">
+                  <svg class="icon-svg xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  <span>Интерактив</span>
+                </button>
+                <button id="btn-clear-term" class="btn-text">Очистить</button>
+              </div>
+            </div>
+
+            <div class="terminal-content-area" id="terminal-scroll-area">
+              <pre class="terminal-body" id="terminal-output">// Нажмите «Начать этап» в сайдбаре или на экране для старта...</pre>
+
+              <div class="diff-inspector hidden" id="diff-inspector">
+                <div class="diff-header">
+                  <span class="diff-badge">SMART DIFF INSPECTOR</span>
+                  <span class="diff-sub">Анализ расхождений в тесте</span>
+                </div>
+                <div class="diff-cols">
+                  <div class="diff-col expected">
+                    <div class="diff-col-title">ОЖИДАЛОСЬ (EXPECTED):</div>
+                    <pre class="diff-code" id="diff-expected">// ...</pre>
+                  </div>
+                  <div class="diff-col actual">
+                    <div class="diff-col-title">ПОЛУЧЕНО В КОДЕ (ACTUAL):</div>
+                    <pre class="diff-code" id="diff-actual">// ...</pre>
+                  </div>
+                </div>
+              </div>
+
+              <form id="terminal-input-form" class="terminal-input-form hidden">
+                <span class="terminal-prompt">&gt;</span>
+                <input type="text" id="terminal-input" class="terminal-input" autocomplete="off" placeholder="Введи значение и нажми Enter..." />
+                <button type="submit" class="terminal-submit-btn">Ввод</button>
+              </form>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- ВЫДВИЖНАЯ ПАНЕЛЬ: CYBER AI TUTOR -->
+  <div class="ai-drawer hidden" id="ai-drawer">
+    <div class="ai-drawer-header">
+      <div class="ai-title-row">
+        <span class="pulse-dot"></span>
+        <h3>CYBER AI МЕНТОР</h3>
+      </div>
+      <button class="btn-icon" id="btn-close-ai" title="Закрыть">
+        <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Минималистичные быстрые действия с SVG -->
+    <div class="ai-quick-bar">
+      <button class="btn-ai-quick" id="btn-ai-analyze" title="Проверить текущий код">
+        <svg class="icon-svg xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <span>Анализ</span>
+      </button>
+
+      <button class="btn-ai-quick" id="btn-ai-explain-error" title="Разобрать ошибку в терминале">
+        <svg class="icon-svg xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span>Ошибка</span>
+      </button>
+
+      <button class="btn-ai-quick" id="btn-ai-exam-prep" title="Вопросы к защите проекта">
+        <svg class="icon-svg xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        <span>Защита</span>
+      </button>
+    </div>
+
+    <!-- Чат диалога с ментором -->
+    <div class="ai-chat-body" id="ai-chat-body">
+      <div class="ai-msg bot">
+        Готов к разбору кода. Задай вопрос или выбери действие вверху.
+      </div>
+    </div>
+
+    <form class="ai-input-form" id="ai-input-form">
+      <input type="text" id="ai-prompt-input" class="ai-prompt-input" placeholder="Спроси о коде..." autocomplete="off" />
+      <button type="submit" class="ai-send-btn" id="btn-ai-send">
+        <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+  <!-- Модальное окно решения -->
+  <div class="modal-overlay hidden" id="solution-modal">
+    <div class="solution-modal-window">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <h3>РЕЖИМ НАБЛЮДЕНИЯ: ЭТАЛОННОЕ РЕШЕНИЕ</h3>
+        </div>
+        <button class="modal-close-btn" id="modal-close-btn">
+          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-warning-banner">
+          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>ТОЛЬКО ПРОСМОТР. Программа не засчитывает задание автоматически. Изучи логику, закрой окно и примени решение в своем редакторе!</span>
+        </div>
+
+        <pre class="modal-code-viewer" id="modal-solution-code"></pre>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-primary" id="btn-modal-close-action">Понятно, попробую написать сам</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно Зала славы (Ачивки) -->
+  <div class="modal-overlay hidden" id="achievements-modal">
+    <div class="solution-modal-window achievements-window">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          <h3>ЗАЛ СЛАВЫ // ТРОФЕИ КУРСА</h3>
+        </div>
+        <button class="modal-close-btn" id="modal-achieve-close-btn">
+          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="achievements-grid" id="achievements-grid"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-primary" id="btn-achieve-close-action">Вернуться к квесту</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно Шпаргалки (Cheat Sheet) -->
+  <div class="modal-overlay hidden" id="cheatsheet-modal">
+    <div class="solution-modal-window cheatsheet-window">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <h3>ШПАРГАЛКА РАЗРАБОТЧИКА // QUICK REFERENCE</h3>
+        </div>
+        <button class="modal-close-btn" id="modal-cheat-close-btn">
+          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body cheatsheet-body">
+        <div class="cheat-section">
+          <h4>⌨️ Профессиональные шорткаты в редакторе (IDEA &amp; VS Code)</h4>
+          <div class="shortcuts-grid">
+            <div class="shortcut-item">
+              <span class="key-combo">sout + Tab</span>
+              <span class="key-desc">Разворачивается в <code>System.out.println();</code></span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key-combo">psvm + Tab</span>
+              <span class="key-desc">Разворачивается в <code>public static void main(String[] args) {}</code></span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key-combo">Tab</span>
+              <span class="key-desc">Вставляет 4 пробела без потери фокуса</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key-combo">Backspace</span>
+              <span class="key-desc">Удаляет парные пустые скобки разом</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cheat-section">
+          <h4>📦 Примитивные типы данных Java</h4>
+          <table class="cheat-table">
+            <thead>
+              <tr>
+                <th>Тип</th>
+                <th>Размер</th>
+                <th>Диапазон / Значение</th>
+                <th>Пример</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>int</code></td>
+                <td>4 байта</td>
+                <td>от -2 147 483 648 до 2 147 483 647</td>
+                <td><code>int x = 42;</code></td>
+              </tr>
+              <tr>
+                <td><code>double</code></td>
+                <td>8 байт</td>
+                <td>Дробные числа (~15 знаков точности)</td>
+                <td><code>double pi = 3.1415;</code></td>
+              </tr>
+              <tr>
+                <td><code>long</code></td>
+                <td>8 байт</td>
+                <td>Огромные целые (до 9·10¹⁸, для факториала)</td>
+                <td><code>long big = 100L;</code></td>
+              </tr>
+              <tr>
+                <td><code>boolean</code></td>
+                <td>1 байт</td>
+                <td>Только <code>true</code> или <code>false</code></td>
+                <td><code>boolean ok = true;</code></td>
+              </tr>
+              <tr>
+                <td><code>String</code></td>
+                <td>Ссылка</td>
+                <td>Текстовые строки (ссылочный тип)</td>
+                <td><code>String s = "Java";</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="cheat-section">
+          <h4>🌀 Формула рекурсии и Call Stack</h4>
+          <p>Любая рекурсивная функция обязана содержать две части:</p>
+          <ul>
+            <li><strong>Базовый случай (терминал):</strong> <code>if (n &lt;= 1) return 1;</code> — останавливает лавину вызовов.</li>
+            <li><strong>Шаг рекурсии:</strong> <code>return n * factorial(n - 1);</code> — уменьшает задачу к базовому случаю.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-primary" id="btn-cheat-close-action">Понятно, закрыть шпаргалку</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно завершения квеста -->
+  <div class="modal-overlay hidden" id="quest-complete-modal">
+    <div class="solution-modal-window quest-complete-window">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <span class="victory-icon">🎉</span>
+          <h3 id="quest-complete-title">КВЕСТ 00 ЗАВЕРШЕН!</h3>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <p id="quest-complete-text">Базовые основы памяти и типов данных Java освоены на 100%. Теперь разблокирован Квест 01: Калькулятор (полное ТЗ от преподавателя).</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-primary" id="btn-next-quest-action">Перейти к Квесту 01: Калькулятор →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модули JavaScript (ES Modules) -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
