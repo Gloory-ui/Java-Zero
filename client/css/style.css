@@ -1,5 +1,5 @@
 /* ==========================================================================
-   STYLE.CSS: Редактор, Босс-файт, Ранги, Matrix Rain, Персоны ИИ и Шпоры
+   STYLE.CSS: Фиксированная компоновка, идеальный скролл, Босс-файт и Ранги
    ========================================================================== */
 
 /* 1. Полноэкранный холст Matrix Rain */
@@ -12,8 +12,50 @@
   z-index: 500;
 }
 
-/* 2. Кибер-ранг пользователя */
-.rank-badge {
+/* 2. Жёстко зафиксированный по высоте хедер (устраняет дергание блоков) */
+.workspace-header {
+  height: 64px;
+  min-height: 64px;
+  max-height: 64px;
+  padding: 0 20px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.header-titles {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.header-titles .badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+#module-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  line-height: 1.25;
+}
+
+/* 3. Кликабельный кибер-ранг */
+.rank-badge-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -21,49 +63,154 @@
   border: 1px solid var(--border-subtle);
   font-size: 0.68rem;
   font-weight: 800;
-  padding: 2px 9px;
+  padding: 3px 9px;
   border-radius: 20px;
   letter-spacing: 0.8px;
   font-family: 'Fira Code', monospace;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+}
+.rank-badge-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
 }
 
-/* 3. Кнопка «Шпора старосты» и ее информационный блок */
-.btn-elder {
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  color: #c084fc;
-  padding: 6px 12px;
+/* 4. Компактные кнопки хедера */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-hud-compact {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 6px 10px;
   border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-weight: 700;
-  font-size: 0.76rem;
 }
-
-.btn-elder:hover {
-  background: rgba(168, 85, 247, 0.25);
-  border-color: #c084fc;
-  transform: translateY(-1px);
-}
-
-.elder-cheat-box {
-  padding: 14px 20px;
-  background: rgba(168, 85, 247, 0.08);
-  border-top: 1px solid rgba(168, 85, 247, 0.4);
+.btn-hud-compact:hover {
+  background: var(--bg-card-hover);
   color: var(--text-primary);
-  font-size: 0.88rem;
-  line-height: 1.55;
-  animation: smoothFade 0.3s ease;
+  border-color: var(--border-neon);
 }
 
-.elder-cheat-box strong {
-  color: #c084fc;
+.btn-ai-pulse {
+  border-color: var(--neon-red);
+  background: rgba(255, 42, 85, 0.08);
+  color: var(--neon-red);
 }
 
-/* 4. БОСС-ФАЙТ: HUD профессора и полоска HP */
+.hud-icons-cluster {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.btn-icon-hud {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 5px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-icon-hud:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.nav-cluster {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.btn-nav-segment {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  padding: 6px 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.btn-nav-segment:hover:not(:disabled) {
+  background: rgba(255, 42, 85, 0.15);
+  color: var(--neon-red);
+}
+.btn-nav-segment:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* 5. Рабочая сетка и скроллинг */
+.workspace-body {
+  display: grid;
+  grid-template-columns: minmax(420px, 46%) minmax(0, 1fr);
+  height: calc(100vh - 64px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.learn-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+.tab-controls {
+  flex-shrink: 0;
+  display: flex;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+
+.tab-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto !important;
+  padding: 22px 24px 40px 24px;
+}
+
+.tab-content::-webkit-scrollbar {
+  width: 6px;
+}
+.tab-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
+}
+.tab-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+.tab-content::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-red);
+}
+
+/* 6. БОСС-ФАЙТ АРЕНА */
 .boss-arena-hud {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--border-neon);
@@ -88,22 +235,9 @@
   gap: 10px;
 }
 
-.boss-avatar {
-  font-size: 1.6rem;
-}
-
-.boss-name {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--neon-red);
-}
-
-.boss-sub {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 1px;
-}
+.boss-avatar { font-size: 1.6rem; }
+.boss-name { font-size: 0.95rem; font-weight: 800; color: var(--neon-red); }
+.boss-sub { font-size: 0.65rem; font-weight: 700; color: var(--text-secondary); letter-spacing: 1px; }
 
 .boss-hp-counter {
   font-family: 'Fira Code', monospace;
@@ -117,7 +251,6 @@
   background: rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   overflow: hidden;
-  position: relative;
   border: 1px solid var(--border-subtle);
 }
 
@@ -129,220 +262,6 @@
   box-shadow: 0 0 14px rgba(255, 42, 85, 0.7);
 }
 
-/* Вспышка критического удара */
-.crit-flash {
-  animation: critFlashAnim 0.35s ease-out;
-}
-
-@keyframes critFlashAnim {
-  0% { box-shadow: 0 0 50px #ff2a55, inset 0 0 35px #ff2a55; border-color: #ff2a55; }
-  100% { box-shadow: none; }
-}
-
-/* Встряска босса при получении урона */
-.boss-hit-shake {
-  animation: bossShakeAnim 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
-
-@keyframes bossShakeAnim {
-  10%, 90% { transform: translate3d(-4px, 0, 0); }
-  20%, 80% { transform: translate3d(6px, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
-  40%, 60% { transform: translate3d(4px, 0, 0); }
-}
-
-/* 5. Редактор кода */
-.editor-panel {
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-editor);
-  position: relative;
-}
-
-.editor-toolbar {
-  padding: 9px 16px;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-
-.editor-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-.dot.red { background: #ff4757; }
-.dot.yellow { background: #ffa502; }
-.dot.green { background: #2ed573; }
-
-.toolbar-btns {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.editor-wrapper {
-  flex: 1;
-  position: relative;
-  display: flex;
-  background: var(--bg-editor);
-  overflow: hidden;
-}
-
-.line-numbers {
-  width: 48px;
-  padding: 18px 0;
-  text-align: right;
-  padding-right: 12px;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.92rem;
-  line-height: 1.6;
-  color: var(--text-secondary);
-  opacity: 0.45;
-  background: var(--bg-gutter);
-  border-right: 1px solid var(--border-subtle);
-  user-select: none;
-  overflow: hidden;
-  white-space: pre-wrap;
-}
-
-#code-editor {
-  flex: 1;
-  height: 100%;
-  background: var(--bg-editor);
-  border: none;
-  color: var(--text-code);
-  padding: 18px 16px;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.92rem;
-  line-height: 1.6;
-  resize: none;
-  outline: none;
-  tab-size: 4;
-  white-space: pre;
-}
-
-/* Оверлей ворот этапа */
-.stage-gate-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(6, 7, 10, 0.84);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 20;
-  padding: 24px;
-}
-
-.gate-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-neon);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), var(--neon-red-glow);
-  padding: 28px 32px;
-  border-radius: 16px;
-  text-align: center;
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.gate-icon { font-size: 2.2rem; }
-.gate-card h3 { font-size: 1.25rem; font-weight: 800; color: var(--text-primary); }
-.gate-card p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; }
-
-.btn-start-stage-big {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #fff;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
-  margin-top: 6px;
-}
-.btn-start-stage-big:hover { filter: brightness(1.2); transform: translateY(-2px); }
-
-/* Кнопки действий */
-.btn-primary {
-  background: var(--neon-gradient);
-  color: #fff;
-  font-weight: 800;
-  border: none;
-  padding: 7px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: var(--neon-red-glow);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-}
-.btn-primary:hover { filter: brightness(1.2); transform: translateY(-1px); }
-
-.btn-secondary {
-  background: var(--bg-card);
-  color: var(--neon-red);
-  border: 1px solid var(--border-neon);
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 700;
-  font-size: 0.76rem;
-}
-.btn-secondary:hover { background: var(--bg-card-hover); transform: translateY(-1px); }
-
-.btn-solution {
-  border-radius: 8px;
-  padding: 6px 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 700;
-  font-size: 0.76rem;
-  cursor: pointer;
-}
-.btn-solution.locked {
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
-  opacity: 0.6;
-}
-.btn-solution.unlocked {
-  background: rgba(255, 42, 85, 0.14);
-  color: var(--neon-red);
-  border: 1px solid var(--border-neon);
-}
-
-.hint-box {
-  padding: 14px 20px;
-  background: var(--bg-card);
-  border-top: 1px solid var(--neon-red);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-/* 6. Экзаменационная арена дуэли */
 .exam-arena-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -483,17 +402,9 @@
   gap: 10px;
 }
 
-.duel-feedback-header {
-  font-size: 0.9rem;
-  font-weight: 800;
-}
-.duel-feedback-explain {
-  font-size: 0.86rem;
-  color: var(--text-secondary);
-  line-height: 1.55;
-}
+.duel-feedback-header { font-size: 0.9rem; font-weight: 800; }
+.duel-feedback-explain { font-size: 0.86rem; color: var(--text-secondary); line-height: 1.55; }
 
-/* Аналитика и советы */
 .exam-summary-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-neon);
@@ -505,11 +416,7 @@
   gap: 14px;
 }
 
-.summary-score-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
+.summary-score-row { display: flex; align-items: center; gap: 14px; }
 
 .summary-score-badge {
   font-family: 'Fira Code', monospace;
@@ -531,8 +438,6 @@
   color: var(--text-secondary);
   line-height: 1.55;
 }
-
-.summary-advice-box strong { color: var(--text-primary); }
 
 .exam-static-list-header { margin-bottom: 12px; }
 .exam-static-list-header h4 { font-size: 0.95rem; font-weight: 800; color: var(--text-secondary); }
@@ -575,16 +480,260 @@
   border-left: 2px solid var(--neon-red);
 }
 
-/* 7. ВЫДВИЖНАЯ ПАНЕЛЬ AI МЕНТОРА (СЕЛЕКТОР ПЕРСОНЫ И СТИЛИ ЧАТА) */
-.btn-ai-pulse {
-  border-color: var(--neon-red);
-  background: rgba(255, 42, 85, 0.08);
-  color: var(--neon-red);
-  font-size: 0.76rem;
-  padding: 6px 12px;
-  border-radius: 8px;
+/* 7. Редактор кода */
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-editor);
+  min-width: 0;
+  overflow: hidden;
 }
 
+.editor-toolbar {
+  padding: 9px 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.editor-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.red { background: #ff4757; }
+.dot.yellow { background: #ffa502; }
+.dot.green { background: #2ed573; }
+
+.toolbar-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-elder {
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #c084fc;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 0.74rem;
+}
+.btn-elder:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: #c084fc;
+}
+
+.elder-cheat-box {
+  padding: 12px 18px;
+  background: rgba(168, 85, 247, 0.08);
+  border-top: 1px solid rgba(168, 85, 247, 0.4);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.btn-solution {
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+.btn-solution.locked {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  opacity: 0.6;
+}
+.btn-solution.unlocked {
+  background: rgba(255, 42, 85, 0.14);
+  color: var(--neon-red);
+  border: 1px solid var(--border-neon);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--neon-red);
+  border: 1px solid var(--border-neon);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 0.74rem;
+}
+
+.btn-primary {
+  background: var(--neon-gradient);
+  color: #fff;
+  font-weight: 800;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: var(--neon-red-glow);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+}
+
+.editor-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  background: var(--bg-editor);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.line-numbers {
+  width: 44px;
+  padding: 16px 0;
+  text-align: right;
+  padding-right: 10px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  opacity: 0.45;
+  background: var(--bg-gutter);
+  border-right: 1px solid var(--border-subtle);
+  user-select: none;
+  overflow: hidden;
+}
+
+#code-editor {
+  flex: 1;
+  height: 100%;
+  background: var(--bg-editor);
+  border: none;
+  color: var(--text-code);
+  padding: 16px 14px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  tab-size: 4;
+  white-space: pre;
+}
+
+.stage-gate-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 7, 10, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 24px;
+}
+
+.gate-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-neon);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), var(--neon-red-glow);
+  padding: 28px 32px;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-start-stage-big {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+/* 8. МОДАЛЬНОЕ ОКНО РАНГОВ */
+.rank-modal-window {
+  max-width: 640px;
+}
+
+.ranks-ladder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.rank-ladder-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.rank-item-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.rank-item-info {
+  flex: 1;
+}
+
+.rank-item-title {
+  font-size: 0.86rem;
+  font-weight: 800;
+  font-family: 'Fira Code', monospace;
+  margin-bottom: 2px;
+}
+
+.rank-item-desc {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.rank-item-badge {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+/* 9. AI Панель */
 .ai-drawer {
   position: fixed;
   top: 0;
@@ -598,12 +747,6 @@
   z-index: 150;
   display: flex;
   flex-direction: column;
-  animation: drawerSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes drawerSlide {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
 }
 
 .ai-drawer-header {
@@ -614,31 +757,6 @@
   justify-content: space-between;
 }
 
-.ai-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ai-title-row h3 {
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: var(--text-primary);
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-}
-.btn-icon:hover { color: var(--neon-red); }
-
-/* Селектор характера ИИ */
 .ai-persona-bar {
   padding: 8px 14px;
   border-bottom: 1px solid var(--border-subtle);
@@ -646,12 +764,6 @@
   align-items: center;
   justify-content: space-between;
   background: rgba(0, 0, 0, 0.15);
-}
-
-.persona-label {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  font-weight: 700;
 }
 
 .ai-persona-select {
@@ -663,10 +775,6 @@
   font-size: 0.74rem;
   font-weight: 700;
   outline: none;
-  cursor: pointer;
-}
-.ai-persona-select:focus {
-  border-color: var(--neon-red);
 }
 
 .ai-quick-bar {
@@ -675,7 +783,6 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   border-bottom: 1px solid var(--border-subtle);
-  background: rgba(0, 0, 0, 0.15);
 }
 
 .btn-ai-quick {
@@ -693,17 +800,6 @@
   gap: 5px;
 }
 
-.btn-ai-quick:hover {
-  border-color: var(--neon-red);
-  color: var(--text-primary);
-  background: var(--bg-card-hover);
-  transform: translateY(-1px);
-}
-
-.btn-ai-quick .icon-svg {
-  color: var(--neon-red);
-}
-
 .ai-chat-body {
   flex: 1;
   overflow-y: auto;
@@ -713,26 +809,12 @@
   gap: 12px;
 }
 
-.ai-chat-body::-webkit-scrollbar {
-  width: 4px;
-}
-.ai-chat-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
 .ai-msg {
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 0.82rem;
   line-height: 1.55;
   max-width: 90%;
-  animation: messageFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes messageFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .ai-msg.bot {
@@ -747,70 +829,6 @@
   background: rgba(255, 42, 85, 0.12);
   border: 1px solid var(--border-neon);
   color: var(--text-primary);
-}
-
-.ai-msg strong {
-  color: #fff;
-  font-weight: 700;
-}
-
-.ai-msg .code-inline {
-  font-size: 0.8em;
-  padding: 1px 5px;
-  margin: 0 2px;
-}
-
-.ai-msg pre {
-  margin: 8px 0;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: #000;
-  border: 1px solid var(--border-subtle);
-  font-family: 'Fira Code', monospace;
-  font-size: 0.76rem;
-  overflow-x: auto;
-  color: #a5b4fc;
-}
-
-.ai-msg .ai-quote {
-  border-left: 2px solid var(--neon-red);
-  padding-left: 8px;
-  margin: 6px 0;
-  color: var(--text-secondary);
-}
-
-.ai-msg .ai-divider {
-  border: none;
-  border-top: 1px solid var(--border-subtle);
-  margin: 10px 0;
-}
-
-.ai-msg h5 {
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: var(--neon-gold);
-  margin: 8px 0 4px 0;
-}
-
-.ai-typing {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-}
-.ai-typing-dot {
-  width: 5px;
-  height: 5px;
-  background: var(--neon-red);
-  border-radius: 50%;
-  animation: typingDot 1.2s infinite ease-in-out;
-}
-.ai-typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.ai-typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typingDot {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-  40% { transform: scale(1); opacity: 1; }
 }
 
 .ai-input-form {
@@ -831,9 +849,6 @@
   font-size: 0.8rem;
   outline: none;
 }
-.ai-prompt-input:focus {
-  border-color: var(--neon-red);
-}
 
 .ai-send-btn {
   background: var(--neon-gradient);
@@ -846,11 +861,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  flex-shrink: 0;
 }
-.ai-send-btn:hover { filter: brightness(1.15); }
 
-/* 8. Модальные окна */
+/* Модальные окна */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -901,7 +914,7 @@
 .modal-body {
   padding: 20px 22px;
   overflow-y: auto;
-  max-height: 60vh;
+  max-height: 65vh;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -944,12 +957,7 @@
 .cheat-section { display: flex; flex-direction: column; gap: 10px; }
 .cheat-section h4 { font-size: 0.95rem; font-weight: 800; color: var(--neon-gold); }
 
-.shortcuts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
+.shortcuts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .shortcut-item {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -991,12 +999,7 @@
 }
 
 /* Ачивки */
-.achievements-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
+.achievements-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .achievement-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -1006,14 +1009,8 @@
   align-items: flex-start;
   gap: 12px;
 }
-.achievement-card.unlocked {
-  border-color: rgba(245, 158, 11, 0.5);
-  box-shadow: var(--neon-gold-glow);
-}
-.achievement-card.locked {
-  opacity: 0.45;
-  filter: grayscale(0.8);
-}
+.achievement-card.unlocked { border-color: rgba(245, 158, 11, 0.5); box-shadow: var(--neon-gold-glow); }
+.achievement-card.locked { opacity: 0.45; filter: grayscale(0.8); }
 
 .achieve-badge-icon {
   font-size: 1.6rem;
@@ -1024,18 +1021,8 @@
   border: 1px solid var(--border-subtle);
 }
 
-.achieve-info h5 {
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 3px;
-}
-
-.achieve-info p {
-  font-size: 0.74rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
+.achieve-info h5 { font-size: 0.85rem; font-weight: 800; color: var(--text-primary); margin-bottom: 3px; }
+.achieve-info p { font-size: 0.74rem; color: var(--text-secondary); line-height: 1.4; }
 
 .achieve-status {
   font-size: 0.65rem;
@@ -1069,25 +1056,3 @@
 .toast-tag { font-size: 0.65rem; font-weight: 800; color: var(--neon-gold); }
 .toast-title { font-size: 0.95rem; font-weight: 800; }
 .toast-desc { font-size: 0.78rem; color: var(--text-secondary); }
-
-.shake-error {
-  animation: cyberShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-  border: 1px solid var(--danger) !important;
-}
-
-@keyframes cyberShake {
-  10%, 90% { transform: translate3d(-3px, 0, 0); }
-  20%, 80% { transform: translate3d(5px, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
-  40%, 60% { transform: translate3d(6px, 0, 0); }
-}
-
-.success-glow {
-  animation: victoryPulse 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes victoryPulse {
-  0% { box-shadow: 0 0 0 rgba(16, 185, 129, 0); }
-  40% { box-shadow: 0 0 45px rgba(16, 185, 129, 0.8); border-color: #10b981; }
-  100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
-}

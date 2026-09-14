@@ -1,12 +1,12 @@
 /**
- * Главная точка входа приложения Java-Zero (v0.2.0 Cyber Release)
+ * Главная точка входа приложения Java-Zero (v0.2.2 Stability Release)
  */
 import { audio } from './audio.js';
 import { state } from './state.js';
 import { QUESTS } from './quests.js';
 import { initExamSimulator } from './exam.js';
 import { renderMemoryVisualizer } from './memory.js';
-import { initAiClient, sendAiMessage } from './ai-client.js';
+import { initAiClient } from './ai-client.js';
 import {
   updateAchievementsBadge,
   renderAchievementsModal
@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAiClient();
   initMatrixRain();
   initBrandEasterEgg();
+  initRankModal();
 
   state.loadStoredProgress();
   switchQuest(state.currentQuestKey);
@@ -42,7 +43,28 @@ document.addEventListener("DOMContentLoaded", () => {
   bindGlobalEvents();
 });
 
-// --- ДИНАМИЧЕСКИЙ КИБЕР-РАНГ ---
+// --- ОКНО КИБЕР-РАНГОВ ---
+function initRankModal() {
+  const badgeBtn = document.getElementById("rank-badge");
+  const modal = document.getElementById("rank-modal");
+  const closeBtn = document.getElementById("modal-rank-close-btn");
+  const actionBtn = document.getElementById("btn-rank-close-action");
+
+  if (badgeBtn && modal) {
+    badgeBtn.addEventListener("click", () => {
+      audio.playClick();
+      modal.classList.remove("hidden");
+    });
+  }
+
+  const closeModal = () => {
+    if (modal) modal.classList.add("hidden");
+  };
+
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (actionBtn) actionBtn.addEventListener("click", closeModal);
+}
+
 function updateUserRankUI() {
   const rank = state.getUserRank();
   const iconEl = document.getElementById("rank-icon");
@@ -75,7 +97,6 @@ function initBrandEasterEgg() {
       logo.classList.add("crit-flash");
       setTimeout(() => logo.classList.remove("crit-flash"), 600);
 
-      // Визуальный тост пасхалки
       const toast = document.getElementById("achievement-toast");
       document.getElementById("toast-icon").textContent = "🎧";
       document.getElementById("toast-title").textContent = "PHONK BASS ACTIVATED";
@@ -180,8 +201,9 @@ function loadStage(idx) {
   const isCompleted = idx < unlockedMax;
   const isStarted = state.isStageStarted();
 
-  document.getElementById("module-badge").textContent = stage.badge;
+  document.getElementById("module-badge").textContent = stage.badge.split(" // ")[0];
   document.getElementById("module-title").textContent = stage.title;
+  document.getElementById("module-title").title = stage.title;
 
   const statusText = document.getElementById("stage-status-text");
   const pulseDot = document.getElementById("stage-pulse-dot");
@@ -193,7 +215,7 @@ function loadStage(idx) {
     pulseDot.style.boxShadow = "0 0 8px var(--success)";
     gateOverlay.classList.add("hidden");
   } else if (isStarted) {
-    statusText.textContent = "В ПРОЦЕССЕ РЕШЕНИЯ";
+    statusText.textContent = "В ПРОЦЕССЕ";
     pulseDot.style.background = "var(--neon-red)";
     pulseDot.style.boxShadow = "0 0 8px var(--neon-red)";
     gateOverlay.classList.add("hidden");
@@ -216,6 +238,16 @@ function loadStage(idx) {
   document.getElementById("hint-box").innerHTML = `<strong>Подсказка:</strong> ${stage.hint}`;
   document.getElementById("hint-box").classList.add("hidden");
   document.getElementById("elder-cheat-box").classList.add("hidden");
+
+  // Сброс состояния дуэли босса к начальному виду
+  const introBlock = document.getElementById("exam-arena-intro");
+  if (introBlock) introBlock.classList.remove("hidden");
+  document.getElementById("exam-duel-box")?.classList.add("hidden");
+  document.getElementById("exam-summary-card")?.classList.add("hidden");
+  const hpFill = document.getElementById("boss-hp-fill");
+  const hpText = document.getElementById("boss-hp-text");
+  if (hpFill) hpFill.style.width = "100%";
+  if (hpText) hpText.textContent = "100 / 100 HP";
 
   const staticList = document.getElementById("exam-static-list");
   if (stage.examTest && stage.examTest.length > 0) {
@@ -444,14 +476,12 @@ function bindGlobalEvents() {
     document.getElementById("hint-box").classList.toggle("hidden");
   });
 
-  // --- КНОПКА: ШПОРА СТАРОСТЫ (СНИМАЕТ СТРИК, НО ДАЕТ АЛГОРИТМ НА РУССКОМ) ---
   document.getElementById("btn-elder-cheat").addEventListener("click", () => {
     audio.playClick();
     const cheatBox = document.getElementById("elder-cheat-box");
     const isHidden = cheatBox.classList.contains("hidden");
 
     if (isHidden) {
-      // Сброс стрика за использование шпоры
       if (state.currentStreak > 0) {
         state.currentStreak = 0;
         state.saveProgress();
@@ -466,7 +496,7 @@ function bindGlobalEvents() {
         <strong>📜 ШПОРА ОТ СТАРОСТЫ (Стрик сброшен в 0):</strong><br/>
         • <strong>Суть алгоритма:</strong> ${stage.tests.map(t => t.name).join(" → ")}.<br/>
         • <strong>Входные данные:</strong> Обрати внимание на типы переменных и граничные проверки.<br/>
-        • <strong>Совет:</strong> Никакой магии — пиши команды последовательно сверху вниз и помни про точку с запятой.
+        • <strong>Совет:</strong> Пиши команды последовательно сверху вниз и помни про точку с запятой.
       `;
       cheatBox.classList.remove("hidden");
     } else {
@@ -622,6 +652,5 @@ function initSoundUI() {
   soundBtn.addEventListener("click", () => {
     const isEnabled = audio.toggleSound();
     if (isEnabled) audio.playClick();
-    document.getElementById("sound-text").textContent = isEnabled ? "Звук" : "Без звука";
   });
 }

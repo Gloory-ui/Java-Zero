@@ -1,5 +1,5 @@
 /**
- * Интерактивный симулятор защиты и Босс-файт (Exam Boss Duel v2.0)
+ * Интерактивный симулятор защиты и Босс-файт (Exam Boss Duel v2.1)
  */
 import { audio } from './audio.js';
 import { state } from './state.js';
@@ -35,7 +35,11 @@ export function startExamDuel() {
     return;
   }
 
-  // Сброс параметров арены и HP босса
+  // Скрываем блок вызова с кнопкой, чтобы исключить случайные перезапуски таймера
+  const introBlock = document.getElementById("exam-arena-intro");
+  if (introBlock) introBlock.classList.add("hidden");
+
+  // Сброс параметров
   currentQuestionIdx = 0;
   examScore = { correct: 0, wrong: 0, wrongQuestions: [] };
   state.bossHp = 100;
@@ -118,30 +122,26 @@ function handleOptionChoice(selectedIdx, btnEl) {
   optionsBox.querySelectorAll(".duel-option-btn").forEach(b => b.disabled = true);
 
   const timeElapsed = CONFIG.EXAM_TIMER_SECONDS - timeLeft;
-  const isCrit = timeElapsed <= 5; // Ответ быстрее 5 секунд = КРИТ
+  const isCrit = timeElapsed <= 5;
 
   if (selectedIdx === q.correct) {
     examScore.correct++;
     btnEl.classList.add("selected-correct");
 
-    // Расчет урона профессору
     const baseDamage = Math.ceil(100 / currentQuestionsList.length);
     state.bossHp = Math.max(0, state.bossHp - baseDamage);
     updateBossHpUI();
 
     if (isCrit) {
       audio.playCritHit();
-      arenaCard.classList.add("crit-flash", "boss-hit-shake");
-      header.innerHTML = `<span style="color:var(--neon-gold)">⚡ КРИТИЧЕСКИЙ УДАР! (-${baseDamage} HP) Быстрый и безупречный ответ за ${timeElapsed} сек!</span>`;
+      arenaCard.classList.add("crit-flash");
+      header.innerHTML = `<span style="color:var(--neon-gold)">⚡ КРИТИЧЕСКИЙ УДАР! (-${baseDamage} HP) Молниеносный ответ за ${timeElapsed} сек!</span>`;
     } else {
       audio.playBossHit();
-      arenaCard.classList.add("boss-hit-shake");
-      header.innerHTML = `<span style="color:var(--success)">✓ ПОПАДАНИЕ! (-${baseDamage} HP) Профессор принял ваш аргумент.</span>`;
+      header.innerHTML = `<span style="color:var(--success)">✓ ВЕРНО! (-${baseDamage} HP) Преподаватель удовлетворен аргументом.</span>`;
     }
 
-    setTimeout(() => {
-      arenaCard.classList.remove("crit-flash", "boss-hit-shake");
-    }, 400);
+    setTimeout(() => arenaCard.classList.remove("crit-flash"), 400);
 
   } else {
     audio.playError();
@@ -149,7 +149,7 @@ function handleOptionChoice(selectedIdx, btnEl) {
     optionsBox.querySelector(`[data-idx="${q.correct}"]`).classList.add("selected-correct");
     examScore.wrong++;
     examScore.wrongQuestions.push(q);
-    header.innerHTML = `<span style="color:var(--danger)">✗ ПРОМАХ! Преподаватель поймал вас на ошибке.</span>`;
+    header.innerHTML = `<span style="color:var(--danger)">✗ НЕВЕРНО! Замечание в лист защиты.</span>`;
   }
 
   explain.innerHTML = `<strong>Разбор логики:</strong> ${q.explain}`;
@@ -170,7 +170,7 @@ function handleTimeout() {
   examScore.wrong++;
   examScore.wrongQuestions.push(q);
 
-  header.innerHTML = `<span style="color:var(--danger)">⏱️ Время вышло! На защите требуется оперативный ответ.</span>`;
+  header.innerHTML = `<span style="color:var(--danger)">⏱️ Время истекло! На защите требуется оперативный ответ.</span>`;
   explain.innerHTML = `<strong>Разбор логики:</strong> ${q.explain}`;
   feedbackBox.classList.remove("hidden");
 }
@@ -203,8 +203,6 @@ function showExamSummary() {
   if (percent === 100 || state.bossHp <= 0) {
     audio.playAchievement();
     unlockAchievement("exam_challenger");
-
-    // Запуск Matrix Rain триггера
     window.dispatchEvent(new CustomEvent("matrix-rain"));
 
     title.textContent = "БОСС ПОВЕРЖЕН! Оценка: 5 (ОТЛИЧНО) 🎓";
