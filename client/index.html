@@ -15,6 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+  <canvas id="matrix-canvas" class="matrix-canvas hidden"></canvas>
   <div class="ambient-glow glow-top"></div>
   <div class="ambient-glow glow-bottom"></div>
 
@@ -32,7 +33,8 @@
     <!-- Сайдбар HUD -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="logo-badge">
+        <!-- Клик 3 раза запускает пасхалку 808 Phonk Drop -->
+        <div class="logo-badge" id="brand-logo-badge" title="Кибер-ядро платформы (кликни 3 раза)">
           <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
           </svg>
@@ -173,6 +175,11 @@
               <span class="streak-icon">🔥</span>
               <span id="streak-count">0</span> STREAK
             </span>
+            <!-- Кибер-ранг пользователя -->
+            <span class="rank-badge" id="rank-badge" title="Текущий статус квалификации">
+              <span id="rank-icon">🌱</span>
+              <span id="rank-title">БАЙТ-ПАДАВАН</span>
+            </span>
           </div>
           <h1 id="module-title">Загрузка данных...</h1>
         </div>
@@ -279,7 +286,7 @@
                 <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
                 <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
               </svg>
-              <span>Защита</span>
+              <span>Защита (Босс)</span>
             </button>
 
             <button class="tab-btn" data-tab="memory">
@@ -299,14 +306,30 @@
             <div class="quiz-box" id="quiz-container"></div>
           </div>
 
-          <!-- Вкладка защиты с выбором ответов и аналитикой -->
+          <!-- Вкладка защиты: Босс-файт с полоской HP и дуэлью -->
           <div class="tab-content hidden anim-fade-in" id="tab-exam">
-            <div class="exam-arena-card">
+            <div class="exam-arena-card" id="boss-arena-card">
+              <div class="boss-arena-hud">
+                <div class="boss-hud-top">
+                  <div class="boss-profile">
+                    <span class="boss-avatar">👨‍🏫</span>
+                    <div>
+                      <div class="boss-name">Профессор Душнов</div>
+                      <span class="boss-sub">БОСС КАФЕДРЫ // ТЕРПЕНИЕ</span>
+                    </div>
+                  </div>
+                  <div class="boss-hp-counter" id="boss-hp-text">100 / 100 HP</div>
+                </div>
+                <div class="boss-hp-bar">
+                  <div class="boss-hp-fill" id="boss-hp-fill"></div>
+                </div>
+              </div>
+
               <div class="exam-arena-header">
                 <div>
-                  <span class="arena-tag">ЭКЗАМЕНАЦИОННЫЙ СИМУЛЯТОР</span>
-                  <h4>Интерактивная защита у преподавателя</h4>
-                  <p>Ответьте на тестовые вопросы с выбором вариантов. Система посчитает результат, разберет ошибки и выставит итоговую оценку.</p>
+                  <span class="arena-tag">БОСС-ФАЙТ СЕССИИ</span>
+                  <h4>Аттестационная дуэль с преподавателем</h4>
+                  <p>Каждый правильный ответ сносит 50 HP. Быстрый ответ (до 5 сек) наносит КРИТИЧЕСКИЙ УДАР. Ошибка снимает ваши очки!</p>
                 </div>
                 <button class="btn-challenge-exam" id="btn-exam-challenge">
                   <span>⚡ БРОСИТЬ ВЫЗОВ</span>
@@ -402,6 +425,14 @@
                 <span id="solution-text">Решение</span>
               </button>
 
+              <button id="btn-elder-cheat" class="btn-elder" title="Шпора от старосты (снимает стрик, но дает русский алгоритм)">
+                <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                </svg>
+                <span>Шпора старосты</span>
+              </button>
+
               <button id="btn-format" class="btn-secondary" title="Автоматически выровнять отступы">
                 <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="16 18 22 12 16 6"></polyline>
@@ -445,7 +476,9 @@
             </div>
           </div>
 
+          <!-- Контейнеры подсказок и шпоры старосты -->
           <div class="hint-box hidden" id="hint-box"></div>
+          <div class="elder-cheat-box hidden" id="elder-cheat-box"></div>
 
           <!-- Терминал -->
           <div class="terminal" id="terminal-block">
@@ -510,7 +543,7 @@
     </main>
   </div>
 
-  <!-- ВЫДВИЖНАЯ ПАНЕЛЬ AI TUTOR -->
+  <!-- ВЫДВИЖНАЯ ПАНЕЛЬ AI TUTOR С СЕЛЕКТОРОМ ПЕРСОНЫ -->
   <div class="ai-drawer hidden" id="ai-drawer">
     <div class="ai-drawer-header">
       <div class="ai-title-row">
@@ -523,6 +556,16 @@
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
+    </div>
+
+    <!-- Переключатель характера ИИ-наставника -->
+    <div class="ai-persona-bar">
+      <span class="persona-label">Характер:</span>
+      <select id="ai-persona-select" class="ai-persona-select">
+        <option value="chill">😎 Сеньор на чилле</option>
+        <option value="dushny">🧐 Душный препод (JLS)</option>
+        <option value="bigtech">💼 Интервьюер в Бигтех</option>
+      </select>
     </div>
 
     <div class="ai-quick-bar">
@@ -553,7 +596,7 @@
 
     <div class="ai-chat-body" id="ai-chat-body">
       <div class="ai-msg bot">
-        Готов к разбору кода. Выбери действие вверху или задай вопрос по задаче.
+        Готов к разбору кода. Выбери характер вверху или задай вопрос.
       </div>
     </div>
 

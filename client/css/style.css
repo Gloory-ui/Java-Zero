@@ -1,4 +1,157 @@
-/* Редактор */
+/* ==========================================================================
+   STYLE.CSS: Редактор, Босс-файт, Ранги, Matrix Rain, Персоны ИИ и Шпоры
+   ========================================================================== */
+
+/* 1. Полноэкранный холст Matrix Rain */
+.matrix-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 500;
+}
+
+/* 2. Кибер-ранг пользователя */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.8px;
+  font-family: 'Fira Code', monospace;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 3. Кнопка «Шпора старосты» и ее информационный блок */
+.btn-elder {
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #c084fc;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.76rem;
+}
+
+.btn-elder:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: #c084fc;
+  transform: translateY(-1px);
+}
+
+.elder-cheat-box {
+  padding: 14px 20px;
+  background: rgba(168, 85, 247, 0.08);
+  border-top: 1px solid rgba(168, 85, 247, 0.4);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  animation: smoothFade 0.3s ease;
+}
+
+.elder-cheat-box strong {
+  color: #c084fc;
+}
+
+/* 4. БОСС-ФАЙТ: HUD профессора и полоска HP */
+.boss-arena-hud {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-neon);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(255, 42, 85, 0.12);
+}
+
+.boss-hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.boss-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boss-avatar {
+  font-size: 1.6rem;
+}
+
+.boss-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--neon-red);
+}
+
+.boss-sub {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+.boss-hp-counter {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--neon-gold);
+}
+
+.boss-hp-bar {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border-subtle);
+}
+
+.boss-hp-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ff2a55 0%, #f59e0b 100%);
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 14px rgba(255, 42, 85, 0.7);
+}
+
+/* Вспышка критического удара */
+.crit-flash {
+  animation: critFlashAnim 0.35s ease-out;
+}
+
+@keyframes critFlashAnim {
+  0% { box-shadow: 0 0 50px #ff2a55, inset 0 0 35px #ff2a55; border-color: #ff2a55; }
+  100% { box-shadow: none; }
+}
+
+/* Встряска босса при получении урона */
+.boss-hit-shake {
+  animation: bossShakeAnim 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes bossShakeAnim {
+  10%, 90% { transform: translate3d(-4px, 0, 0); }
+  20%, 80% { transform: translate3d(6px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* 5. Редактор кода */
 .editor-panel {
   display: flex;
   flex-direction: column;
@@ -82,7 +235,7 @@
   white-space: pre;
 }
 
-/* Оверлей старта */
+/* Оверлей ворот этапа */
 .stage-gate-overlay {
   position: absolute;
   inset: 0;
@@ -127,7 +280,7 @@
 }
 .btn-start-stage-big:hover { filter: brightness(1.2); transform: translateY(-2px); }
 
-/* Кнопки тулбара */
+/* Кнопки действий */
 .btn-primary {
   background: var(--neon-gradient);
   color: #fff;
@@ -189,7 +342,7 @@
   font-size: 0.9rem;
 }
 
-/* ЭКЗАМЕНАЦИОННЫЙ СИМУЛЯТОР С ВЫБОРОМ И АНАЛИТИКОЙ */
+/* 6. Экзаменационная арена дуэли */
 .exam-arena-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -284,7 +437,6 @@
   line-height: 1.5;
 }
 
-/* Варианты ответов в экзамене */
 .duel-options-list {
   display: flex;
   flex-direction: column;
@@ -423,9 +575,7 @@
   border-left: 2px solid var(--neon-red);
 }
 
-/* =========================================
-   ВЫДВИЖНАЯ ПАНЕЛЬ AI МЕНТОРА (МИНИМАЛИЗМ & АНИМАЦИИ)
-   ========================================= */
+/* 7. ВЫДВИЖНАЯ ПАНЕЛЬ AI МЕНТОРА (СЕЛЕКТОР ПЕРСОНЫ И СТИЛИ ЧАТА) */
 .btn-ai-pulse {
   border-color: var(--neon-red);
   background: rgba(255, 42, 85, 0.08);
@@ -488,7 +638,37 @@
 }
 .btn-icon:hover { color: var(--neon-red); }
 
-/* Аккуратные кнопки-пилюли без уродливого скроллбара */
+/* Селектор характера ИИ */
+.ai-persona-bar {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.persona-label {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.ai-persona-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+}
+.ai-persona-select:focus {
+  border-color: var(--neon-red);
+}
+
 .ai-quick-bar {
   padding: 10px 14px;
   display: grid;
@@ -511,7 +691,6 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  transition: all 0.2s ease;
 }
 
 .btn-ai-quick:hover {
@@ -525,7 +704,6 @@
   color: var(--neon-red);
 }
 
-/* Чат и кастомный тонкий скроллбар */
 .ai-chat-body {
   flex: 1;
   overflow-y: auto;
@@ -543,7 +721,6 @@
   border-radius: 4px;
 }
 
-/* Сообщения чата */
 .ai-msg {
   padding: 10px 14px;
   border-radius: 10px;
@@ -572,7 +749,6 @@
   color: var(--text-primary);
 }
 
-/* Красивые Markdown-элементы внутри бота */
 .ai-msg strong {
   color: #fff;
   font-weight: 700;
@@ -616,7 +792,6 @@
   margin: 8px 0 4px 0;
 }
 
-/* Пульсирующие точки загрузки */
 .ai-typing {
   display: inline-flex;
   align-items: center;
@@ -638,7 +813,6 @@
   40% { transform: scale(1); opacity: 1; }
 }
 
-/* Поле ввода */
 .ai-input-form {
   padding: 10px 14px;
   border-top: 1px solid var(--border-subtle);
@@ -676,7 +850,7 @@
 }
 .ai-send-btn:hover { filter: brightness(1.15); }
 
-/* Модальные окна и ачивки */
+/* 8. Модальные окна */
 .modal-overlay {
   position: fixed;
   inset: 0;

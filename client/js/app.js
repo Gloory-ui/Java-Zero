@@ -1,12 +1,12 @@
 /**
- * Главная точка входа приложения Java-Zero (ES6 Modules)
+ * Главная точка входа приложения Java-Zero (v0.2.0 Cyber Release)
  */
 import { audio } from './audio.js';
 import { state } from './state.js';
 import { QUESTS } from './quests.js';
 import { initExamSimulator } from './exam.js';
 import { renderMemoryVisualizer } from './memory.js';
-import { initAiClient } from './ai-client.js';
+import { initAiClient, sendAiMessage } from './ai-client.js';
 import {
   updateAchievementsBadge,
   renderAchievementsModal
@@ -32,12 +32,120 @@ document.addEventListener("DOMContentLoaded", () => {
   initDropdown();
   initExamSimulator();
   initAiClient();
+  initMatrixRain();
+  initBrandEasterEgg();
 
   state.loadStoredProgress();
   switchQuest(state.currentQuestKey);
   updateAchievementsBadge();
+  updateUserRankUI();
   bindGlobalEvents();
 });
+
+// --- ДИНАМИЧЕСКИЙ КИБЕР-РАНГ ---
+function updateUserRankUI() {
+  const rank = state.getUserRank();
+  const iconEl = document.getElementById("rank-icon");
+  const titleEl = document.getElementById("rank-title");
+  const badgeEl = document.getElementById("rank-badge");
+
+  if (iconEl) iconEl.textContent = rank.icon;
+  if (titleEl) titleEl.textContent = rank.title;
+  if (badgeEl) {
+    badgeEl.style.color = rank.color;
+    badgeEl.style.borderColor = rank.color;
+    badgeEl.style.boxShadow = `0 0 10px ${rank.color}33`;
+  }
+}
+
+// --- ПАСХАЛКА 3 КЛИКА НА ЛОГОТИП (PHONK 808 DROP) ---
+function initBrandEasterEgg() {
+  const logo = document.getElementById("brand-logo-badge");
+  if (!logo) return;
+
+  let clickCount = 0;
+  let clickTimer = null;
+
+  logo.addEventListener("click", () => {
+    clickCount++;
+    clearTimeout(clickTimer);
+
+    if (clickCount >= 3) {
+      audio.playPhonk808Drop();
+      logo.classList.add("crit-flash");
+      setTimeout(() => logo.classList.remove("crit-flash"), 600);
+
+      // Визуальный тост пасхалки
+      const toast = document.getElementById("achievement-toast");
+      document.getElementById("toast-icon").textContent = "🎧";
+      document.getElementById("toast-title").textContent = "PHONK BASS ACTIVATED";
+      document.getElementById("toast-desc").textContent = "Кибер-ядро платформы разогнано до предела!";
+      toast.classList.remove("hidden");
+      setTimeout(() => toast.classList.add("hidden"), 4000);
+
+      clickCount = 0;
+    } else {
+      audio.playClick();
+      clickTimer = setTimeout(() => { clickCount = 0; }, 700);
+    }
+  });
+}
+
+// --- ХОЛСТ MATRIX RAIN САЛЮТА ---
+function initMatrixRain() {
+  const canvas = document.getElementById("matrix-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  let animationFrame = null;
+  let drops = [];
+  const chars = "010101JAVA{}<>;/=+*#~";
+  const fontSize = 14;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const cols = Math.floor(canvas.width / fontSize);
+    drops = Array(cols).fill(1);
+  }
+
+  window.addEventListener("resize", resize);
+  resize();
+
+  window.addEventListener("matrix-rain", () => {
+    canvas.classList.remove("hidden");
+    resize();
+    let startTime = Date.now();
+
+    function draw() {
+      ctx.fillStyle = "rgba(6, 7, 10, 0.12)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#10b981";
+      ctx.font = `${fontSize}px 'Fira Code', monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+
+      if (Date.now() - startTime < 3500) {
+        animationFrame = requestAnimationFrame(draw);
+      } else {
+        cancelAnimationFrame(animationFrame);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.classList.add("hidden");
+      }
+    }
+
+    draw();
+  });
+}
 
 function switchQuest(questKey) {
   if (!state.isQuestUnlocked(questKey)) {
@@ -58,6 +166,7 @@ function switchQuest(questKey) {
   state.loadStoredProgress();
   loadStage(state.currentStageIdx);
   updateQuestDropdownUI();
+  updateUserRankUI();
   renderNav();
 }
 
@@ -106,6 +215,7 @@ function loadStage(idx) {
 
   document.getElementById("hint-box").innerHTML = `<strong>Подсказка:</strong> ${stage.hint}`;
   document.getElementById("hint-box").classList.add("hidden");
+  document.getElementById("elder-cheat-box").classList.add("hidden");
 
   const staticList = document.getElementById("exam-static-list");
   if (stage.examTest && stage.examTest.length > 0) {
@@ -135,6 +245,7 @@ function loadStage(idx) {
 
   updateLineNumbers();
   updateSolutionButtonState();
+  updateUserRankUI();
   renderNav();
 }
 
@@ -333,6 +444,36 @@ function bindGlobalEvents() {
     document.getElementById("hint-box").classList.toggle("hidden");
   });
 
+  // --- КНОПКА: ШПОРА СТАРОСТЫ (СНИМАЕТ СТРИК, НО ДАЕТ АЛГОРИТМ НА РУССКОМ) ---
+  document.getElementById("btn-elder-cheat").addEventListener("click", () => {
+    audio.playClick();
+    const cheatBox = document.getElementById("elder-cheat-box");
+    const isHidden = cheatBox.classList.contains("hidden");
+
+    if (isHidden) {
+      // Сброс стрика за использование шпоры
+      if (state.currentStreak > 0) {
+        state.currentStreak = 0;
+        state.saveProgress();
+        document.getElementById("streak-count").textContent = "0";
+        updateUserRankUI();
+      }
+
+      const quest = QUESTS[state.currentQuestKey];
+      const stage = quest.stages[state.currentStageIdx];
+
+      cheatBox.innerHTML = `
+        <strong>📜 ШПОРА ОТ СТАРОСТЫ (Стрик сброшен в 0):</strong><br/>
+        • <strong>Суть алгоритма:</strong> ${stage.tests.map(t => t.name).join(" → ")}.<br/>
+        • <strong>Входные данные:</strong> Обрати внимание на типы переменных и граничные проверки.<br/>
+        • <strong>Совет:</strong> Никакой магии — пиши команды последовательно сверху вниз и помни про точку с запятой.
+      `;
+      cheatBox.classList.remove("hidden");
+    } else {
+      cheatBox.classList.add("hidden");
+    }
+  });
+
   document.getElementById("btn-solution").addEventListener("click", () => {
     audio.playClick();
     const modal = document.getElementById("solution-modal");
@@ -347,6 +488,7 @@ function bindGlobalEvents() {
 
   document.getElementById("btn-run").addEventListener("click", () => {
     runCodeValidation(() => {
+      updateUserRankUI();
       loadStage(state.currentStageIdx);
     });
   });
@@ -425,6 +567,7 @@ function bindGlobalEvents() {
       });
       loadStage(0);
       updateQuestDropdownUI();
+      updateUserRankUI();
       renderNav();
     }
   });

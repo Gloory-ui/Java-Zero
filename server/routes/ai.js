@@ -19,33 +19,55 @@ if (!apiKey) {
 
 const ai = new GoogleGenAI({ apiKey });
 
-// 3.6 в приоритете для мгновенного ответа
 const MODELS_PRIORITY = [
   'gemini-3.6-flash',
   'gemini-2.5-flash',
   'gemini-2.0-flash'
 ];
 
-const SYSTEM_INSTRUCTION = `
-Ты — Cyber AI Mentor на платформе "Java-Zero".
-Твоя цель: лаконично и быстро направлять студента по Java 21.
-
-ПРАВИЛА:
-1. Пиши емко, структурированно, без воды и длинных приветствий.
-2. Не давай готовое решение целиком. Укажи строку и механику ошибки в 1-2 предложениях.
-3. Оформляй код в одинарные (\`код\`) или тройные бэктики (\`\`\`java).
-4. Используй жирный шрифт для ключевых терминов.
-`;
+// Наборы инструкций под разные характеры
+const PERSONA_PROMPTS = {
+  chill: `
+Ты — Сеньор на чилле. Твой стиль: расслабленный, ободряющий, дружелюбный.
+Объясняй сложные концепции простыми жизненными аналогиями и легким IT-юмором.
+Никакой академической духоты: четко укажи на ошибку, подбодри и намекни, как починить.
+`,
+  dushny: `
+Ты — Душный профессор кафедры фундаментальной информатики.
+Твой стиль: академический, требовательный, педантичный.
+Придирайся к деталям: стилю camelCase, пропущенным фигурным скобкам, отсутствию проверок граничных условий.
+Цитируй спецификацию Java Language Specification (JLS) и требуй аккуратности.
+`,
+  bigtech: `
+Ты — Техлид и интервьюер на строгом алгоритмическом собеседовании в Бигтех (FAANG).
+Твой стиль: сухой, прагматичный, ориентированный на производительность.
+Всегда оценивай асимптотическую сложность алгоритма O(N) по времени и расход памяти в байтах.
+Указывай, где цикл неэффективен и как сделать решение продакшн-ready.
+`
+};
 
 router.post('/analyze', aiRateLimiter, async (req, res) => {
-  const { stageTitle, userCode, compilerError, failedTest, userMessage } = req.body;
+  const { stageTitle, userCode, compilerError, failedTest, userMessage, persona = 'chill' } = req.body;
 
   if (!userCode && !userMessage) {
     return res.status(400).json({ error: 'Код или сообщение отсутствуют.' });
   }
 
+  const selectedPersonaPrompt = PERSONA_PROMPTS[persona] || PERSONA_PROMPTS.chill;
+
+  const systemInstruction = `
+Ты — Cyber AI Mentor платформы "Java-Zero".
+Твоя задача: направлять студента по Java 21, анализировать ошибки компилятора и теста.
+${selectedPersonaPrompt}
+
+ОБЩИЕ ПРАВИЛА:
+1. НИКОГДА не пиши готовый код решения целиком. Студент обязан дописать строку сам.
+2. Отвечай кратко (до 150-200 слов), структурированно, оформляй код в \`код\` или \`\`\`java.
+3. Отвечай на русском языке.
+`;
+
   const prompt = `
-КОНТЕКСТ:
+КОНТЕКСТ ЭТАПА:
 - Этап: ${stageTitle || 'Не указан'}
 - Ошибка javac: ${compilerError || 'Нет'}
 - Тест: ${failedTest || 'Пройден'}
@@ -67,8 +89,8 @@ ${userCode || '// Нет кода'}
         model: modelName,
         contents: prompt,
         config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: 0.2, // Низкая температура для максимальной скорости генерации
+          systemInstruction: systemInstruction,
+          temperature: persona === 'chill' ? 0.4 : 0.2,
           maxOutputTokens: 600
         }
       });
@@ -78,13 +100,13 @@ ${userCode || '// Нет кода'}
       }
     } catch (err) {
       lastError = err;
-      console.warn(`[AI] ${modelName} вернула статус ${err?.status || err?.code}. Переключение...`);
+      console.warn(`[AI] ${modelName} вернула ошибку. Переключение...`);
     }
   }
 
   console.error('[AI Final Error]:', lastError);
   res.status(503).json({
-    error: 'Серверы Gemini временно перегружены. Попробуйте снова через 3 секунды.'
+    error: 'Серверы нейросети перегружены. Попробуйте еще раз через 3 секунды.'
   });
 });
 

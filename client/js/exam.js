@@ -1,5 +1,5 @@
 /**
- * Интерактивный симулятор защиты у преподавателя (Exam Simulator v2.0 Pro)
+ * Интерактивный симулятор защиты и Босс-файт (Exam Boss Duel v2.0)
  */
 import { audio } from './audio.js';
 import { state } from './state.js';
@@ -35,13 +35,34 @@ export function startExamDuel() {
     return;
   }
 
+  // Сброс параметров арены и HP босса
   currentQuestionIdx = 0;
   examScore = { correct: 0, wrong: 0, wrongQuestions: [] };
+  state.bossHp = 100;
+  updateBossHpUI();
 
   document.getElementById("exam-duel-box").classList.remove("hidden");
   document.getElementById("exam-summary-card").classList.add("hidden");
 
   renderCurrentQuestion();
+}
+
+function updateBossHpUI() {
+  const hpFill = document.getElementById("boss-hp-fill");
+  const hpText = document.getElementById("boss-hp-text");
+  if (!hpFill || !hpText) return;
+
+  const percent = Math.max(0, state.bossHp);
+  hpFill.style.width = `${percent}%`;
+  hpText.textContent = `${percent} / 100 HP`;
+
+  if (percent <= 25) {
+    hpFill.style.background = "linear-gradient(90deg, #ef4444 0%, #dc2626 100%)";
+  } else if (percent <= 50) {
+    hpFill.style.background = "linear-gradient(90deg, #f59e0b 0%, #ef4444 100%)";
+  } else {
+    hpFill.style.background = "linear-gradient(90deg, #ff2a55 0%, #f59e0b 100%)";
+  }
 }
 
 function renderCurrentQuestion() {
@@ -55,7 +76,6 @@ function renderCurrentQuestion() {
   counterEl.textContent = `ВОПРОС ${currentQuestionIdx + 1} ИЗ ${currentQuestionsList.length}`;
   textEl.textContent = q.q;
 
-  // 4 варианта ответов
   optionsBox.innerHTML = q.options.map((opt, i) => `
     <button class="duel-option-btn" data-idx="${i}">
       <span class="code-inline">${String.fromCharCode(65 + i)}</span>
@@ -70,7 +90,7 @@ function renderCurrentQuestion() {
     });
   });
 
-  // Таймер обратного отсчета
+  // Запуск таймера
   clearInterval(examTimer);
   timeLeft = CONFIG.EXAM_TIMER_SECONDS;
   const timerEl = document.getElementById("duel-timer");
@@ -93,21 +113,43 @@ function handleOptionChoice(selectedIdx, btnEl) {
   const feedbackBox = document.getElementById("duel-feedback-box");
   const header = document.getElementById("duel-feedback-header");
   const explain = document.getElementById("duel-feedback-explain");
+  const arenaCard = document.getElementById("boss-arena-card");
 
   optionsBox.querySelectorAll(".duel-option-btn").forEach(b => b.disabled = true);
 
+  const timeElapsed = CONFIG.EXAM_TIMER_SECONDS - timeLeft;
+  const isCrit = timeElapsed <= 5; // Ответ быстрее 5 секунд = КРИТ
+
   if (selectedIdx === q.correct) {
-    audio.playSuccess();
-    btnEl.classList.add("selected-correct");
     examScore.correct++;
-    header.innerHTML = `<span style="color:var(--success)">✓ ВЕРНО! Преподаватель удовлетворен ответом.</span>`;
+    btnEl.classList.add("selected-correct");
+
+    // Расчет урона профессору
+    const baseDamage = Math.ceil(100 / currentQuestionsList.length);
+    state.bossHp = Math.max(0, state.bossHp - baseDamage);
+    updateBossHpUI();
+
+    if (isCrit) {
+      audio.playCritHit();
+      arenaCard.classList.add("crit-flash", "boss-hit-shake");
+      header.innerHTML = `<span style="color:var(--neon-gold)">⚡ КРИТИЧЕСКИЙ УДАР! (-${baseDamage} HP) Быстрый и безупречный ответ за ${timeElapsed} сек!</span>`;
+    } else {
+      audio.playBossHit();
+      arenaCard.classList.add("boss-hit-shake");
+      header.innerHTML = `<span style="color:var(--success)">✓ ПОПАДАНИЕ! (-${baseDamage} HP) Профессор принял ваш аргумент.</span>`;
+    }
+
+    setTimeout(() => {
+      arenaCard.classList.remove("crit-flash", "boss-hit-shake");
+    }, 400);
+
   } else {
     audio.playError();
     btnEl.classList.add("selected-wrong");
     optionsBox.querySelector(`[data-idx="${q.correct}"]`).classList.add("selected-correct");
     examScore.wrong++;
     examScore.wrongQuestions.push(q);
-    header.innerHTML = `<span style="color:var(--danger)">✗ НЕВЕРНО! Замечание в лист защиты.</span>`;
+    header.innerHTML = `<span style="color:var(--danger)">✗ ПРОМАХ! Преподаватель поймал вас на ошибке.</span>`;
   }
 
   explain.innerHTML = `<strong>Разбор логики:</strong> ${q.explain}`;
@@ -128,7 +170,7 @@ function handleTimeout() {
   examScore.wrong++;
   examScore.wrongQuestions.push(q);
 
-  header.innerHTML = `<span style="color:var(--danger)">⏱️ Время истекло! На защите требуется оперативный ответ.</span>`;
+  header.innerHTML = `<span style="color:var(--danger)">⏱️ Время вышло! На защите требуется оперативный ответ.</span>`;
   explain.innerHTML = `<strong>Разбор логики:</strong> ${q.explain}`;
   feedbackBox.classList.remove("hidden");
 }
@@ -158,23 +200,27 @@ function showExamSummary() {
   scoreBadge.textContent = `${examScore.correct} / ${total} (${percent}%)`;
 
   let gradeMarkup = '';
-  if (percent === 100) {
+  if (percent === 100 || state.bossHp <= 0) {
     audio.playAchievement();
     unlockAchievement("exam_challenger");
-    title.textContent = "Оценка: ОТЛИЧНО (5 / A) 🎓";
-    subtitle.textContent = "Защита принята без единого замечания!";
+
+    // Запуск Matrix Rain триггера
+    window.dispatchEvent(new CustomEvent("matrix-rain"));
+
+    title.textContent = "БОСС ПОВЕРЖЕН! Оценка: 5 (ОТЛИЧНО) 🎓";
+    subtitle.textContent = "Профессор Душнов подписал зачетный лист без единого вопроса!";
     gradeMarkup = `
-      <p style="color:var(--success); font-weight:700;">Поздравляем! Ты полностью понимаешь происходящее в памяти JVM.</p>
+      <p style="color:var(--success); font-weight:700;">Поздравляем! Полная победа на дуэли знаний.</p>
       <button class="btn-primary" id="btn-oral-ai-extra" style="margin-top:10px;">🎙️ Пройти устный допрос у AI-профессора</button>
     `;
   } else if (percent >= 50) {
-    title.textContent = "Оценка: ХОРОШО (4 / B) ✍️";
-    subtitle.textContent = `Защита зачтена, но есть шероховатости (${examScore.wrong} ошибки).`;
+    title.textContent = "БОСС УСТОЯЛ: Оценка 4 (ХОРОШО) ✍️";
+    subtitle.textContent = `Защита зачтена с замечаниями (${examScore.wrong} ошибки).`;
     gradeMarkup = renderMistakesAdvice();
   } else {
     audio.playError();
-    title.textContent = "Оценка: НЕЗАЧЁТ (2 / F) ⚠️";
-    subtitle.textContent = "Преподаватель отправил вас на пересдачу.";
+    title.textContent = "НЕЗАЧЁТ: Оценка 2 (ПЕРЕСДАЧА) ⚠️";
+    subtitle.textContent = "Преподаватель отправил вас учить теорию заново.";
     gradeMarkup = renderMistakesAdvice();
   }
 
@@ -198,7 +244,7 @@ function renderMistakesAdvice() {
   `).join("");
 
   return `
-    <p><strong>Темы, которые нужно повторить перед сдачей:</strong></p>
+    <p><strong>Темы, которые нужно повторить перед повторной сдачей:</strong></p>
     <ul style="list-style:none; padding:0; margin-top:8px;">${list}</ul>
   `;
 }
