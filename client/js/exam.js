@@ -1,11 +1,12 @@
 /**
- * Интерактивный симулятор защиты у преподавателя (Exam Simulator)
+ * Интерактивный симулятор защиты у преподавателя (Exam Simulator v2.0 Pro)
  */
 import { audio } from './audio.js';
 import { state } from './state.js';
 import { QUESTS } from './quests.js';
 import { unlockAchievement } from './achievements.js';
 import { CONFIG } from './config.js';
+import { sendAiMessage } from './ai-client.js';
 
 let currentQuestionIdx = 0;
 let currentQuestionsList = [];
@@ -18,9 +19,9 @@ export function initExamSimulator() {
   const restartBtn = document.getElementById("btn-restart-exam");
   const nextBtn = document.getElementById("btn-duel-next");
 
-  startBtn.addEventListener("click", startExamDuel);
-  restartBtn.addEventListener("click", startExamDuel);
-  nextBtn.addEventListener("click", advanceToNextQuestion);
+  if (startBtn) startBtn.addEventListener("click", startExamDuel);
+  if (restartBtn) restartBtn.addEventListener("click", startExamDuel);
+  if (nextBtn) nextBtn.addEventListener("click", advanceToNextQuestion);
 }
 
 export function startExamDuel() {
@@ -54,7 +55,7 @@ function renderCurrentQuestion() {
   counterEl.textContent = `ВОПРОС ${currentQuestionIdx + 1} ИЗ ${currentQuestionsList.length}`;
   textEl.textContent = q.q;
 
-  // Рендерим 4 варианта выбора
+  // 4 варианта ответов
   optionsBox.innerHTML = q.options.map((opt, i) => `
     <button class="duel-option-btn" data-idx="${i}">
       <span class="code-inline">${String.fromCharCode(65 + i)}</span>
@@ -63,13 +64,13 @@ function renderCurrentQuestion() {
   `).join("");
 
   optionsBox.querySelectorAll(".duel-option-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", () => {
       const selected = parseInt(btn.dataset.idx, 10);
       handleOptionChoice(selected, btn);
     });
   });
 
-  // Запуск таймера на 30 сек
+  // Таймер обратного отсчета
   clearInterval(examTimer);
   timeLeft = CONFIG.EXAM_TIMER_SECONDS;
   const timerEl = document.getElementById("duel-timer");
@@ -93,7 +94,6 @@ function handleOptionChoice(selectedIdx, btnEl) {
   const header = document.getElementById("duel-feedback-header");
   const explain = document.getElementById("duel-feedback-explain");
 
-  // Блокируем повторные клики
   optionsBox.querySelectorAll(".duel-option-btn").forEach(b => b.disabled = true);
 
   if (selectedIdx === q.correct) {
@@ -107,10 +107,10 @@ function handleOptionChoice(selectedIdx, btnEl) {
     optionsBox.querySelector(`[data-idx="${q.correct}"]`).classList.add("selected-correct");
     examScore.wrong++;
     examScore.wrongQuestions.push(q);
-    header.innerHTML = `<span style="color:var(--danger)">✗ НЕВЕРНО! Замечание от преподавателя.</span>`;
+    header.innerHTML = `<span style="color:var(--danger)">✗ НЕВЕРНО! Замечание в лист защиты.</span>`;
   }
 
-  explain.innerHTML = `<strong>Разбор:</strong> ${q.explain}`;
+  explain.innerHTML = `<strong>Разбор логики:</strong> ${q.explain}`;
   feedbackBox.classList.remove("hidden");
 }
 
@@ -128,8 +128,8 @@ function handleTimeout() {
   examScore.wrong++;
   examScore.wrongQuestions.push(q);
 
-  header.innerHTML = `<span style="color:var(--danger)">⏱️ Время вышло! На защите важна скорость реакции.</span>`;
-  explain.innerHTML = `<strong>Разбор:</strong> ${q.explain}`;
+  header.innerHTML = `<span style="color:var(--danger)">⏱️ Время истекло! На защите требуется оперативный ответ.</span>`;
+  explain.innerHTML = `<strong>Разбор логики:</strong> ${q.explain}`;
   feedbackBox.classList.remove("hidden");
 }
 
@@ -154,22 +154,51 @@ function showExamSummary() {
   const subtitle = document.getElementById("summary-verdict-subtitle");
   const adviceBox = document.getElementById("summary-advice-box");
 
-  scoreBadge.textContent = `${examScore.correct}/${total}`;
+  const percent = Math.round((examScore.correct / total) * 100);
+  scoreBadge.textContent = `${examScore.correct} / ${total} (${percent}%)`;
 
-  if (examScore.correct === total) {
+  let gradeMarkup = '';
+  if (percent === 100) {
     audio.playAchievement();
     unlockAchievement("exam_challenger");
-    title.textContent = "Защита сдана на Отлично! 🎉";
-    subtitle.textContent = "Преподаватель не нашел пробелов в ваших знаниях.";
-    adviceBox.innerHTML = `<strong>Совет наставника:</strong> Ты прекрасно понимаешь архитектуру Java и механику памяти. Можешь смело переходить к следующему этапу!`;
-  } else {
-    title.textContent = "Требуется доработка ⚠️";
-    subtitle.textContent = `Правильных ответов: ${examScore.correct}, ошибок: ${examScore.wrong}.`;
-    
-    const adviceList = examScore.wrongQuestions.map(wq => `<li>• <strong>${wq.q}</strong><br/>💡 ${wq.advice}</li>`).join("");
-    adviceBox.innerHTML = `
-      <p><strong>Что нужно повторить перед реальной защитой:</strong></p>
-      <ul style="list-style:none; padding:0; margin-top:8px; display:flex; flex-direction:column; gap:8px;">${adviceList}</ul>
+    title.textContent = "Оценка: ОТЛИЧНО (5 / A) 🎓";
+    subtitle.textContent = "Защита принята без единого замечания!";
+    gradeMarkup = `
+      <p style="color:var(--success); font-weight:700;">Поздравляем! Ты полностью понимаешь происходящее в памяти JVM.</p>
+      <button class="btn-primary" id="btn-oral-ai-extra" style="margin-top:10px;">🎙️ Пройти устный допрос у AI-профессора</button>
     `;
+  } else if (percent >= 50) {
+    title.textContent = "Оценка: ХОРОШО (4 / B) ✍️";
+    subtitle.textContent = `Защита зачтена, но есть шероховатости (${examScore.wrong} ошибки).`;
+    gradeMarkup = renderMistakesAdvice();
+  } else {
+    audio.playError();
+    title.textContent = "Оценка: НЕЗАЧЁТ (2 / F) ⚠️";
+    subtitle.textContent = "Преподаватель отправил вас на пересдачу.";
+    gradeMarkup = renderMistakesAdvice();
   }
+
+  adviceBox.innerHTML = gradeMarkup;
+
+  const oralBtn = document.getElementById("btn-oral-ai-extra");
+  if (oralBtn) {
+    oralBtn.addEventListener("click", () => {
+      document.getElementById("ai-drawer").classList.remove("hidden");
+      sendAiMessage("Сыграй роль строжайшего преподавателя Java и задай мне один трудный устный вопрос по текущему этапу с подвохом.");
+    });
+  }
+}
+
+function renderMistakesAdvice() {
+  const list = examScore.wrongQuestions.map(wq => `
+    <li style="margin-bottom:8px;">
+      • <strong>Вопрос:</strong> ${wq.q}<br/>
+      💡 <span style="color:var(--neon-gold);">${wq.advice}</span>
+    </li>
+  `).join("");
+
+  return `
+    <p><strong>Темы, которые нужно повторить перед сдачей:</strong></p>
+    <ul style="list-style:none; padding:0; margin-top:8px;">${list}</ul>
+  `;
 }
