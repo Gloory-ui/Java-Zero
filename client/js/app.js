@@ -39,11 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
   bindGlobalEvents();
 });
 
-// Переключение квестов
 function switchQuest(questKey) {
   if (!state.isQuestUnlocked(questKey)) {
     audio.playError();
-    alert("Сначала заверши Квест 00 (Фундамент Java), чтобы разблокировать Калькулятор!");
+    alert("Этот раздел пока заблокирован! Пройди предыдущие этапы обучения.");
     return;
   }
 
@@ -62,7 +61,6 @@ function switchQuest(questKey) {
   renderNav();
 }
 
-// Загрузка этапа
 function loadStage(idx) {
   state.currentStageIdx = idx;
   state.resetStageMetrics();
@@ -76,7 +74,6 @@ function loadStage(idx) {
   document.getElementById("module-badge").textContent = stage.badge;
   document.getElementById("module-title").textContent = stage.title;
 
-  // Синхронизация статуса в шапке и оверлея старта
   const statusText = document.getElementById("stage-status-text");
   const pulseDot = document.getElementById("stage-pulse-dot");
   const gateOverlay = document.getElementById("stage-gate-overlay");
@@ -95,24 +92,21 @@ function loadStage(idx) {
     statusText.textContent = "ГОТОВ К СТАРТУ";
     pulseDot.style.background = "var(--neon-gold)";
     pulseDot.style.boxShadow = "0 0 8px var(--neon-gold)";
-    document.getElementById("gate-stage-title").textContent = `${stage.badge.split(" / ")[0]}: ${stage.title}`;
+    document.getElementById("gate-stage-title").textContent = `${stage.badge.split(" // ")[0]}: ${stage.title}`;
     gateOverlay.classList.remove("hidden");
   }
 
-  // Обновление контента теории и квиза
   document.getElementById("tab-theory").innerHTML = stage.theory;
   document.getElementById("tab-pitfalls").innerHTML = stage.pitfalls;
   renderQuiz(stage.quiz);
   renderMemoryVisualizer();
 
-  // Редактор
   const editor = document.getElementById("code-editor");
   editor.value = getCodeForStage(idx, stage.starterCode);
 
   document.getElementById("hint-box").innerHTML = `<strong>Подсказка:</strong> ${stage.hint}`;
   document.getElementById("hint-box").classList.add("hidden");
 
-  // Статический список вопросов к защите
   const staticList = document.getElementById("exam-static-list");
   if (stage.examTest && stage.examTest.length > 0) {
     staticList.innerHTML = stage.examTest.map((item, i) => `
@@ -144,7 +138,6 @@ function loadStage(idx) {
   renderNav();
 }
 
-// Отрисовка сайдбара со статусами
 function renderNav() {
   const nav = document.getElementById("module-nav");
   nav.innerHTML = "";
@@ -164,7 +157,6 @@ function renderNav() {
     let badgeText = "🔒 ЗАКРЫТО";
     let isActionBtn = false;
 
-    // Сданный этап ВСЕГДА остается в статусе "СДАНО"
     if (isCompleted) {
       statusItemClass = "status-completed";
       badgeClass = "badge-completed";
@@ -188,11 +180,11 @@ function renderNav() {
 
     const btn = document.createElement("div");
     btn.className = `nav-item ${statusItemClass} ${isCurrent ? 'selected-active' : ''}`;
-    if (isLocked) btn.title = `Пройди Этап 0${idx}, чтобы открыть`;
+    if (isLocked) btn.title = `Пройди предыдущий этап, чтобы открыть`;
 
     btn.innerHTML = `
       <div class="nav-item-title-wrap">
-        <span class="nav-item-label">${s.badge.split(" / ")[0]}: ${s.title}</span>
+        <span class="nav-item-label">${s.badge.split(" // ")[0]}: ${s.title}</span>
       </div>
       <span class="stage-status-badge ${badgeClass}" id="badge-stage-${idx}">${badgeText}</span>
     `;
@@ -230,36 +222,40 @@ function startCurrentStage() {
 }
 
 function updateQuestDropdownUI() {
-  const basicsBadge = document.getElementById("quest-badge-basics");
-  const calcItem = document.getElementById("quest-item-calc");
-  const calcBadge = document.getElementById("quest-badge-calc");
+  const questsList = [
+    { key: "basics", item: "quest-item-basics", badge: "quest-badge-basics", req: null },
+    { key: "loops_prep", item: "quest-item-loops_prep", badge: "quest-badge-loops_prep", req: "НУЖЕН КВЕСТ 00" },
+    { key: "kt1", item: "quest-item-kt1", badge: "quest-badge-kt1", req: "НУЖНА ПОДГОТОВКА" },
+    { key: "calc", item: "quest-item-calc", badge: "quest-badge-calc", req: "НУЖНА КТ 1" }
+  ];
 
-  if (state.isQuestCompleted("basics")) {
-    basicsBadge.className = "quest-status status-completed";
-    basicsBadge.textContent = "✓ ПРОЙДЕН";
-  } else if (state.currentQuestKey === "basics") {
-    basicsBadge.className = "quest-status status-active";
-    basicsBadge.textContent = "АКТИВЕН";
-  }
+  questsList.forEach(q => {
+    const itemEl = document.getElementById(q.item);
+    const badgeEl = document.getElementById(q.badge);
+    if (!itemEl || !badgeEl) return;
 
-  const calcUnlocked = state.isQuestUnlocked("calc");
-  if (!calcUnlocked) {
-    calcItem.classList.add("locked");
-    calcBadge.className = "quest-status status-locked";
-    calcBadge.innerHTML = `🔒 НУЖЕН КВЕСТ 00`;
-  } else {
-    calcItem.classList.remove("locked");
-    if (state.isQuestCompleted("calc")) {
-      calcBadge.className = "quest-status status-completed";
-      calcBadge.textContent = "✓ ПРОЙДЕН";
-    } else if (state.currentQuestKey === "calc") {
-      calcBadge.className = "quest-status status-active";
-      calcBadge.textContent = "АКТИВЕН";
+    const isUnlocked = state.isQuestUnlocked(q.key);
+    const isDone = state.isQuestCompleted(q.key);
+    const isActive = state.currentQuestKey === q.key;
+
+    if (!isUnlocked) {
+      itemEl.classList.add("locked");
+      badgeEl.className = "quest-status status-locked";
+      badgeEl.textContent = `🔒 ${q.req}`;
     } else {
-      calcBadge.className = "quest-status status-available";
-      calcBadge.textContent = "⚡ ДОСТУПЕН";
+      itemEl.classList.remove("locked");
+      if (isDone) {
+        badgeEl.className = "quest-status status-completed";
+        badgeEl.textContent = "✓ СДАНО";
+      } else if (isActive) {
+        badgeEl.className = "quest-status status-active";
+        badgeEl.textContent = "АКТИВЕН";
+      } else {
+        badgeEl.className = "quest-status status-available";
+        badgeEl.textContent = "⚡ ДОСТУПЕН";
+      }
     }
-  }
+  });
 
   document.querySelectorAll(".dropdown-item").forEach(item => {
     item.classList.toggle("active", item.dataset.val === state.currentQuestKey);
@@ -293,24 +289,21 @@ function renderQuiz(quiz) {
       } else {
         audio.playError();
         feedback.classList.add("error");
-        feedback.innerHTML = `✗ <span>Мимо! Чекни подсказку: ${quiz.hint}</span>`;
+        feedback.innerHTML = `✗ <span>Мимо! Подсказка: ${quiz.hint}</span>`;
       }
     });
   });
 }
 
-// Привязка глобальных обработчиков
 function bindGlobalEvents() {
   document.getElementById("btn-start-stage-overlay").addEventListener("click", startCurrentStage);
 
-  // Lo-Fi переключатель
   document.getElementById("btn-ambient").addEventListener("click", () => {
     const isPlaying = audio.toggleAmbient();
     const btn = document.getElementById("btn-ambient");
     btn.classList.toggle("active", isPlaying);
   });
 
-  // Шпаргалка
   document.getElementById("btn-cheatsheet").addEventListener("click", () => {
     audio.playClick();
     document.getElementById("cheatsheet-modal").classList.remove("hidden");
@@ -319,7 +312,6 @@ function bindGlobalEvents() {
   document.getElementById("modal-cheat-close-btn").addEventListener("click", closeCheat);
   document.getElementById("btn-cheat-close-action").addEventListener("click", closeCheat);
 
-  // Ачивки
   document.getElementById("btn-achievements").addEventListener("click", () => {
     audio.playClick();
     renderAchievementsModal();
@@ -329,7 +321,6 @@ function bindGlobalEvents() {
   document.getElementById("modal-achieve-close-btn").addEventListener("click", closeAchieve);
   document.getElementById("btn-achieve-close-action").addEventListener("click", closeAchieve);
 
-  // Редактор и клавиши
   const editor = document.getElementById("code-editor");
   editor.addEventListener("keydown", handleEditorKeydown);
   editor.addEventListener("input", updateLineNumbers);
@@ -354,7 +345,6 @@ function bindGlobalEvents() {
   document.getElementById("modal-close-btn").addEventListener("click", closeSolution);
   document.getElementById("btn-modal-close-action").addEventListener("click", closeSolution);
 
-  // Запуск тестов и интерактив
   document.getElementById("btn-run").addEventListener("click", () => {
     runCodeValidation(() => {
       loadStage(state.currentStageIdx);
@@ -377,7 +367,6 @@ function bindGlobalEvents() {
     document.getElementById("diff-inspector").classList.toggle("hidden");
   });
 
-  // Навигация
   document.getElementById("btn-prev").addEventListener("click", () => {
     if (state.currentStageIdx > 0) {
       audio.playClick();
@@ -396,7 +385,6 @@ function bindGlobalEvents() {
     }
   });
 
-  // Вкладки
   document.querySelectorAll(".tab-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       audio.playClick();
@@ -409,7 +397,6 @@ function bindGlobalEvents() {
     });
   });
 
-  // Экспорт кода
   document.getElementById("btn-export-code").addEventListener("click", () => {
     audio.playClick();
     const quest = QUESTS[state.currentQuestKey];
@@ -424,7 +411,6 @@ function bindGlobalEvents() {
     URL.revokeObjectURL(url);
   });
 
-  // Сброс прогресса
   document.getElementById("btn-reset").addEventListener("click", () => {
     audio.playClick();
     if (confirm(`Сбросить весь прогресс квеста "${QUESTS[state.currentQuestKey].title}"?`)) {

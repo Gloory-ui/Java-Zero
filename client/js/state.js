@@ -1,12 +1,11 @@
 /**
- * Управление состоянием (State Management)
+ * Управление состоянием (State Management с цепочкой аттестации)
  */
 export const state = {
   currentQuestKey: localStorage.getItem("java_zero_active_quest") || "basics",
   currentStageIdx: 0,
   currentStreak: parseInt(localStorage.getItem("java_zero_streak") || "0", 10),
   
-  // Метрики качества решения текущего этапа (для честных ачивок)
   hintUsedCurrentStage: false,
   solutionViewedCurrentStage: false,
   failedAttemptsCurrentStage: 0,
@@ -19,9 +18,12 @@ export const state = {
     localStorage.setItem(`java_zero_quest_done_${questKey}`, val ? "true" : "false");
   },
 
+  // Строгая цепочка разблокировки: Фундамент -> Подготовка -> КТ 1 -> Калькулятор
   isQuestUnlocked(questKey) {
     if (questKey === "basics") return true;
-    if (questKey === "calc") return this.isQuestCompleted("basics");
+    if (questKey === "loops_prep") return this.isQuestCompleted("basics");
+    if (questKey === "kt1") return this.isQuestCompleted("loops_prep");
+    if (questKey === "calc") return this.isQuestCompleted("kt1");
     return false;
   },
 
