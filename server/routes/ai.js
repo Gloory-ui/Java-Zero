@@ -21,8 +21,8 @@ const ai = new GoogleGenAI({ apiKey });
 
 const MODELS_PRIORITY = [
   'gemini-3.6-flash',
-  'gemini-2.5-flash',
-  'gemini-2.0-flash'
+  'gemini-3.5-flash',
+  'gemini-2.5-flash'
 ];
 
 // Наборы инструкций под разные характеры
@@ -91,16 +91,22 @@ ${userCode || '// Нет кода'}
         config: {
           systemInstruction: systemInstruction,
           temperature: persona === 'chill' ? 0.4 : 0.2,
-          maxOutputTokens: 600
+          // Токены «размышлений» модели входят в этот лимит: при 600 на сам ответ
+          // оставалось ~20 токенов и он обрывался на полуслове
+          maxOutputTokens: 4096
         }
       });
+
+      if (response?.candidates?.[0]?.finishReason === 'MAX_TOKENS') {
+        console.warn(`[AI] ${modelName}: ответ обрезан по лимиту токенов`, response.usageMetadata);
+      }
 
       if (response?.text) {
         return res.json({ reply: response.text });
       }
     } catch (err) {
       lastError = err;
-      console.warn(`[AI] ${modelName} вернула ошибку. Переключение...`);
+      console.warn(`[AI] ${modelName} вернула ошибку ${err.status ?? ''}: ${String(err.message).slice(0, 200)}. Переключение...`);
     }
   }
 
