@@ -521,6 +521,15 @@
   gap: 6px;
 }
 
+/* Кнопки не помещались в панель редактора на ноутбуках (обрезалась «Тесты»):
+   в узкой панели у второстепенных кнопок остаются только иконки, подпись — в title */
+.editor-panel { container-type: inline-size; }
+@container (max-width: 700px) {
+  #btn-elder-cheat span,
+  #btn-format span,
+  #btn-hint span { display: none; }
+}
+
 .btn-elder {
   background: rgba(168, 85, 247, 0.12);
   border: 1px solid rgba(168, 85, 247, 0.35);
