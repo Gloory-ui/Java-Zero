@@ -332,6 +332,13 @@
                 <div class="boss-hp-bar">
                   <div class="boss-hp-fill" id="boss-hp-fill"></div>
                 </div>
+                <div class="player-hud-top">
+                  <span>🧑‍🎓 СТУДЕНТ // НЕРВЫ</span>
+                  <span class="player-hp-counter" id="player-hp-text">100 / 100 HP</span>
+                </div>
+                <div class="boss-hp-bar">
+                  <div class="boss-hp-fill player-hp-fill" id="player-hp-fill"></div>
+                </div>
               </div>
 
               <!-- Блок вызова скрывается при начале боя -->
@@ -339,7 +346,7 @@
                 <div>
                   <span class="arena-tag">БОСС-ФАЙТ СЕССИИ</span>
                   <h4>Аттестационная дуэль с преподавателем</h4>
-                  <p>Каждый правильный ответ сносит 50 HP. Быстрый ответ (до 5 сек) наносит КРИТИЧЕСКИЙ УДАР. Ошибка снимает ваши очки!</p>
+                  <p>Правильный ответ бьёт по HP профессора, быстрый (до 5 сек) — КРИТИЧЕСКИЙ УДАР. Ошибка или просроченный таймер снимают ваши нервы: обнулятся — незачёт!</p>
                 </div>
                 <button class="btn-challenge-exam" id="btn-exam-challenge">
                   <span>⚡ БРОСИТЬ ВЫЗОВ</span>
@@ -541,6 +548,8 @@
                   </div>
                 </div>
               </div>
+
+              <div class="loop-tracer hidden" id="loop-tracer"></div>
 
               <form id="terminal-input-form" class="terminal-input-form hidden">
                 <span class="terminal-prompt">&gt;</span>

@@ -6,6 +6,7 @@ import { state } from './state.js';
 import { QUESTS } from './quests.js';
 import { initExamSimulator, resetExamDuel } from './exam.js';
 import { renderMemoryVisualizer } from './memory.js';
+import { stopLoopTracer } from './tracer.js';
 import { initAiClient } from './ai-client.js';
 import {
   updateAchievementsBadge,
@@ -134,7 +135,12 @@ function initMatrixRain() {
   window.addEventListener("resize", resize);
   resize();
 
+  let isRaining = false;
+
   window.addEventListener("matrix-rain", () => {
+    // Победа в дуэли может одновременно выдать ачивку — второй запуск удвоил бы скорость анимации
+    if (isRaining) return;
+    isRaining = true;
     canvas.classList.remove("hidden");
     resize();
     let startTime = Date.now();
@@ -162,6 +168,7 @@ function initMatrixRain() {
         cancelAnimationFrame(animationFrame);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         canvas.classList.add("hidden");
+        isRaining = false;
       }
     }
 
@@ -192,7 +199,8 @@ function switchQuest(questKey) {
   renderNav();
 }
 
-function loadStage(idx) {
+// keepTerminal: перерисовать этап, не трогая терминал (после сдачи там остаются ALL PASS и трассировка)
+function loadStage(idx, { keepTerminal = false } = {}) {
   state.currentStageIdx = idx;
   state.resetStageMetrics();
 
@@ -239,6 +247,7 @@ function loadStage(idx) {
   document.getElementById("hint-box").innerHTML = `<strong>Подсказка:</strong> ${stage.hint}`;
   document.getElementById("hint-box").classList.add("hidden");
   document.getElementById("elder-cheat-box").classList.add("hidden");
+  updateElderCheatButton();
 
   resetExamDuel();
 
@@ -263,15 +272,26 @@ function loadStage(idx) {
   document.getElementById("btn-prev").disabled = idx === 0;
   document.getElementById("btn-next").disabled = (idx >= unlockedMax || idx === quest.stages.length - 1);
 
-  document.getElementById("terminal-input-form").classList.add("hidden");
-  document.getElementById("diff-inspector").classList.add("hidden");
-  document.getElementById("btn-toggle-diff").classList.add("hidden");
-  setTermStatus("IDLE", "idle");
+  if (!keepTerminal) {
+    document.getElementById("terminal-input-form").classList.add("hidden");
+    document.getElementById("diff-inspector").classList.add("hidden");
+    document.getElementById("btn-toggle-diff").classList.add("hidden");
+    setTermStatus("IDLE", "idle");
+    stopLoopTracer();
+  }
 
   updateLineNumbers();
   updateSolutionButtonState();
   updateUserRankUI();
   renderNav();
+}
+
+function updateElderCheatButton() {
+  const btn = document.getElementById("btn-elder-cheat");
+  btn.classList.toggle("used", state.cheatUsedCurrentStage);
+  btn.title = state.cheatUsedCurrentStage
+    ? "Джокер этапа уже использован — перечитать шпору можно без штрафа"
+    : "Шпора старосты: один раз на этап, даёт алгоритм, но сбрасывает стрик";
 }
 
 function renderNav() {
@@ -475,18 +495,25 @@ function bindGlobalEvents() {
     const isHidden = cheatBox.classList.contains("hidden");
 
     if (isHidden) {
-      if (state.currentStreak > 0) {
-        state.currentStreak = 0;
-        state.saveProgress();
-        document.getElementById("streak-count").textContent = "0";
-        updateUserRankUI();
+      // Штраф только за первое открытие на этапе, дальше шпору можно перечитывать
+      if (!state.cheatUsedCurrentStage) {
+        state.cheatUsedCurrentStage = true;
+        state.setCheatUsed(state.currentQuestKey, state.currentStageIdx);
+        updateElderCheatButton();
+
+        if (state.currentStreak > 0) {
+          state.currentStreak = 0;
+          state.saveProgress();
+          document.getElementById("streak-count").textContent = "0";
+          updateUserRankUI();
+        }
       }
 
       const quest = QUESTS[state.currentQuestKey];
       const stage = quest.stages[state.currentStageIdx];
 
       cheatBox.innerHTML = `
-        <strong>📜 ШПОРА ОТ СТАРОСТЫ (Стрик сброшен в 0):</strong><br/>
+        <strong>📜 ШПОРА ОТ СТАРОСТЫ (джокер этапа использован, стрик сброшен):</strong><br/>
         • <strong>Суть алгоритма:</strong> ${stage.tests.map(t => t.name).join(" → ")}.<br/>
         • <strong>Входные данные:</strong> Обрати внимание на типы переменных и граничные проверки.<br/>
         • <strong>Совет:</strong> Пиши команды последовательно сверху вниз и помни про точку с запятой.
@@ -519,7 +546,7 @@ function bindGlobalEvents() {
   document.getElementById("btn-run").addEventListener("click", () => {
     runCodeValidation(() => {
       updateUserRankUI();
-      loadStage(state.currentStageIdx);
+      loadStage(state.currentStageIdx, { keepTerminal: true });
     });
   });
 
@@ -532,6 +559,7 @@ function bindGlobalEvents() {
     document.getElementById("terminal-input-form").classList.add("hidden");
     document.getElementById("diff-inspector").classList.add("hidden");
     setTermStatus("IDLE", "idle");
+    stopLoopTracer();
   });
 
   document.getElementById("btn-toggle-diff").addEventListener("click", () => {
@@ -594,6 +622,7 @@ function bindGlobalEvents() {
       localStorage.removeItem(`java_zero_distinct_attempts_${state.currentQuestKey}`);
       QUESTS[state.currentQuestKey].stages.forEach((_, sIdx) => {
         localStorage.removeItem(`java_zero_started_${state.currentQuestKey}_${sIdx}`);
+        localStorage.removeItem(`java_zero_cheat_used_${state.currentQuestKey}_${sIdx}`);
       });
       loadStage(0);
       updateQuestDropdownUI();

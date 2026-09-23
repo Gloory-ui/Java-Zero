@@ -73,6 +73,15 @@ export const state = {
     localStorage.setItem(`java_zero_started_${questKey}_${stageIdx}`, val ? "true" : "false");
   },
 
+  // Шпора старосты — одноразовый джокер: факт использования хранится между перезагрузками
+  isCheatUsed(questKey = this.currentQuestKey, stageIdx = this.currentStageIdx) {
+    return localStorage.getItem(`java_zero_cheat_used_${questKey}_${stageIdx}`) === "true";
+  },
+
+  setCheatUsed(questKey, stageIdx) {
+    localStorage.setItem(`java_zero_cheat_used_${questKey}_${stageIdx}`, "true");
+  },
+
   setAiPersona(persona) {
     this.aiPersona = persona;
     localStorage.setItem("java_zero_ai_persona", persona);
@@ -92,7 +101,7 @@ export const state = {
 
   resetStageMetrics() {
     this.hintUsedCurrentStage = false;
-    this.cheatUsedCurrentStage = false;
+    this.cheatUsedCurrentStage = this.isCheatUsed();
     this.solutionViewedCurrentStage = false;
     this.failedAttemptsCurrentStage = 0;
     this.bossHp = 100;

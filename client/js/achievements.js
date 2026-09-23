@@ -32,6 +32,7 @@ export function unlockAchievement(id) {
   if (ach) {
     showAchievementToast(ach);
     audio.playAchievement();
+    window.dispatchEvent(new CustomEvent("matrix-rain"));
   }
 
   updateAchievementsBadge();

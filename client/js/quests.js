@@ -459,7 +459,8 @@ System.out.println(sumOdd);
           { name: "Печать с табуляцией \\t", check: (c) => c.includes("\\t") || c.includes("\\\\t"), expected: 'System.out.print((i * j) + "\\t");' },
           { name: "Перевод строки System.out.println()", check: (c) => c.includes("System.out.println()"), expected: "System.out.println();" }
         ],
-        interactiveFlow: [{ prompt: null, output: "1\t2\t3\t\n2\t4\t6\t\n3\t6\t9\t" }]
+        interactiveFlow: [{ prompt: null, output: "1\t2\t3\t\n2\t4\t6\t\n3\t6\t9\t" }],
+        loopTracer: { rows: 3, cols: 3 }
       },
 
       {
@@ -704,7 +705,8 @@ if (isPrime) System.out.println("Простое");
           { name: "Форматированный вывод (\\t или printf)", check: (c) => c.includes("\\t") || c.includes("printf") || c.includes("\\\\t"), expected: "System.out.print(... + \"\\t\");" },
           { name: "Перевод строки System.out.println()", check: (c) => c.includes("System.out.println()"), expected: "System.out.println();" }
         ],
-        interactiveFlow: [{ prompt: null, output: "1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t\n2\t4\t6\t8\t10\t12\t14\t16\t18\t20\t\n...\n10\t20\t30\t40\t50\t60\t70\t80\t90\t100\t" }]
+        interactiveFlow: [{ prompt: null, output: "1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t\n2\t4\t6\t8\t10\t12\t14\t16\t18\t20\t\n...\n10\t20\t30\t40\t50\t60\t70\t80\t90\t100\t" }],
+        loopTracer: { rows: 10, cols: 10 }
       },
 
       {

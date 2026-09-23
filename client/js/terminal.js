@@ -6,6 +6,7 @@ import { state } from './state.js';
 import { QUESTS } from './quests.js';
 import { unlockAchievement } from './achievements.js';
 import { registerAttempt, saveCurrentCode } from './editor.js';
+import { runLoopTracer, stopLoopTracer } from './tracer.js';
 
 let interactiveStep = 0;
 let interactiveData = {};
@@ -94,6 +95,7 @@ export function runCodeValidation(onStagePassed) {
   inputForm.classList.add("hidden");
   diffBox.classList.add("hidden");
   diffBtn.classList.add("hidden");
+  stopLoopTracer();
 
   registerAttempt(code);
   saveCurrentCode(code);
@@ -153,7 +155,7 @@ export function runCodeValidation(onStagePassed) {
 
       // Проверка ачивок
       if (state.currentStreak >= 3) unlockAchievement("streak_master");
-      if (state.currentQuestKey === "basics" && state.currentStageIdx === 0 && !state.solutionViewedCurrentStage) {
+      if (state.currentQuestKey === "basics" && state.currentStageIdx === 0 && !state.solutionViewedCurrentStage && !state.cheatUsedCurrentStage) {
         unlockAchievement("first_var");
       }
       if (state.currentQuestKey === "basics" && state.currentStageIdx === 1 && state.failedAttemptsCurrentStage === 0) {
@@ -178,9 +180,13 @@ export function runCodeValidation(onStagePassed) {
           state.setUnlockedStageMax(unlockedMax + 1);
         } else {
           state.setQuestCompleted(state.currentQuestKey, true);
+          term.textContent += `[КВЕСТ ЗАКРЫТ] «${quest.title}» пройден целиком!\n`;
+          window.dispatchEvent(new CustomEvent("matrix-rain"));
         }
         state.saveProgress();
       }
+
+      if (stage.loopTracer) runLoopTracer(stage.loopTracer, { reveal: true });
 
       if (onStagePassed) onStagePassed();
     } else {
@@ -216,6 +222,7 @@ export function startInteractiveSimulation() {
 
   interactiveStep = 0;
   interactiveData = {};
+  stopLoopTracer();
 
   term.className = "terminal-body";
   term.textContent = `=== [ИНТЕРАКТИВНЫЙ ЗАПУСК: ${stage.title}] ===\nЗапуск виртуальной машины Java 21 (${quest.fileName})...\n`;
