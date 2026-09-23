@@ -17,6 +17,15 @@ export function setTermStatus(statusText, type) {
   badge.className = `term-status-badge ${type}`;
 }
 
+// Комментарии-подсказки в стартовом коде содержат готовые ответы (например, "// Добавь проверку b == 0"),
+// поэтому тесты проверяют код без них. Строки и char-литералы сохраняются как есть.
+function stripJavaComments(code) {
+  return code.replace(
+    /"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|\/\/[^\n]*|\/\*[\s\S]*?\*\//g,
+    m => (m.startsWith("//") || m.startsWith("/*")) ? "" : m
+  );
+}
+
 export function performJdkSyntaxCheck(code, fileName) {
   const lines = code.split("\n");
   let braceCount = 0;
@@ -122,9 +131,10 @@ export function runCodeValidation(onStagePassed) {
     let allPassed = true;
     let log = "";
     let failedTestExpected = "";
+    const testableCode = stripJavaComments(code);
 
     stage.tests.forEach((t, i) => {
-      const ok = t.check(code);
+      const ok = t.check(testableCode);
       if (ok) {
         log += `[TEST ${i + 1}/${stage.tests.length}] ${t.name} ... PASSED\n`;
       } else {
