@@ -231,3 +231,75 @@
   font-family: 'Fira Code', monospace;
   cursor: pointer;
 }
+
+/* Трассировщик вложенных циклов */
+.loop-tracer {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  font-family: 'Fira Code', monospace;
+  cursor: pointer;
+}
+
+.tracer-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--neon-gold);
+}
+
+.tracer-step {
+  color: var(--text-primary);
+  letter-spacing: 0;
+}
+
+.tracer-grid {
+  display: grid;
+  gap: 2px;
+  font-size: 0.66rem;
+  text-align: center;
+}
+
+.tracer-grid > div {
+  min-height: 17px;
+  padding: 1px 0;
+  border-radius: 3px;
+}
+
+.tracer-hdr {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.tracer-hdr.active {
+  color: var(--neon-gold);
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.tracer-cell {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+}
+
+.tracer-cell.done {
+  background: rgba(16, 185, 129, 0.14);
+  color: var(--text-primary);
+}
+
+.tracer-cell.current {
+  background: var(--success);
+  color: #06070a;
+  box-shadow: 0 0 8px var(--success);
+}
+
+.tracer-hint {
+  margin-top: 6px;
+  font-size: 0.62rem;
+  color: var(--text-secondary);
+}

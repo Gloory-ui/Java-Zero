@@ -6,6 +6,7 @@ import { state } from './state.js';
 import { QUESTS } from './quests.js';
 import { unlockAchievement } from './achievements.js';
 import { registerAttempt, saveCurrentCode } from './editor.js';
+import { runLoopTracer, stopLoopTracer } from './tracer.js';
 
 let interactiveStep = 0;
 let interactiveData = {};
@@ -94,6 +95,7 @@ export function runCodeValidation(onStagePassed) {
   inputForm.classList.add("hidden");
   diffBox.classList.add("hidden");
   diffBtn.classList.add("hidden");
+  stopLoopTracer();
 
   registerAttempt(code);
   saveCurrentCode(code);
@@ -184,6 +186,8 @@ export function runCodeValidation(onStagePassed) {
         state.saveProgress();
       }
 
+      if (stage.loopTracer) runLoopTracer(stage.loopTracer, { reveal: true });
+
       if (onStagePassed) onStagePassed();
     } else {
       state.failedAttemptsCurrentStage++;
@@ -218,6 +222,7 @@ export function startInteractiveSimulation() {
 
   interactiveStep = 0;
   interactiveData = {};
+  stopLoopTracer();
 
   term.className = "terminal-body";
   term.textContent = `=== [ИНТЕРАКТИВНЫЙ ЗАПУСК: ${stage.title}] ===\nЗапуск виртуальной машины Java 21 (${quest.fileName})...\n`;

@@ -6,6 +6,7 @@ import { state } from './state.js';
 import { QUESTS } from './quests.js';
 import { initExamSimulator, resetExamDuel } from './exam.js';
 import { renderMemoryVisualizer } from './memory.js';
+import { stopLoopTracer } from './tracer.js';
 import { initAiClient } from './ai-client.js';
 import {
   updateAchievementsBadge,
@@ -198,7 +199,8 @@ function switchQuest(questKey) {
   renderNav();
 }
 
-function loadStage(idx) {
+// keepTerminal: перерисовать этап, не трогая терминал (после сдачи там остаются ALL PASS и трассировка)
+function loadStage(idx, { keepTerminal = false } = {}) {
   state.currentStageIdx = idx;
   state.resetStageMetrics();
 
@@ -270,10 +272,13 @@ function loadStage(idx) {
   document.getElementById("btn-prev").disabled = idx === 0;
   document.getElementById("btn-next").disabled = (idx >= unlockedMax || idx === quest.stages.length - 1);
 
-  document.getElementById("terminal-input-form").classList.add("hidden");
-  document.getElementById("diff-inspector").classList.add("hidden");
-  document.getElementById("btn-toggle-diff").classList.add("hidden");
-  setTermStatus("IDLE", "idle");
+  if (!keepTerminal) {
+    document.getElementById("terminal-input-form").classList.add("hidden");
+    document.getElementById("diff-inspector").classList.add("hidden");
+    document.getElementById("btn-toggle-diff").classList.add("hidden");
+    setTermStatus("IDLE", "idle");
+    stopLoopTracer();
+  }
 
   updateLineNumbers();
   updateSolutionButtonState();
@@ -541,7 +546,7 @@ function bindGlobalEvents() {
   document.getElementById("btn-run").addEventListener("click", () => {
     runCodeValidation(() => {
       updateUserRankUI();
-      loadStage(state.currentStageIdx);
+      loadStage(state.currentStageIdx, { keepTerminal: true });
     });
   });
 
@@ -554,6 +559,7 @@ function bindGlobalEvents() {
     document.getElementById("terminal-input-form").classList.add("hidden");
     document.getElementById("diff-inspector").classList.add("hidden");
     setTermStatus("IDLE", "idle");
+    stopLoopTracer();
   });
 
   document.getElementById("btn-toggle-diff").addEventListener("click", () => {
