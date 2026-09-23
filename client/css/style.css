@@ -622,6 +622,7 @@
   border-right: 1px solid var(--border-subtle);
   user-select: none;
   overflow: hidden;
+  white-space: pre;
 }
 
 #code-editor {
