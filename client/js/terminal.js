@@ -159,8 +159,11 @@ export function runCodeValidation(onStagePassed) {
       if (state.currentQuestKey === "basics" && state.currentStageIdx === 1 && state.failedAttemptsCurrentStage === 0) {
         unlockAchievement("division_safe");
       }
-      if (state.currentQuestKey === "calc" && state.currentStageIdx === 2 && !state.hintUsedCurrentStage) {
+      if (state.currentQuestKey === "calc" && state.currentStageIdx === 1 && !state.hintUsedCurrentStage) {
         unlockAchievement("zero_shield");
+      }
+      if (state.currentQuestKey === "calc" && state.currentStageIdx === 3) {
+        unlockAchievement("stack_safe");
       }
 
       setTermStatus("ALL PASS", "success");
