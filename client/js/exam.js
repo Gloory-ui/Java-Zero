@@ -251,7 +251,6 @@ function showExamSummary() {
   } else if (percent === 100 || state.bossHp <= 0) {
     audio.playAchievement();
     unlockAchievement("exam_challenger");
-    window.dispatchEvent(new CustomEvent("matrix-rain"));
 
     title.textContent = "БОСС ПОВЕРЖЕН! Оценка: 5 (ОТЛИЧНО) 🎓";
     subtitle.textContent = "Профессор Душнов подписал зачетный лист без единого вопроса!";

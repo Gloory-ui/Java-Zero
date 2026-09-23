@@ -181,7 +181,6 @@ export function runCodeValidation(onStagePassed) {
         } else {
           state.setQuestCompleted(state.currentQuestKey, true);
           term.textContent += `[КВЕСТ ЗАКРЫТ] «${quest.title}» пройден целиком!\n`;
-          window.dispatchEvent(new CustomEvent("matrix-rain"));
         }
         state.saveProgress();
       }
