@@ -8,10 +8,7 @@ import { initExamSimulator, resetExamDuel } from './exam.js';
 import { renderMemoryVisualizer } from './memory.js';
 import { stopLoopTracer } from './tracer.js';
 import { initAiClient } from './ai-client.js';
-import {
-  updateAchievementsBadge,
-  renderAchievementsModal
-} from './achievements.js';
+import { updateAchievementsBadge } from './achievements.js';
 import {
   updateLineNumbers,
   syncEditorScroll,
@@ -36,7 +33,14 @@ document.addEventListener("DOMContentLoaded", () => {
   initAiClient();
   initMatrixRain();
   initBrandEasterEgg();
-  initRankModal();
+
+  // Карточки квестов на главной ведут сюда с ?quest=<ключ>
+  const params = new URLSearchParams(location.search);
+  const requestedQuest = params.get("quest");
+  if (requestedQuest && QUESTS[requestedQuest] && state.isQuestUnlocked(requestedQuest)) {
+    state.currentQuestKey = requestedQuest;
+  }
+  if (params.has("quest")) history.replaceState(null, "", location.pathname);
 
   state.loadStoredProgress();
   switchQuest(state.currentQuestKey);
@@ -44,28 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
   updateUserRankUI();
   bindGlobalEvents();
 });
-
-// --- ОКНО КИБЕР-РАНГОВ ---
-function initRankModal() {
-  const badgeBtn = document.getElementById("rank-badge");
-  const modal = document.getElementById("rank-modal");
-  const closeBtn = document.getElementById("modal-rank-close-btn");
-  const actionBtn = document.getElementById("btn-rank-close-action");
-
-  if (badgeBtn && modal) {
-    badgeBtn.addEventListener("click", () => {
-      audio.playClick();
-      modal.classList.remove("hidden");
-    });
-  }
-
-  const closeModal = () => {
-    if (modal) modal.classList.add("hidden");
-  };
-
-  if (closeBtn) closeBtn.addEventListener("click", closeModal);
-  if (actionBtn) actionBtn.addEventListener("click", closeModal);
-}
 
 function updateUserRankUI() {
   const rank = state.getUserRank();
@@ -459,23 +441,6 @@ function bindGlobalEvents() {
     const btn = document.getElementById("btn-ambient");
     btn.classList.toggle("active", isPlaying);
   });
-
-  document.getElementById("btn-cheatsheet").addEventListener("click", () => {
-    audio.playClick();
-    document.getElementById("cheatsheet-modal").classList.remove("hidden");
-  });
-  const closeCheat = () => document.getElementById("cheatsheet-modal").classList.add("hidden");
-  document.getElementById("modal-cheat-close-btn").addEventListener("click", closeCheat);
-  document.getElementById("btn-cheat-close-action").addEventListener("click", closeCheat);
-
-  document.getElementById("btn-achievements").addEventListener("click", () => {
-    audio.playClick();
-    renderAchievementsModal();
-    document.getElementById("achievements-modal").classList.remove("hidden");
-  });
-  const closeAchieve = () => document.getElementById("achievements-modal").classList.add("hidden");
-  document.getElementById("modal-achieve-close-btn").addEventListener("click", closeAchieve);
-  document.getElementById("btn-achieve-close-action").addEventListener("click", closeAchieve);
 
   const editor = document.getElementById("code-editor");
   editor.addEventListener("keydown", handleEditorKeydown);

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Java-Zero — Справочник</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/modules.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="doc-page">
+  <div class="ambient-glow glow-top"></div>
+  <div class="ambient-glow glow-bottom"></div>
+
+  <header class="site-header" id="site-header"></header>
+
+  <main class="page">
+    <section>
+      <span class="page-tag">QUICK REFERENCE</span>
+      <h1>Справочник Java</h1>
+      <p class="page-lead">Короткие напоминалки по темам курса: открой рядом с лабораторией, когда забыл синтаксис.</p>
+    </section>
+
+    <div class="handbook">
+      <section class="cheat-section">
+        <h4>⌨️ Шорткаты редактора</h4>
+        <div class="shortcuts-grid">
+          <div class="shortcut-item">
+            <span class="key-combo">sout + Tab</span>
+            <span class="key-desc">Разворачивается в <code>System.out.println();</code></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="key-combo">psvm + Tab</span>
+            <span class="key-desc">Разворачивается в метод <code>main</code></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="key-combo">Tab</span>
+            <span class="key-desc">Вставляет 4 пробела</span>
+          </div>
+          <div class="shortcut-item">
+            <span class="key-combo">Backspace</span>
+            <span class="key-desc">Удаляет парные пустые скобки разом</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="cheat-section">
+        <h4>📦 Примитивные типы и String</h4>
+        <table class="cheat-table">
+          <thead>
+            <tr>
+              <th>Тип</th>
+              <th>Размер</th>
+              <th>Назначение</th>
+              <th>Пример</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>int</code></td>
+              <td>4 байта</td>
+              <td>Целые числа</td>
+              <td><code>int x = 42;</code></td>
+            </tr>
+            <tr>
+              <td><code>long</code></td>
+              <td>8 байт</td>
+              <td>Большие целые числа</td>
+              <td><code>long f = 2432902008176640000L;</code></td>
+            </tr>
+            <tr>
+              <td><code>double</code></td>
+              <td>8 байт</td>
+              <td>Вещественные числа с плавающей точкой</td>
+              <td><code>double pi = 3.1415;</code></td>
+            </tr>
+            <tr>
+              <td><code>char</code></td>
+              <td>2 байта</td>
+              <td>Один символ</td>
+              <td><code>char op = '+';</code></td>
+            </tr>
+            <tr>
+              <td><code>boolean</code></td>
+              <td>не задан JLS</td>
+              <td>Логический флаг (true / false)</td>
+              <td><code>boolean isPrime = true;</code></td>
+            </tr>
+            <tr>
+              <td><code>String</code></td>
+              <td>Ссылка</td>
+              <td>Текстовая строка (живёт в куче Heap)</td>
+              <td><code>String s = "Java";</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="cheat-section">
+        <h4>➗ Деление и остаток</h4>
+<pre class="handbook-code">int a = 7 / 2;              // 3   — int / int отбрасывает дробную часть
+double b = 7 / 2;           // 3.0 — сначала целое деление, потом перевод в double
+double c = 7.0 / 2;         // 3.5 — хотя бы один операнд double
+double d = (double) 7 / 2;  // 3.5 — явное приведение типа
+int r = 7 % 2;              // 1   — остаток от деления
+boolean even = n % 2 == 0;  // проверка на чётность</pre>
+        <ul>
+          <li>Целое деление на ноль (<code>5 / 0</code>) бросает <code>ArithmeticException</code>.</li>
+          <li>Вещественное деление на ноль (<code>10.0 / 0</code>) даёт <code>Infinity</code> — поэтому в калькуляторе нужна проверка <code>b == 0</code>.</li>
+        </ul>
+      </section>
+
+      <section class="cheat-section">
+        <h4>🔁 Циклы for и while</h4>
+<pre class="handbook-code">for (int i = 1; i &lt;= 10; i++) {  // 10 итераций: i = 1, 2, …, 10
+    System.out.println(i);
+}
+
+int attempts = 0;
+while (attempts &lt; 3) {           // условие проверяется ДО каждой итерации
+    attempts++;
+}
+
+for (int i = 1; i &lt;= 50; i++) {
+    if (i % 5 == 0) continue;     // пропустить остаток итерации
+    if (i == 41) break;           // выйти из цикла совсем
+    System.out.println(i);
+}</pre>
+        <ul>
+          <li>Во вложенных циклах внутренний проходит целиком на каждой итерации внешнего — посмотри трассировку после сдачи таблицы умножения в КТ 1.</li>
+        </ul>
+      </section>
+
+      <section class="cheat-section">
+        <h4>🔀 Выбор через switch</h4>
+<pre class="handbook-code">switch (op) {
+    case '+':
+        System.out.println(a + b);
+        break;
+    case '/':
+        if (b == 0) {
+            System.out.println("Ошибка: деление на ноль!");
+        } else {
+            System.out.println(a / b);
+        }
+        break;
+    default:
+        System.out.println("Неизвестная операция");
+}</pre>
+        <ul>
+          <li>Без <code>break</code> выполнение «проваливается» в следующий <code>case</code>.</li>
+        </ul>
+      </section>
+
+      <section class="cheat-section">
+        <h4>📚 Массивы</h4>
+<pre class="handbook-code">double[] history = new double[5];    // 5 ячеек, по умолчанию 0.0
+history[0] = 10.5;                   // индексы от 0 до length - 1
+System.out.println(history.length);  // 5
+// history[5] = 1; → ArrayIndexOutOfBoundsException</pre>
+      </section>
+
+      <section class="cheat-section">
+        <h4>⌨️ Ввод с клавиатуры: Scanner</h4>
+<pre class="handbook-code">import java.util.Scanner;
+
+Scanner sc = new Scanner(System.in);
+int n = sc.nextInt();
+double x = sc.nextDouble();
+String word = sc.next();          // одно слово до пробела
+char op = sc.next().charAt(0);    // первый символ слова</pre>
+        <ul>
+          <li>На компьютере с русской локалью <code>nextDouble()</code> ждёт дробь через запятую: <code>3,5</code>. Ввод <code>3.5</code> бросит <code>InputMismatchException</code>.</li>
+          <li>Чтобы вводить через точку: <code>new Scanner(System.in).useLocale(Locale.US)</code> и <code>import java.util.Locale;</code>.</li>
+        </ul>
+      </section>
+
+      <section class="cheat-section">
+        <h4>🌀 Рекурсия</h4>
+<pre class="handbook-code">static long factorial(int n) {
+    if (n &lt;= 1) return 1;          // базовый случай — останавливает рекурсию
+    return n * factorial(n - 1);   // рекурсивный шаг
+}</pre>
+        <ul>
+          <li>Без базового случая вызовы не заканчиваются, и JVM бросает <code>StackOverflowError</code>.</li>
+          <li><code>long</code> вмещает факториал только до 20! — дальше переполнение.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initSitePage } from './js/site.js';
+    initSitePage("handbook");
+  </script>
+</body>
+</html>
