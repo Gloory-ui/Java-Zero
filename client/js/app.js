@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initDropdown();
   initExamSimulator();
   initAiClient();
-  initMatrixRain();
   initBrandEasterEgg();
 
   // Карточки квестов на главной ведут сюда с ?quest=<ключ>
@@ -93,68 +92,6 @@ function initBrandEasterEgg() {
       audio.playClick();
       clickTimer = setTimeout(() => { clickCount = 0; }, 700);
     }
-  });
-}
-
-// --- ХОЛСТ MATRIX RAIN САЛЮТА ---
-function initMatrixRain() {
-  const canvas = document.getElementById("matrix-canvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-
-  let animationFrame = null;
-  let drops = [];
-  const chars = "010101JAVA{}<>;/=+*#~";
-  const fontSize = 14;
-
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const cols = Math.floor(canvas.width / fontSize);
-    drops = Array(cols).fill(1);
-  }
-
-  window.addEventListener("resize", resize);
-  resize();
-
-  let isRaining = false;
-
-  window.addEventListener("matrix-rain", () => {
-    // Победа в дуэли может одновременно выдать ачивку — второй запуск удвоил бы скорость анимации
-    if (isRaining) return;
-    isRaining = true;
-    canvas.classList.remove("hidden");
-    resize();
-    let startTime = Date.now();
-
-    function draw() {
-      ctx.fillStyle = "rgba(6, 7, 10, 0.12)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "#10b981";
-      ctx.font = `${fontSize}px 'Fira Code', monospace`;
-
-      for (let i = 0; i < drops.length; i++) {
-        const text = chars.charAt(Math.floor(Math.random() * chars.length));
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        drops[i]++;
-      }
-
-      if (Date.now() - startTime < 3500) {
-        animationFrame = requestAnimationFrame(draw);
-      } else {
-        cancelAnimationFrame(animationFrame);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.classList.add("hidden");
-        isRaining = false;
-      }
-    }
-
-    draw();
   });
 }
 
