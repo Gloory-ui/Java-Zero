@@ -88,8 +88,10 @@ body {
   position: relative;
 }
 
+/* fixed, а не absolute: свечение выходит за край экрана и раздувало документ до 1100px,
+   из-за чего фокус в поле ввода сдвигал всю страницу вверх без возможности вернуть её */
 .ambient-glow {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   filter: blur(120px);
   pointer-events: none;

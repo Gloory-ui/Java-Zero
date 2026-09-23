@@ -87,7 +87,7 @@ export async function sendAiMessage(userText) {
     drawer.classList.remove("hidden");
   }
 
-  appendAiMessage(userText, 'user');
+  appendAiMessage(escapeHtml(userText).replace(/\n/g, '<br/>'), 'user');
   const typingId = showTypingIndicator();
 
   const quest = QUESTS[state.currentQuestKey];
@@ -156,9 +156,15 @@ function removeTypingIndicator(id) {
   if (el) el.remove();
 }
 
+// Сообщения вставляются через innerHTML: без экранирования `List<String>` превращался в `List`,
+// а `i<n` ломал разметку чата
+function escapeHtml(text) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function formatMarkdown(text) {
   if (!text) return "";
-  return text
+  return escapeHtml(text)
     .replace(/```java([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
     .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
     .replace(/`([^`]+)`/g, '<span class="code-inline">$1</span>')

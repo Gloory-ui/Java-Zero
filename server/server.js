@@ -13,6 +13,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// На Render запросы приходят через прокси: без этого req.ip — адрес прокси,
+// и лимит AI-запросов становился общим на всех посетителей
+app.set('trust proxy', 1);
+
 app.use(cors());
 app.use(express.json());
 
