@@ -47,6 +47,12 @@
         </div>
       </div>
 
+      <nav class="sidebar-nav" aria-label="Разделы сайта">
+        <a href="index.html">Главная</a>
+        <a href="profile.html">Профиль</a>
+        <a href="handbook.html">Справочник</a>
+      </nav>
+
       <!-- Селектор квестов -->
       <div class="track-card">
         <div class="track-header">
@@ -171,11 +177,11 @@
               <span class="streak-icon">🔥</span>
               <span id="streak-count">0</span> STREAK
             </span>
-            <!-- КЛИКАБЕЛЬНЫЙ РАНГ С МОДАЛКОЙ КВАЛИФИКАЦИИ -->
-            <button class="rank-badge-btn" id="rank-badge" title="Нажми, чтобы открыть лестницу званий">
+            <!-- Ранг ведёт на табель о рангах в профиле -->
+            <a href="profile.html" class="rank-badge-btn" id="rank-badge" title="Табель о рангах — в профиле">
               <span id="rank-icon">🌱</span>
               <span id="rank-title">БАЙТ-ПАДАВАН</span>
-            </button>
+            </a>
           </div>
           <h1 id="module-title" title="Название этапа">Загрузка данных...</h1>
         </div>
@@ -190,13 +196,13 @@
             <span>AI</span>
           </button>
 
-          <button id="btn-cheatsheet" class="btn-hud-compact" title="Шпаргалка разработчика">
+          <a href="handbook.html" class="btn-hud-compact" title="Справочник по Java">
             <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
             </svg>
             <span>Справка</span>
-          </button>
+          </a>
 
           <button id="btn-ambient" class="btn-hud-compact btn-lofi-compact" title="Lo-Fi Synth Ambient">
             <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -208,13 +214,13 @@
             <span>Lo-Fi</span>
           </button>
 
-          <button id="btn-achievements" class="btn-hud-compact" title="Трофеи и ачивки">
+          <a href="profile.html" class="btn-hud-compact" title="Трофеи — в профиле">
             <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="8" r="7"></circle>
               <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
             </svg>
             <span class="achieve-counter" id="achieve-counter">0/7</span>
-          </button>
+          </a>
 
           <!-- Компактные иконки-переключатели -->
           <div class="hud-icons-cluster">
@@ -630,90 +636,6 @@
     </form>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО ЛЕСТНИЦЫ КИБЕР-РАНГОВ (ОТВЕТ НА "ЧТО ТАКОЕ БАЙТ-ПАДАВАН") -->
-  <div class="modal-overlay hidden" id="rank-modal">
-    <div class="solution-modal-window rank-modal-window">
-      <div class="modal-header">
-        <div class="modal-title-row">
-          <span style="font-size: 1.4rem;">🎖️</span>
-          <h3>ТАБЕЛЬ О РАНГАХ // КИБЕР-КВАЛИФИКАЦИЯ</h3>
-        </div>
-        <button class="modal-close-btn" id="modal-rank-close-btn">
-          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
-          Ваш ранг отражает реальный прогресс и стабильность решений. Чтобы повышать статус, сдавайте квесты и держите серию решений без ошибок (STREAK).
-        </p>
-
-        <div class="ranks-ladder-list">
-          <div class="rank-ladder-item">
-            <span class="rank-item-icon">🌱</span>
-            <div class="rank-item-info">
-              <div class="rank-item-title" style="color: #94a3b8;">БАЙТ-ПАДАВАН</div>
-              <div class="rank-item-desc">Стартовый ранг. Студент, делающий первые шаги в понимании переменных и оперативной памяти JVM.</div>
-            </div>
-            <span class="rank-item-badge">СТАРТ</span>
-          </div>
-
-          <div class="rank-ladder-item">
-            <span class="rank-item-icon">📦</span>
-            <div class="rank-item-info">
-              <div class="rank-item-title" style="color: #a855f7;">СИНТАКСИЧЕСКИЙ ЮНГА</div>
-              <div class="rank-item-desc">Присваивается за успешное завершение Квеста 00 «Фундамент Java». Знает разницу между int и double.</div>
-            </div>
-            <span class="rank-item-badge">КВЕСТ 00</span>
-          </div>
-
-          <div class="rank-ladder-item">
-            <span class="rank-item-icon">🌀</span>
-            <div class="rank-item-info">
-              <div class="rank-item-title" style="color: #38bdf8;">ОПЕРАТОР ЦИКЛА</div>
-              <div class="rank-item-desc">Присваивается за прохождение «Подготовки к КТ 1». Освоил циклы for/while, break, continue и флаги.</div>
-            </div>
-            <span class="rank-item-badge">КВЕСТ 01</span>
-          </div>
-
-          <div class="rank-ladder-item">
-            <span class="rank-item-icon">⚔️</span>
-            <div class="rank-item-info">
-              <div class="rank-item-title" style="color: #ff2a55;">ГРОЗА СЕССИИ</div>
-              <div class="rank-item-desc">Элитный статус! Закрыты все 6 задач «Контрольной точки 1» без использования прямых ответов.</div>
-            </div>
-            <span class="rank-item-badge">КТ 1</span>
-          </div>
-
-          <div class="rank-ladder-item">
-            <span class="rank-item-icon">⚡</span>
-            <div class="rank-item-info">
-              <div class="rank-item-title" style="color: #10b981;">УКРОТИТЕЛЬ СТЕКА</div>
-              <div class="rank-item-desc">Присваивается за успешную реализацию всех модулей Квеста 02 «Калькулятор» с рекурсией и массивами.</div>
-            </div>
-            <span class="rank-item-badge">ФИНАЛ</span>
-          </div>
-
-          <div class="rank-ladder-item">
-            <span class="rank-item-icon">👑</span>
-            <div class="rank-item-info">
-              <div class="rank-item-title" style="color: #f59e0b;">СЕНЬОР-КИБЕРДЕД</div>
-              <div class="rank-item-desc">Легендарный ранг! Достигается серией из 5+ успешных защит и тестов подряд без ошибок и подсказок.</div>
-            </div>
-            <span class="rank-item-badge">STREAK 5+</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-primary" id="btn-rank-close-action">Понятно, иду качать ранг</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Модальное окно решения -->
   <div class="modal-overlay hidden" id="solution-modal">
     <div class="solution-modal-window">
@@ -748,124 +670,6 @@
 
       <div class="modal-footer">
         <button class="btn-primary" id="btn-modal-close-action">Понятно, попробую написать сам</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Модальное окно ачивок -->
-  <div class="modal-overlay hidden" id="achievements-modal">
-    <div class="solution-modal-window achievements-window">
-      <div class="modal-header">
-        <div class="modal-title-row">
-          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="8" r="7"></circle>
-            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-          </svg>
-          <h3>ЗАЛ СЛАВЫ // ТРОФЕИ КУРСА</h3>
-        </div>
-        <button class="modal-close-btn" id="modal-achieve-close-btn">
-          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <div class="achievements-grid" id="achievements-grid"></div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-primary" id="btn-achieve-close-action">Вернуться к квесту</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Модальное окно шпаргалки -->
-  <div class="modal-overlay hidden" id="cheatsheet-modal">
-    <div class="solution-modal-window cheatsheet-window">
-      <div class="modal-header">
-        <div class="modal-title-row">
-          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-          </svg>
-          <h3>ШПАРГАЛКА РАЗРАБОТЧИКА // QUICK REFERENCE</h3>
-        </div>
-        <button class="modal-close-btn" id="modal-cheat-close-btn">
-          <svg class="icon-svg sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <div class="modal-body cheatsheet-body">
-        <div class="cheat-section">
-          <h4>⌨️ Шорткаты редактора</h4>
-          <div class="shortcuts-grid">
-            <div class="shortcut-item">
-              <span class="key-combo">sout + Tab</span>
-              <span class="key-desc">Разворачивается в <code>System.out.println();</code></span>
-            </div>
-            <div class="shortcut-item">
-              <span class="key-combo">psvm + Tab</span>
-              <span class="key-desc">Разворачивается в метод <code>main</code></span>
-            </div>
-            <div class="shortcut-item">
-              <span class="key-combo">Tab</span>
-              <span class="key-desc">Вставляет 4 пробела</span>
-            </div>
-            <div class="shortcut-item">
-              <span class="key-combo">Backspace</span>
-              <span class="key-desc">Удаляет парные пустые скобки разом</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="cheat-section">
-          <h4>📦 Примитивные типы данных</h4>
-          <table class="cheat-table">
-            <thead>
-              <tr>
-                <th>Тип</th>
-                <th>Размер</th>
-                <th>Назначение</th>
-                <th>Пример</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><code>int</code></td>
-                <td>4 байта</td>
-                <td>Целые числа</td>
-                <td><code>int x = 42;</code></td>
-              </tr>
-              <tr>
-                <td><code>double</code></td>
-                <td>8 байт</td>
-                <td>Вещественные числа с плавающей точкой</td>
-                <td><code>double pi = 3.1415;</code></td>
-              </tr>
-              <tr>
-                <td><code>boolean</code></td>
-                <td>1 байт</td>
-                <td>Логический флаг (true / false)</td>
-                <td><code>boolean isPrime = true;</code></td>
-              </tr>
-              <tr>
-                <td><code>String</code></td>
-                <td>Ссылка</td>
-                <td>Текстовая строка (живет в куче Heap)</td>
-                <td><code>String s = "Java";</code></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-primary" id="btn-cheat-close-action">Закрыть</button>
       </div>
     </div>
   </div>

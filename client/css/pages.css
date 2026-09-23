@@ -1,0 +1,396 @@
+/**
+ * Страницы-документы: Главная, Профиль, Справочник.
+ * Лаборатория (lab.html) — полноэкранное приложение без прокрутки, эти стили её не касаются.
+ */
+
+/* В main.css body зафиксирован по высоте экрана — здесь страница прокручивается */
+body.doc-page {
+  height: auto;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Шапка сайта */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 32px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.site-brand .logo-badge {
+  padding: 7px;
+  border-radius: 10px;
+}
+
+.site-brand-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  background: var(--neon-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.site-links {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.site-links a {
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-links a:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.site-links a.active {
+  color: var(--neon-red);
+  background: rgba(255, 42, 85, 0.1);
+}
+
+.site-header #btn-theme {
+  margin-left: auto;
+}
+
+/* Каркас страницы */
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 32px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.page-tag {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--neon-gold);
+}
+
+.page h1 {
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 8px 0 12px;
+}
+
+.page-lead {
+  max-width: 560px;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.section-note {
+  margin: -8px 0 16px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.btn-lg {
+  margin-top: 22px;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+/* Главная: приветствие и сводка */
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-family: 'Fira Code', monospace;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.stat-value.rank-value {
+  font-size: 0.9rem;
+}
+
+/* Главная: карта курса */
+.quest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.quest-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+a.quest-card:hover {
+  border-color: var(--border-neon);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.quest-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quest-card.completed {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.quest-card.active {
+  border-color: var(--border-neon);
+  box-shadow: var(--neon-card-glow);
+}
+
+.quest-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.quest-num {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-neon);
+  background: rgba(255, 42, 85, 0.12);
+  color: var(--neon-red);
+}
+
+.quest-state {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--text-secondary);
+}
+
+.quest-card.completed .quest-state { color: var(--success); }
+.quest-card.active .quest-state { color: var(--neon-red); }
+
+.quest-card h3 {
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.quest-card p {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.quest-progress {
+  height: 6px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--border-subtle);
+}
+
+.quest-progress-fill {
+  height: 100%;
+  background: var(--neon-gradient);
+}
+
+.quest-card.completed .quest-progress-fill { background: var(--success); }
+
+.quest-meta {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+/* Профиль */
+.profile-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.profile-rank-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.profile-rank-icon {
+  font-size: 2.6rem;
+}
+
+.profile-rank-title {
+  font-family: 'Fira Code', monospace;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.profile-hero .stats-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.rank-ladder-item.current {
+  border-color: var(--neon-gold);
+  box-shadow: var(--neon-gold-glow);
+}
+
+/* Справочник */
+/* minmax(0, …): иначе длинные строки кода и таблица растягивали страницу на телефоне */
+.handbook {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+.handbook .cheat-section {
+  overflow-x: auto;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.handbook p,
+.handbook li {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.handbook ul {
+  padding-left: 18px;
+}
+
+.handbook code {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--bg-card-hover);
+  color: var(--text-code);
+}
+
+.handbook-code {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-editor);
+  color: var(--text-code);
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+@media (max-width: 860px) {
+  .home-hero,
+  .profile-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-header {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 16px;
+  }
+
+  .site-links {
+    order: 3;
+    flex-basis: 100%;
+    overflow-x: auto;
+  }
+
+  .page {
+    padding: 24px 16px 48px;
+    gap: 32px;
+  }
+
+  .page h1 {
+    font-size: 1.6rem;
+  }
+
+  .shortcuts-grid,
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+}

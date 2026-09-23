@@ -76,6 +76,35 @@
   transform: translateY(-1px);
 }
 
+/* Ранг, «Справка» и трофеи стали ссылками на отдельные страницы */
+a.rank-badge-btn,
+a.btn-hud-compact {
+  text-decoration: none;
+}
+
+.sidebar-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.sidebar-nav a {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.sidebar-nav a:hover {
+  color: var(--text-primary);
+  border-color: var(--border-neon);
+}
+
 /* 4. Компактные кнопки хедера */
 .header-actions {
   display: flex;

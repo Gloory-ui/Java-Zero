@@ -1,11 +1,61 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=lab.html" />
-  <title>Java-Zero</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Java-Zero — Главная</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/modules.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
-  <a href="lab.html">Перейти в лабораторию</a>
+<body class="doc-page">
+  <div class="ambient-glow glow-top"></div>
+  <div class="ambient-glow glow-bottom"></div>
+
+  <header class="site-header" id="site-header"></header>
+
+  <main class="page">
+    <section class="home-hero">
+      <div>
+        <span class="page-tag">CYBER TRAINING LAB</span>
+        <h1>Java с нуля — квест за квестом</h1>
+        <p class="page-lead">
+          Теория, задания с автопроверкой, защита у профессора и AI-ментор.
+          Каждый следующий квест открывается после сдачи предыдущего.
+        </p>
+        <a class="btn-primary btn-lg" id="btn-continue" href="lab.html">▶ Начать обучение</a>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Ранг</span>
+          <span class="stat-value rank-value" id="stat-rank">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Этапов сдано</span>
+          <span class="stat-value" id="stat-stages">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Серия без ошибок</span>
+          <span class="stat-value" id="stat-streak">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Трофеи</span>
+          <span class="stat-value" id="stat-trophies">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Карта курса</h2>
+      <div class="quest-grid" id="quest-grid"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/home.js"></script>
 </body>
 </html>

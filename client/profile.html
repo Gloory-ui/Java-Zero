@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Java-Zero — Профиль</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/modules.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="doc-page">
+  <div class="ambient-glow glow-top"></div>
+  <div class="ambient-glow glow-bottom"></div>
+
+  <header class="site-header" id="site-header"></header>
+
+  <main class="page">
+    <section class="profile-hero">
+      <div class="profile-rank-card">
+        <span class="page-tag">ТЕКУЩИЙ РАНГ</span>
+        <span class="profile-rank-icon" id="profile-rank-icon">🌱</span>
+        <span class="profile-rank-title" id="profile-rank-title">БАЙТ-ПАДАВАН</span>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Этапов сдано</span>
+          <span class="stat-value" id="stat-stages">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Квестов закрыто</span>
+          <span class="stat-value" id="stat-quests">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Серия без ошибок</span>
+          <span class="stat-value" id="stat-streak">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Трофеи</span>
+          <span class="stat-value" id="stat-trophies">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">🏆 Зал славы: трофеи курса</h2>
+      <div class="achievements-grid" id="achievements-grid"></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">🎖️ Табель о рангах</h2>
+      <p class="section-note">
+        Ранг отражает реальный прогресс и стабильность решений. Чтобы повышать статус, сдавайте квесты и держите серию решений без ошибок (STREAK).
+      </p>
+
+      <div class="ranks-ladder-list">
+        <div class="rank-ladder-item" data-rank="БАЙТ-ПАДАВАН">
+          <span class="rank-item-icon">🌱</span>
+          <div class="rank-item-info">
+            <div class="rank-item-title" style="color: #94a3b8;">БАЙТ-ПАДАВАН</div>
+            <div class="rank-item-desc">Стартовый ранг. Студент, делающий первые шаги в понимании переменных и оперативной памяти JVM.</div>
+          </div>
+          <span class="rank-item-badge">СТАРТ</span>
+        </div>
+
+        <div class="rank-ladder-item" data-rank="СИНТАКСИЧЕСКИЙ ЮНГА">
+          <span class="rank-item-icon">📦</span>
+          <div class="rank-item-info">
+            <div class="rank-item-title" style="color: #a855f7;">СИНТАКСИЧЕСКИЙ ЮНГА</div>
+            <div class="rank-item-desc">Присваивается за успешное завершение Квеста 00 «Фундамент Java». Знает разницу между int и double.</div>
+          </div>
+          <span class="rank-item-badge">КВЕСТ 00</span>
+        </div>
+
+        <div class="rank-ladder-item" data-rank="ОПЕРАТОР ЦИКЛА">
+          <span class="rank-item-icon">🌀</span>
+          <div class="rank-item-info">
+            <div class="rank-item-title" style="color: #38bdf8;">ОПЕРАТОР ЦИКЛА</div>
+            <div class="rank-item-desc">Присваивается за прохождение «Подготовки к КТ 1». Освоил циклы for/while, break, continue и флаги.</div>
+          </div>
+          <span class="rank-item-badge">КВЕСТ 01</span>
+        </div>
+
+        <div class="rank-ladder-item" data-rank="ГРОЗА СЕССИИ">
+          <span class="rank-item-icon">⚔️</span>
+          <div class="rank-item-info">
+            <div class="rank-item-title" style="color: #ff2a55;">ГРОЗА СЕССИИ</div>
+            <div class="rank-item-desc">Элитный статус! Закрыты все 6 задач «Контрольной точки 1» без использования прямых ответов.</div>
+          </div>
+          <span class="rank-item-badge">КТ 1</span>
+        </div>
+
+        <div class="rank-ladder-item" data-rank="УКРОТИТЕЛЬ СТЕКА">
+          <span class="rank-item-icon">⚡</span>
+          <div class="rank-item-info">
+            <div class="rank-item-title" style="color: #10b981;">УКРОТИТЕЛЬ СТЕКА</div>
+            <div class="rank-item-desc">Присваивается за успешную реализацию всех модулей Квеста 02 «Калькулятор» с рекурсией и массивами.</div>
+          </div>
+          <span class="rank-item-badge">ФИНАЛ</span>
+        </div>
+
+        <div class="rank-ladder-item" data-rank="СЕНЬОР-КИБЕРДЕД">
+          <span class="rank-item-icon">👑</span>
+          <div class="rank-item-info">
+            <div class="rank-item-title" style="color: #f59e0b;">СЕНЬОР-КИБЕРДЕД</div>
+            <div class="rank-item-desc">Легендарный ранг! Достигается серией из 5+ успешных защит и тестов подряд без ошибок и подсказок.</div>
+          </div>
+          <span class="rank-item-badge">STREAK 5+</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/profile.js"></script>
+</body>
+</html>

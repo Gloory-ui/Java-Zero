@@ -61,7 +61,7 @@ export function updateAchievementsBadge() {
   counter.textContent = `${unlocked.length}/${ACHIEVEMENTS_LIST.length}`;
 }
 
-export function renderAchievementsModal() {
+export function renderAchievementsGrid() {
   const grid = document.getElementById("achievements-grid");
   if (!grid) return;
   const unlocked = getUnlockedAchievements();
