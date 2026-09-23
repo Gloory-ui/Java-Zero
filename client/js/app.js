@@ -17,7 +17,8 @@ import {
   handleEditorKeydown,
   formatJavaCode,
   getCodeForStage,
-  updateSolutionButtonState
+  updateSolutionButtonState,
+  isSolutionUnlocked
 } from './editor.js';
 import {
   runCodeValidation,
@@ -505,6 +506,13 @@ function bindGlobalEvents() {
   });
 
   document.getElementById("btn-solution").addEventListener("click", () => {
+    const btn = document.getElementById("btn-solution");
+    if (!isSolutionUnlocked()) {
+      audio.playError();
+      btn.classList.add("shake-error");
+      setTimeout(() => btn.classList.remove("shake-error"), 500);
+      return;
+    }
     audio.playClick();
     const modal = document.getElementById("solution-modal");
     const codeViewer = document.getElementById("modal-solution-code");

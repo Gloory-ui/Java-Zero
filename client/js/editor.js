@@ -195,9 +195,17 @@ export function registerAttempt(rawCode) {
   updateSolutionButtonState();
 }
 
-export function updateSolutionButtonState() {
+function getDistinctAttemptsCount() {
   const data = JSON.parse(localStorage.getItem(`java_zero_distinct_attempts_${state.currentQuestKey}`) || "{}");
-  const count = (data[state.currentStageIdx] || []).length;
+  return (data[state.currentStageIdx] || []).length;
+}
+
+export function isSolutionUnlocked() {
+  return getDistinctAttemptsCount() >= CONFIG.REQUIRED_DISTINCT_ATTEMPTS;
+}
+
+export function updateSolutionButtonState() {
+  const count = getDistinctAttemptsCount();
   const btn = document.getElementById("btn-solution");
   const textSlot = document.getElementById("solution-text");
 
