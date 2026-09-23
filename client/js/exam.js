@@ -47,8 +47,21 @@ export function startExamDuel() {
 
   document.getElementById("exam-duel-box").classList.remove("hidden");
   document.getElementById("exam-summary-card").classList.add("hidden");
+  // Шпаргалка содержит ответы — во время боя её не видно
+  document.getElementById("exam-cheatsheet").classList.add("hidden");
 
   renderCurrentQuestion();
+}
+
+// Возврат арены к начальному виду при смене этапа; останавливает таймер незавершённой дуэли
+export function resetExamDuel() {
+  clearInterval(examTimer);
+  state.bossHp = 100;
+  updateBossHpUI();
+  document.getElementById("exam-arena-intro")?.classList.remove("hidden");
+  document.getElementById("exam-duel-box")?.classList.add("hidden");
+  document.getElementById("exam-summary-card")?.classList.add("hidden");
+  document.getElementById("exam-cheatsheet")?.classList.remove("hidden");
 }
 
 function updateBossHpUI() {
@@ -187,6 +200,7 @@ function advanceToNextQuestion() {
 
 function showExamSummary() {
   document.getElementById("exam-duel-box").classList.add("hidden");
+  document.getElementById("exam-cheatsheet").classList.remove("hidden");
   const summaryCard = document.getElementById("exam-summary-card");
   summaryCard.classList.remove("hidden");
 

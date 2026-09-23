@@ -4,7 +4,7 @@
 import { audio } from './audio.js';
 import { state } from './state.js';
 import { QUESTS } from './quests.js';
-import { initExamSimulator } from './exam.js';
+import { initExamSimulator, resetExamDuel } from './exam.js';
 import { renderMemoryVisualizer } from './memory.js';
 import { initAiClient } from './ai-client.js';
 import {
@@ -240,15 +240,7 @@ function loadStage(idx) {
   document.getElementById("hint-box").classList.add("hidden");
   document.getElementById("elder-cheat-box").classList.add("hidden");
 
-  // Сброс состояния дуэли босса к начальному виду
-  const introBlock = document.getElementById("exam-arena-intro");
-  if (introBlock) introBlock.classList.remove("hidden");
-  document.getElementById("exam-duel-box")?.classList.add("hidden");
-  document.getElementById("exam-summary-card")?.classList.add("hidden");
-  const hpFill = document.getElementById("boss-hp-fill");
-  const hpText = document.getElementById("boss-hp-text");
-  if (hpFill) hpFill.style.width = "100%";
-  if (hpText) hpText.textContent = "100 / 100 HP";
+  resetExamDuel();
 
   const staticList = document.getElementById("exam-static-list");
   if (stage.examTest && stage.examTest.length > 0) {
