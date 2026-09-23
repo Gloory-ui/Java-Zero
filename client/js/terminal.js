@@ -178,6 +178,8 @@ export function runCodeValidation(onStagePassed) {
           state.setUnlockedStageMax(unlockedMax + 1);
         } else {
           state.setQuestCompleted(state.currentQuestKey, true);
+          term.textContent += `[КВЕСТ ЗАКРЫТ] «${quest.title}» пройден целиком!\n`;
+          window.dispatchEvent(new CustomEvent("matrix-rain"));
         }
         state.saveProgress();
       }

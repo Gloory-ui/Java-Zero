@@ -134,7 +134,12 @@ function initMatrixRain() {
   window.addEventListener("resize", resize);
   resize();
 
+  let isRaining = false;
+
   window.addEventListener("matrix-rain", () => {
+    // Победа в дуэли может одновременно выдать ачивку — второй запуск удвоил бы скорость анимации
+    if (isRaining) return;
+    isRaining = true;
     canvas.classList.remove("hidden");
     resize();
     let startTime = Date.now();
@@ -162,6 +167,7 @@ function initMatrixRain() {
         cancelAnimationFrame(animationFrame);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         canvas.classList.add("hidden");
+        isRaining = false;
       }
     }
 
