@@ -43,7 +43,9 @@ export function startExamDuel() {
   currentQuestionIdx = 0;
   examScore = { correct: 0, wrong: 0, wrongQuestions: [] };
   state.bossHp = 100;
+  state.playerHp = 100;
   updateBossHpUI();
+  updatePlayerHpUI();
 
   document.getElementById("exam-duel-box").classList.remove("hidden");
   document.getElementById("exam-summary-card").classList.add("hidden");
@@ -57,7 +59,9 @@ export function startExamDuel() {
 export function resetExamDuel() {
   clearInterval(examTimer);
   state.bossHp = 100;
+  state.playerHp = 100;
   updateBossHpUI();
+  updatePlayerHpUI();
   document.getElementById("exam-arena-intro")?.classList.remove("hidden");
   document.getElementById("exam-duel-box")?.classList.add("hidden");
   document.getElementById("exam-summary-card")?.classList.add("hidden");
@@ -80,6 +84,40 @@ function updateBossHpUI() {
   } else {
     hpFill.style.background = "linear-gradient(90deg, #ff2a55 0%, #f59e0b 100%)";
   }
+}
+
+function updatePlayerHpUI() {
+  const hpFill = document.getElementById("player-hp-fill");
+  const hpText = document.getElementById("player-hp-text");
+  if (!hpFill || !hpText) return;
+
+  const hp = Math.max(0, state.playerHp);
+  hpFill.style.width = `${hp}%`;
+  hpText.textContent = `${hp} / 100 HP`;
+}
+
+// Нервы студента кончаются ровно тогда, когда ошибок столько, что незачёт (< 50%) уже неизбежен
+function registerMistake(q) {
+  examScore.wrong++;
+  examScore.wrongQuestions.push(q);
+
+  const mistakesToFail = Math.floor(currentQuestionsList.length / 2) + 1;
+  state.playerHp = Math.max(0, state.playerHp - Math.ceil(100 / mistakesToFail));
+  updatePlayerHpUI();
+
+  const hud = document.querySelector(".boss-arena-hud");
+  hud.classList.add("shake-error");
+  setTimeout(() => hud.classList.remove("shake-error"), 500);
+
+  return state.playerHp <= 0;
+}
+
+function showFeedback(q) {
+  const isLast = currentQuestionIdx >= currentQuestionsList.length - 1;
+  document.getElementById("btn-duel-next").textContent =
+    (isLast || state.playerHp <= 0) ? "К итогам →" : "Следующий вопрос →";
+  document.getElementById("duel-feedback-explain").innerHTML = `<strong>Разбор логики:</strong> ${q.explain}`;
+  document.getElementById("duel-feedback-box").classList.remove("hidden");
 }
 
 function renderCurrentQuestion() {
@@ -127,9 +165,7 @@ function handleOptionChoice(selectedIdx, btnEl) {
   clearInterval(examTimer);
   const q = currentQuestionsList[currentQuestionIdx];
   const optionsBox = document.getElementById("duel-options-list");
-  const feedbackBox = document.getElementById("duel-feedback-box");
   const header = document.getElementById("duel-feedback-header");
-  const explain = document.getElementById("duel-feedback-explain");
   const arenaCard = document.getElementById("boss-arena-card");
 
   optionsBox.querySelectorAll(".duel-option-btn").forEach(b => b.disabled = true);
@@ -160,38 +196,31 @@ function handleOptionChoice(selectedIdx, btnEl) {
     audio.playError();
     btnEl.classList.add("selected-wrong");
     optionsBox.querySelector(`[data-idx="${q.correct}"]`).classList.add("selected-correct");
-    examScore.wrong++;
-    examScore.wrongQuestions.push(q);
-    header.innerHTML = `<span style="color:var(--danger)">✗ НЕВЕРНО! Замечание в лист защиты.</span>`;
+    const knockedOut = registerMistake(q);
+    header.innerHTML = `<span style="color:var(--danger)">✗ НЕВЕРНО! Замечание в лист защиты.${knockedOut ? " Нервы на нуле — профессор ставит незачёт." : ""}</span>`;
   }
 
-  explain.innerHTML = `<strong>Разбор логики:</strong> ${q.explain}`;
-  feedbackBox.classList.remove("hidden");
+  showFeedback(q);
 }
 
 function handleTimeout() {
   audio.playError();
   const q = currentQuestionsList[currentQuestionIdx];
   const optionsBox = document.getElementById("duel-options-list");
-  const feedbackBox = document.getElementById("duel-feedback-box");
   const header = document.getElementById("duel-feedback-header");
-  const explain = document.getElementById("duel-feedback-explain");
 
   optionsBox.querySelectorAll(".duel-option-btn").forEach(b => b.disabled = true);
   optionsBox.querySelector(`[data-idx="${q.correct}"]`).classList.add("selected-correct");
 
-  examScore.wrong++;
-  examScore.wrongQuestions.push(q);
-
-  header.innerHTML = `<span style="color:var(--danger)">⏱️ Время истекло! На защите требуется оперативный ответ.</span>`;
-  explain.innerHTML = `<strong>Разбор логики:</strong> ${q.explain}`;
-  feedbackBox.classList.remove("hidden");
+  const knockedOut = registerMistake(q);
+  header.innerHTML = `<span style="color:var(--danger)">⏱️ Время истекло! На защите требуется оперативный ответ.${knockedOut ? " Нервы на нуле — профессор ставит незачёт." : ""}</span>`;
+  showFeedback(q);
 }
 
 function advanceToNextQuestion() {
   audio.playClick();
   currentQuestionIdx++;
-  if (currentQuestionIdx < currentQuestionsList.length) {
+  if (state.playerHp > 0 && currentQuestionIdx < currentQuestionsList.length) {
     renderCurrentQuestion();
   } else {
     showExamSummary();
@@ -214,7 +243,12 @@ function showExamSummary() {
   scoreBadge.textContent = `${examScore.correct} / ${total} (${percent}%)`;
 
   let gradeMarkup = '';
-  if (percent === 100 || state.bossHp <= 0) {
+  if (state.playerHp <= 0) {
+    audio.playError();
+    title.textContent = "НЕЗАЧЁТ: НЕРВЫ НА НУЛЕ ⚠️";
+    subtitle.textContent = `Ошибок: ${examScore.wrong} — профессор выставил вас с защиты досрочно.`;
+    gradeMarkup = renderMistakesAdvice();
+  } else if (percent === 100 || state.bossHp <= 0) {
     audio.playAchievement();
     unlockAchievement("exam_challenger");
     window.dispatchEvent(new CustomEvent("matrix-rain"));

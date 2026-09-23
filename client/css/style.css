@@ -262,6 +262,30 @@
   box-shadow: 0 0 14px rgba(255, 42, 85, 0.7);
 }
 
+.player-hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+.player-hp-counter {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--success);
+}
+
+.player-hp-fill {
+  background: linear-gradient(90deg, #10b981 0%, #38bdf8 100%);
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.6);
+}
+
 .exam-arena-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
