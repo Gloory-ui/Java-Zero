@@ -153,7 +153,7 @@ export function runCodeValidation(onStagePassed) {
 
       // Проверка ачивок
       if (state.currentStreak >= 3) unlockAchievement("streak_master");
-      if (state.currentQuestKey === "basics" && state.currentStageIdx === 0 && !state.solutionViewedCurrentStage) {
+      if (state.currentQuestKey === "basics" && state.currentStageIdx === 0 && !state.solutionViewedCurrentStage && !state.cheatUsedCurrentStage) {
         unlockAchievement("first_var");
       }
       if (state.currentQuestKey === "basics" && state.currentStageIdx === 1 && state.failedAttemptsCurrentStage === 0) {

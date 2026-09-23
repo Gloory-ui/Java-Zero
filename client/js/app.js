@@ -239,6 +239,7 @@ function loadStage(idx) {
   document.getElementById("hint-box").innerHTML = `<strong>Подсказка:</strong> ${stage.hint}`;
   document.getElementById("hint-box").classList.add("hidden");
   document.getElementById("elder-cheat-box").classList.add("hidden");
+  updateElderCheatButton();
 
   resetExamDuel();
 
@@ -272,6 +273,14 @@ function loadStage(idx) {
   updateSolutionButtonState();
   updateUserRankUI();
   renderNav();
+}
+
+function updateElderCheatButton() {
+  const btn = document.getElementById("btn-elder-cheat");
+  btn.classList.toggle("used", state.cheatUsedCurrentStage);
+  btn.title = state.cheatUsedCurrentStage
+    ? "Джокер этапа уже использован — перечитать шпору можно без штрафа"
+    : "Шпора старосты: один раз на этап, даёт алгоритм, но сбрасывает стрик";
 }
 
 function renderNav() {
@@ -475,18 +484,25 @@ function bindGlobalEvents() {
     const isHidden = cheatBox.classList.contains("hidden");
 
     if (isHidden) {
-      if (state.currentStreak > 0) {
-        state.currentStreak = 0;
-        state.saveProgress();
-        document.getElementById("streak-count").textContent = "0";
-        updateUserRankUI();
+      // Штраф только за первое открытие на этапе, дальше шпору можно перечитывать
+      if (!state.cheatUsedCurrentStage) {
+        state.cheatUsedCurrentStage = true;
+        state.setCheatUsed(state.currentQuestKey, state.currentStageIdx);
+        updateElderCheatButton();
+
+        if (state.currentStreak > 0) {
+          state.currentStreak = 0;
+          state.saveProgress();
+          document.getElementById("streak-count").textContent = "0";
+          updateUserRankUI();
+        }
       }
 
       const quest = QUESTS[state.currentQuestKey];
       const stage = quest.stages[state.currentStageIdx];
 
       cheatBox.innerHTML = `
-        <strong>📜 ШПОРА ОТ СТАРОСТЫ (Стрик сброшен в 0):</strong><br/>
+        <strong>📜 ШПОРА ОТ СТАРОСТЫ (джокер этапа использован, стрик сброшен):</strong><br/>
         • <strong>Суть алгоритма:</strong> ${stage.tests.map(t => t.name).join(" → ")}.<br/>
         • <strong>Входные данные:</strong> Обрати внимание на типы переменных и граничные проверки.<br/>
         • <strong>Совет:</strong> Пиши команды последовательно сверху вниз и помни про точку с запятой.
@@ -594,6 +610,7 @@ function bindGlobalEvents() {
       localStorage.removeItem(`java_zero_distinct_attempts_${state.currentQuestKey}`);
       QUESTS[state.currentQuestKey].stages.forEach((_, sIdx) => {
         localStorage.removeItem(`java_zero_started_${state.currentQuestKey}_${sIdx}`);
+        localStorage.removeItem(`java_zero_cheat_used_${state.currentQuestKey}_${sIdx}`);
       });
       loadStage(0);
       updateQuestDropdownUI();
