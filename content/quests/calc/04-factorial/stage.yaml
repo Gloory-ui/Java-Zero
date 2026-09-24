@@ -1,0 +1,49 @@
+id: factorial
+badge: ЭТАП 04 / 04
+title: Рекурсивный факториал n!
+hint: if (n <= 1) return 1; return n * factorial(n - 1);
+quiz:
+  question: Чему равен факториал 5!?
+  options:
+    - "25"
+    - "60"
+    - "120"
+    - "720"
+  correct: 2
+  hint: 5 * 4 * 3 * 2 * 1 = 120.
+exam:
+  - q: Что вызывает ошибку java.lang.StackOverflowError?
+    options:
+      - Переполнение кучи
+      - Исчерпание памяти стека вызовов из-за бесконечной или слишком глубокой рекурсии
+      - Деление на 0
+      - Ошибка диска
+    correct: 1
+    explain: Каждый рекурсивный вызов занимает отдельный стековый фрейм. При исчерпании стека потока JVM выбрасывает StackOverflowError.
+    advice: Всегда следи за достижимостью терминального случая в рекурсии.
+memory:
+  stack:
+    - method: factorial(1)
+      vars:
+        - return 1
+    - method: factorial(2)
+      vars:
+        - return 2 * factorial(1)
+    - method: factorial(3)
+      vars:
+        - return 3 * factorial(2)
+  heap:
+    - obj: Call Stack Limit
+      data: -Xss1m
+tests:
+  - name: Выводит 5! = 120
+    stdout: |
+      120
+  - kind: source
+    name: Рекурсивный вызов factorial(n - 1)
+    pattern: \bfactorial\s*\(\s*n\s*-\s*1\s*\)
+    message: "Метод должен вызывать сам себя: factorial(n - 1)"
+  - kind: source
+    name: Базовый случай n <= 1
+    pattern: \bn\s*(<=\s*1|==\s*[01]|<\s*2)\b
+    message: "Без базового случая рекурсия не остановится: if (n <= 1) return 1;"

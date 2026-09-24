@@ -1,0 +1,39 @@
+id: remainder
+badge: ЭТАП 02 / 02
+title: Оператор остатка % и деление
+hint: int rem = 7 % 2; System.out.println(rem);
+quiz:
+  question: Как проверить, что число n кратно 5?
+  options:
+    - n / 5 == 0
+    - n % 5 == 0
+    - n % 5 == 1
+    - n == 5
+  correct: 1
+  hint: Если остаток от деления на 5 равен нулю, значит число делится нацело.
+exam:
+  - q: Чему равно выражение 14 % 5 в Java?
+    options:
+      - "2.8"
+      - "2"
+      - "4"
+      - "0"
+    correct: 2
+    explain: "14 делим на 5: берем по 2 (это 10), в остатке остается 4 (14 - 10 = 4)."
+    advice: Потренируйся находить остаток от деления в уме.
+memory:
+  stack:
+    - method: main()
+      vars:
+        - int rem = 7 % 2 [= 1]
+  heap:
+    - obj: Output
+      data: '"1"'
+tests:
+  - name: Выводит остаток 7 % 2
+    stdout: |
+      1
+  - kind: source
+    name: Остаток через оператор %
+    pattern: \b7\s*%\s*2\b
+    message: "Посчитай остаток оператором %: 7 % 2"

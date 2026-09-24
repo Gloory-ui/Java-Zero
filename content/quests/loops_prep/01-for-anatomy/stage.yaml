@@ -1,0 +1,48 @@
+id: for-anatomy
+badge: ПОДГОТОВКА 01 / 06
+title: "Анатомия цикла for: счетчики и границы"
+hint: for (int i = 1; i <= 10; i++) { System.out.println(i); }
+quiz:
+  question: Что делает оператор i++ в заголовке цикла?
+  options:
+    - Уменьшает i на 1
+    - Увеличивает i на 1
+    - Умножает i на 2
+    - Сравнивает i с нулем
+  correct: 1
+  hint: i++ — это инкремент (эквивалентно i = i + 1).
+exam:
+  - q: Сколько раз выполнится цикл for (int i = 0; i < 5; i++)?
+    options:
+      - 4 раза
+      - 5 раз (для i = 0, 1, 2, 3, 4)
+      - 6 раз
+      - Бесконечно
+    correct: 1
+    explain: "Итерации: 0, 1, 2, 3, 4. При i = 5 условие 5 < 5 вернет false, и цикл завершится."
+    advice: Всегда считай количество итераций с учетом строгого знака неравенства.
+memory:
+  stack:
+    - method: main()
+      vars:
+        - int i = 1..10 (Счетчик итераций)
+  heap:
+    - obj: Console Buffer
+      data: 1 2 3 4 5 6 7 8 9 10
+tests:
+  - name: Выводит числа от 1 до 10
+    stdout: |
+      1
+      2
+      3
+      4
+      5
+      6
+      7
+      8
+      9
+      10
+  - kind: source
+    name: Цикл for
+    pattern: \bfor\s*\(
+    message: Используй цикл for

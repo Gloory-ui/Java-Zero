@@ -1,0 +1,64 @@
+id: switch-zero
+badge: ЭТАП 02 / 04
+title: Конструкция switch и защита от 0
+hint: "case '/': if (b == 0) System.out.println(\"Ошибка: деление на ноль!\"); else System.out.println(a / b); break;"
+sampleInput: |
+  10 / 4
+quiz:
+  question: Что предотвращает эффект 'проваливания' в конструкции switch?
+  options:
+    - continue
+    - break
+    - default
+    - return 0
+  correct: 1
+  hint: Оператор break останавливает выполнение дальнейших case.
+exam:
+  - q: Что вернет операция 10.0 / 0.0 в Java?
+    options:
+      - ArithmeticException
+      - Infinity по стандарту IEEE 754
+      - "0"
+      - NaN
+    correct: 1
+    explain: Вещественные числа в Java следуют стандарту IEEE 754, где деление ненулевого числа на 0.0 дает Infinity.
+    advice: Всегда помни об особенности IEEE 754 для double.
+memory:
+  stack:
+    - method: main()
+      vars:
+        - char op = '/'
+        - num2 == 0 -> Error
+  heap:
+    - obj: Jump Table
+      data: Switch binary offsets
+tests:
+  - name: "Сложение: 3 + 4"
+    stdin: |
+      3 + 4
+    stdout: |
+      7.0
+  - name: "Вычитание: 9 - 12"
+    stdin: |
+      9 - 12
+    stdout: |
+      -3.0
+  - name: "Умножение: 6 * 7"
+    stdin: |
+      6 * 7
+    stdout: |
+      42.0
+  - name: "Деление: 10 / 4"
+    stdin: |
+      10 / 4
+    stdout: |
+      2.5
+  - name: "Защита от деления на ноль: 5 / 0"
+    stdin: |
+      5 / 0
+    stdout: |
+      Ошибка: деление на ноль!
+  - kind: source
+    name: Выбор операции через switch
+    pattern: \bswitch\s*\(
+    message: Выбери операцию конструкцией switch (op)

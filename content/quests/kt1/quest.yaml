@@ -1,0 +1,11 @@
+id: kt1
+num: КТ
+title: Контрольная точка 1
+subtitle: 6 аттестационных заданий
+fileName: KT1.java
+order: 3
+unlockAfter: loops_prep
+rank:
+  title: ГРОЗА СЕССИИ
+  icon: ⚔️
+  color: "#ff2a55"

@@ -1,0 +1,35 @@
+id: splash
+badge: ЭТАП 01 / 04
+title: Базовый каркас и заставка
+hint: System.out.println("=== КАЛЬКУЛЯТОР ЗАПУЩЕН ===");
+quiz:
+  question: Какая сигнатура является точкой входа в Java?
+  options:
+    - function main()
+    - public static void main(String[] args)
+    - void start()
+    - public void run()
+  correct: 1
+  hint: public static void main(String[] args)
+exam:
+  - q: Почему метод main объявлен как static?
+    options:
+      - Чтобы работать быстрее
+      - Чтобы JVM могла вызвать его без создания объекта через new
+      - Это устаревшее требование
+      - Чтобы запретить вызовы из других классов
+    correct: 1
+    explain: static позволяет JVM вызвать метод main без создания экземпляра класса в куче.
+    advice: Повтори разницу между статическими и нестатическими методами.
+memory:
+  stack:
+    - method: main(String[] args)
+      vars:
+        - "args = @0x01 [len: 0]"
+  heap:
+    - obj: String Pool
+      data: '"=== КАЛЬКУЛЯТОР ЗАПУЩЕН ==="'
+tests:
+  - name: Выводит заставку
+    stdout: |
+      === КАЛЬКУЛЯТОР ЗАПУЩЕН ===

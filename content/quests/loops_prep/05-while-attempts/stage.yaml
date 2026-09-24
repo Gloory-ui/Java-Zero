@@ -1,0 +1,42 @@
+id: while-attempts
+badge: ПОДГОТОВКА 05 / 06
+title: Цикл while и лимит попыток
+hint: while (attempts < maxAttempts) { attempts++; System.out.println("Попытка " + attempts); }
+quiz:
+  question: Когда проверяется условие в цикле while?
+  options:
+    - Перед каждой итерацией
+    - После каждой итерации
+    - Только один раз при старте
+    - В конце программы
+  correct: 0
+  hint: while — это цикл с предусловием (проверка идет ДО входа в тело).
+exam:
+  - q: Что произойдет, если в цикле while (attempts < 3) забыть сделать attempts++?
+    options:
+      - Ошибка компиляции
+      - Бесконечный цикл (Infinite Loop), программа намертво зависнет
+      - Цикл выполнится ровно 3 раза
+      - JVM автоматически увеличит переменную
+    correct: 1
+    explain: Если переменная в условии цикла не изменяется, условие всегда истинно. Выполнение зациклится.
+    advice: Всегда проверяй шаг изменения условий в циклах while.
+memory:
+  stack:
+    - method: main()
+      vars:
+        - int attempts = 0
+        - int maxAttempts = 3
+  heap:
+    - obj: Input stream
+      data: User guesses
+tests:
+  - name: Печатает три попытки
+    stdout: |
+      Попытка 1
+      Попытка 2
+      Попытка 3
+  - kind: source
+    name: Цикл while
+    pattern: \bwhile\s*\(
+    message: Используй цикл while
