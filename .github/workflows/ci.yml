@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [next, "feature/**", "fix/**"]
+  pull_request:
+    branches: [next, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Линтер, типы, тесты, сборка
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Biome
+        run: npx biome ci
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Юнит-тесты
+        run: npm test
+
+      - name: Сборка
+        run: npm run build
+
+      - name: Браузер для e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E-тесты
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Отчёт Playwright при падении
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
