@@ -3,6 +3,7 @@
 import { motion, useAnimationControls, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useMentor } from "@/lib/ai/client";
 import { sound } from "@/lib/audio";
 import { cn } from "@/lib/cn";
 import {
@@ -19,6 +20,9 @@ import {
 import { duelFinished } from "@/lib/game/events";
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
+
+const ORAL_EXAM =
+  "Сыграй строгого преподавателя Java и задай мне один трудный устный вопрос с подвохом по этому этапу. Дождись моего ответа и оцени его.";
 
 const VERDICTS: Record<Verdict, { title: string; tone: string }> = {
   "knocked-out": { title: "Незачёт: нервы на нуле", tone: "text-danger" },
@@ -180,10 +184,15 @@ export function Duel({ questions }: { questions: DuelQuestion[] }) {
             </ul>
           </div>
         )}
-        <div>
+        <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={begin}>
             Ещё раз
           </Button>
+          {result === "excellent" && (
+            <Button variant="ghost" onClick={() => useMentor.getState().show(ORAL_EXAM)}>
+              Устный допрос у AI-профессора
+            </Button>
+          )}
         </div>
         <details className="rounded-md border border-border">
           <summary className="cursor-pointer px-4 py-3 text-sm font-medium">Разбор всех вопросов</summary>
