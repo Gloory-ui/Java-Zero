@@ -1,4 +1,5 @@
 import ReactMarkdown, { type Components } from "react-markdown";
+import { JavaCode } from "./code-block";
 
 // Разметка теории и граблей: только безопасный Markdown (react-markdown не исполняет HTML из текста)
 const components: Components = {
@@ -15,10 +16,14 @@ const components: Components = {
     </pre>
   ),
   code: ({ className, children }) =>
-    className ? (
+    className?.includes("language-java") ? (
+      <JavaCode code={String(children)} />
+    ) : className ? (
       <code className={`${className} font-mono text-code-text`}>{children}</code>
     ) : (
-      <code className="rounded-sm bg-card-hover px-1.5 py-0.5 font-mono text-[0.9em] text-code-text">{children}</code>
+      <code className="rounded-sm bg-card-hover px-1.5 py-0.5 font-mono text-[0.9em] [overflow-wrap:anywhere] text-code-text">
+        {children}
+      </code>
     ),
   a: ({ href, children }) => (
     <a href={href} className="text-accent underline underline-offset-2" target="_blank" rel="noreferrer">

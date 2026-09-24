@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { AccountMenu } from "@/components/account/account-menu";
 import { CourseMap } from "@/components/course/course-map";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteFooter, SiteHeader } from "@/components/site/site-header";
 import { getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
 
@@ -13,20 +11,13 @@ export const metadata: Metadata = {
 
 export default function CoursePage() {
   return (
-    <div className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-8 px-4 py-8">
-      <header className="flex items-center justify-between">
-        <Link href="/" className="font-display text-base font-semibold">
-          Java-Zero
-        </Link>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <AccountMenu />
-        </div>
-      </header>
-      <main className="flex flex-col gap-6">
+    <>
+      <SiteHeader />
+      <main className="mx-auto flex min-h-[70dvh] max-w-3xl flex-col gap-6 px-4 py-10">
         <h1 className="font-display text-3xl font-semibold">Карта курса</h1>
         <CourseMap course={toOutline(getCourse())} />
       </main>
-    </div>
+      <SiteFooter />
+    </>
   );
 }

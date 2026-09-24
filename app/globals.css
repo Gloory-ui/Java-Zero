@@ -140,3 +140,24 @@
       "liga" 0;
   }
 }
+
+/* Подсветка Java вне редактора (lib/highlight.ts): те же цвета, что у CodeMirror */
+.tok-keyword {
+  color: var(--code-keyword);
+}
+.tok-type {
+  color: var(--code-type);
+}
+.tok-string {
+  color: var(--code-string);
+}
+.tok-number {
+  color: var(--code-number);
+}
+.tok-comment {
+  color: var(--code-comment);
+  font-style: italic;
+}
+.tok-func {
+  color: var(--code-func);
+}

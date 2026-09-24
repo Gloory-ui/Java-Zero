@@ -29,6 +29,7 @@ export function CourseMap({ course }: { course: QuestOutline[] }) {
         {course.map((quest) => {
           const open = isQuestUnlocked(progress, course, quest);
           const { passed, total, percent } = questProgress(progress, quest);
+          const unlockAfter = course.find((q) => q.id === quest.unlockAfter);
           return (
             <li
               key={quest.id}
@@ -36,11 +37,19 @@ export function CourseMap({ course }: { course: QuestOutline[] }) {
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <div>
-                  <p className="font-mono text-xs tracking-widest uppercase" style={{ color: quest.rank.color }}>
+                  <p className="flex items-center gap-2 font-mono text-xs tracking-widest text-muted uppercase">
+                    <span
+                      className="size-2 rounded-full"
+                      style={{ backgroundColor: quest.rank.color }}
+                      aria-hidden="true"
+                    />
                     {quest.num} · {open ? `${passed} из ${total}` : "закрыт"}
                   </p>
                   <h2 className="mt-1 font-display text-lg font-semibold">{quest.title}</h2>
                   <p className="text-sm text-muted">{quest.subtitle}</p>
+                  {!open && unlockAfter && (
+                    <p className="mt-1 text-sm text-muted">Откроется после квеста «{unlockAfter.title}».</p>
+                  )}
                 </div>
                 <span className="text-sm text-muted" title="Ранг за прохождение квеста">
                   {quest.rank.icon} {quest.rank.title}
@@ -52,7 +61,7 @@ export function CourseMap({ course }: { course: QuestOutline[] }) {
                   style={{ transform: `scaleX(${percent / 100})`, backgroundColor: quest.rank.color }}
                 />
               </div>
-              <ol className="mt-4 grid gap-1.5 sm:grid-cols-2">
+              <ol className="mt-4 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                 {quest.stages.map((stage, index) => {
                   const done = isStagePassed(progress, quest.id, stage.id);
                   const unlocked = isStageUnlocked(progress, course, quest, index);

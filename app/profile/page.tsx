@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ProfileView } from "@/components/profile/profile-view";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteFooter, SiteHeader } from "@/components/site/site-header";
 import { getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
 
@@ -12,16 +11,12 @@ export const metadata: Metadata = {
 
 export default function ProfilePage() {
   return (
-    <div className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-8 px-4 py-8">
-      <header className="flex items-center justify-between">
-        <Link href="/course" className="text-sm text-muted hover:text-text">
-          ← Карта курса
-        </Link>
-        <ThemeToggle />
-      </header>
-      <main>
+    <>
+      <SiteHeader />
+      <main className="mx-auto max-w-3xl px-4 py-10">
         <ProfileView course={toOutline(getCourse())} />
       </main>
-    </div>
+      <SiteFooter />
+    </>
   );
 }
