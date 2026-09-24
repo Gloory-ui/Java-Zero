@@ -283,7 +283,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
         <p className="text-muted">
           Этапы открываются по порядку: сначала сдай предыдущие задания квеста «{quest.title}».
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {continueTo && (
             <ButtonLink href={stageHref(continueTo.questId, continueTo.stageId)}>
               Продолжить с доступного этапа
@@ -349,7 +349,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
           <div
             role="tablist"
             aria-label="Материалы этапа"
-            className="flex shrink-0 gap-1 border-b border-border px-3 pt-2"
+            className="flex shrink-0 gap-0.5 overflow-x-auto border-b border-border px-2 pt-2 [scrollbar-width:none] sm:gap-1 sm:px-3"
           >
             {tabs.map((t) => (
               <button
@@ -361,7 +361,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
                 aria-controls="tab-panel"
                 onClick={() => switchTab(t.id)}
                 className={cn(
-                  "relative px-3 py-2 text-sm font-medium transition-colors duration-150 ease-snappy",
+                  "relative shrink-0 px-2.5 py-2 text-sm font-medium transition-colors duration-150 ease-snappy sm:px-3",
                   tab === t.id ? "text-text" : "text-muted hover:text-text",
                 )}
               >

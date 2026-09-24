@@ -110,7 +110,8 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
         )}
         <div className="min-w-0">
           <h1 className="truncate font-display text-2xl font-semibold">{user?.name ?? "Профиль"}</h1>
-          <p className="mt-1 font-mono text-sm tracking-wide" style={{ color: rank.color }}>
+          <p className="mt-1 flex items-center gap-2 font-mono text-sm tracking-wide">
+            <span className="size-2 rounded-full" style={{ backgroundColor: rank.color }} aria-hidden="true" />
             {rank.icon} {rank.title}
           </p>
         </div>

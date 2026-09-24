@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Onest, Unbounded } from "next/font/google";
 import { AccountProvider } from "@/components/account/account-provider";
 import { Toaster } from "@/components/game/toaster";
+import { SITE_INDEXED, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const display = Unbounded({ subsets: ["latin", "cyrillic"], variable: "--font-unbounded", display: "swap" });
@@ -9,12 +10,13 @@ const sans = Onest({ subsets: ["latin", "cyrillic"], variable: "--font-onest", d
 const mono = JetBrains_Mono({ subsets: ["latin", "cyrillic"], variable: "--font-jetbrains", display: "swap" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://java-zero.onrender.com"),
+  metadataBase: new URL(SITE_URL),
   title: { default: "Java-Zero — Java с нуля", template: "%s · Java-Zero" },
   description:
     "Учи Java с нуля: теория, задания, которые проверяет настоящий компилятор в браузере, защита у профессора и AI-ментор.",
   // Превью ветки next не должно попасть в поиск; на релизе включается SITE_INDEX=true
-  robots: { index: process.env.SITE_INDEX === "true", follow: process.env.SITE_INDEX === "true" },
+  robots: { index: SITE_INDEXED, follow: SITE_INDEXED },
+  openGraph: { type: "website", locale: "ru_RU", siteName: "Java-Zero" },
 };
 
 export const viewport: Viewport = {
