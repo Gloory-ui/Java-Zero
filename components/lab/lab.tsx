@@ -6,6 +6,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, ButtonLink, buttonClasses } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { useMentor } from "@/lib/ai/client";
 import { cn } from "@/lib/cn";
 import type { QuestOutline } from "@/lib/content/outline";
 import type { Stage } from "@/lib/content/schema";
@@ -22,6 +23,7 @@ import { EngineStatus } from "./engine-status";
 import { LabStatus } from "./lab-status";
 import { LoopTracer } from "./loop-tracer";
 import { MemoryView } from "./memory-view";
+import { Mentor, type MentorContext } from "./mentor";
 import { Quiz } from "./quiz";
 import { type Outcome, ResultsPanel } from "./results-panel";
 
@@ -85,6 +87,46 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
   const attempts = saved?.attempts.length ?? 0;
   const solutionUnlocked = passed || attempts >= SOLUTION_UNLOCK_ATTEMPTS;
   const busy = outcome.kind === "running";
+
+  // Ментору уходит код и результат последней проверки: реальные ошибки компилятора и непройденные тесты
+  const outcomeRef = useRef(outcome);
+  outcomeRef.current = outcome;
+  const mentorContext = useCallback((): MentorContext => {
+    const last = outcomeRef.current;
+    const cut = (text: string | undefined) => text?.slice(0, 2000);
+    return {
+      code: code.current,
+      compileErrors:
+        last.kind === "compile-error"
+          ? last.compile.diagnostics
+              .filter((d) => d.severity === "error")
+              .slice(0, 20)
+              .map((d) => ({ line: d.line, message: d.message.slice(0, 500) }))
+          : [],
+      failedTests:
+        last.kind === "checked"
+          ? last.verdicts
+              .filter((v) => !v.passed)
+              .slice(0, 10)
+              .map((v) => ({
+                name: v.name,
+                status: v.status,
+                message: v.message?.slice(0, 500),
+                expected: cut(v.expected),
+                actual: cut(v.actual),
+              }))
+          : last.kind === "ran" && last.run.status !== "ok"
+            ? [
+                {
+                  name: "Запуск с вводом",
+                  status: last.run.status,
+                  message: cut(last.run.error),
+                  actual: cut(last.run.stdout),
+                },
+              ]
+            : [],
+    };
+  }, []);
 
   const tabs = useMemo(() => {
     const list: { id: TabId; label: string }[] = [
@@ -378,6 +420,9 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
             <Button variant="secondary" onClick={() => setStdinOpen((v) => !v)} aria-expanded={stdinOpen}>
               Запуск с вводом
             </Button>
+            <Button variant="ghost" onClick={() => useMentor.getState().show()}>
+              AI-ментор
+            </Button>
             <Button variant="ghost" onClick={toggleHint}>
               Подсказка
             </Button>
@@ -464,6 +509,8 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
           </div>
         </section>
       </div>
+
+      <Mentor stageKey={key} getContext={mentorContext} />
 
       <Dialog open={solutionOpen} onClose={() => setSolutionOpen(false)} title="Эталонное решение">
         <p className="mb-3 text-sm text-muted">Прочитай и закрой. Перепиши решение сам: так оно останется в голове.</p>
