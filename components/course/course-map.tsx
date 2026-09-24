@@ -5,7 +5,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import type { QuestOutline } from "@/lib/content/outline";
 import { isQuestUnlocked, isStagePassed, isStageUnlocked, nextStage, questProgress } from "@/lib/progress/selectors";
-import { EMPTY_PROGRESS, useProgress, useProgressHydrated } from "@/lib/progress/store";
+import { useProgress, useProgressHydrated } from "@/lib/progress/store";
+import { EMPTY_PROGRESS } from "@/lib/progress/types";
 
 /** Карта курса: квесты по порядку, этапы с отметками «сдан / открыт / закрыт» и кнопка «Продолжить». */
 export function CourseMap({ course }: { course: QuestOutline[] }) {

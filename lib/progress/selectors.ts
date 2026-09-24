@@ -1,5 +1,5 @@
 import type { QuestOutline } from "@/lib/content/outline";
-import { type ProgressData, stageKey } from "./store";
+import { type ProgressData, stageKey } from "./types";
 
 type Progress = Pick<ProgressData, "stages">;
 

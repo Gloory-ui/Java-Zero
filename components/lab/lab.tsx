@@ -9,12 +9,17 @@ import { Dialog } from "@/components/ui/dialog";
 import { cn } from "@/lib/cn";
 import type { QuestOutline } from "@/lib/content/outline";
 import type { Stage } from "@/lib/content/schema";
+import type { DuelQuestion } from "@/lib/game/duel";
+import { checkFailed, runFinished, stagePassed } from "@/lib/game/events";
 import { EngineRestartedError, getEngine, useEngine } from "@/lib/java/engine";
 import { type Diagnostic, ioInputs, judge } from "@/lib/java/judge";
 import { isStagePassed, isStageUnlocked, nextStage } from "@/lib/progress/selectors";
-import { SOLUTION_UNLOCK_ATTEMPTS, stageKey, useProgress, useProgressHydrated } from "@/lib/progress/store";
+import { useProgress, useProgressHydrated } from "@/lib/progress/store";
+import { SOLUTION_UNLOCK_ATTEMPTS, stageKey } from "@/lib/progress/types";
 import { CodeEditor, type CodeEditorHandle } from "./code-editor";
+import { Duel } from "./duel";
 import { EngineStatus } from "./engine-status";
+import { LabStatus } from "./lab-status";
 import { LoopTracer } from "./loop-tracer";
 import { MemoryView } from "./memory-view";
 import { Quiz } from "./quiz";
@@ -33,7 +38,10 @@ export type LabStage = Pick<
   | "tests"
   | "starter"
   | "solution"
->;
+> & {
+  /** Вопросы защиты: этого этапа и предыдущих этапов квеста */
+  duel: DuelQuestion[];
+};
 
 type Props = {
   course: QuestOutline[];
@@ -44,7 +52,7 @@ type Props = {
   pitfalls: ReactNode;
 };
 
-type TabId = "theory" | "pitfalls" | "quiz" | "memory";
+type TabId = "theory" | "pitfalls" | "quiz" | "duel" | "memory";
 
 const stageHref = (questId: string, stageId: string) => `/learn/${questId}/${stageId}`;
 
@@ -83,6 +91,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
       { id: "theory", label: "Теория" },
       { id: "pitfalls", label: "Грабли" },
       { id: "quiz", label: "Квиз" },
+      { id: "duel", label: "Защита" },
     ];
     if (stage.memory) list.push({ id: "memory", label: "Память" });
     return list;
@@ -119,7 +128,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
       const { compile, runs } = await getEngine().check(quest.fileName, source, ioInputs(stage.tests));
       setDiagnostics(compile.diagnostics);
       if (!compile.compiled) {
-        useProgress.getState().failCheck();
+        checkFailed(key);
         setOutcome(
           compile.fatal && compile.diagnostics.length === 0
             ? { kind: "engine-error", message: `Не удалось подготовить программу к запуску: ${compile.fatal}` }
@@ -129,8 +138,8 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
       }
       const verdicts = judge(stage.tests, source, runs);
       const allPassed = verdicts.every((v) => v.passed);
-      if (allPassed) useProgress.getState().markPassed(key);
-      else useProgress.getState().failCheck();
+      if (allPassed) stagePassed(key, course);
+      else checkFailed(key);
       setOutcome({ kind: "checked", verdicts, passed: allPassed });
     } catch (error) {
       setOutcome({
@@ -141,7 +150,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
             : `Java-движок не ответил: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
-  }, [busy, key, quest.fileName, stage.tests]);
+  }, [busy, course, key, quest.fileName, stage.tests]);
 
   const runWithInput = useCallback(async () => {
     if (busy) return;
@@ -153,6 +162,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
       setDiagnostics(compile.diagnostics);
       if (!compile.compiled) return setOutcome({ kind: "compile-error", compile });
       setOutcome({ kind: "ran", run: runs[0], stdin });
+      runFinished(source, stdin, runs[0]);
     } catch (error) {
       setOutcome({ kind: "engine-error", message: error instanceof Error ? error.message : String(error) });
     }
@@ -166,6 +176,8 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
       pitfalls
     ) : tab === "quiz" ? (
       <Quiz quiz={stage.quiz} />
+    ) : tab === "duel" ? (
+      <Duel questions={stage.duel} />
     ) : stage.memory ? (
       <MemoryView memory={stage.memory} />
     ) : null;
@@ -283,6 +295,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
             </span>
           )}
         </nav>
+        <LabStatus course={course} />
         <div className="hidden md:block">
           <EngineStatus />
         </div>
