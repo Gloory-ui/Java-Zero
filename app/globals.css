@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+/* Тема переключается атрибутом data-theme на <html>; тёмная по умолчанию */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #08090c;
+  --surface: #0d1016;
+  --card: #131822;
+  --card-hover: #1a2030;
+  --border: rgb(255 255 255 / 0.08);
+  --border-strong: rgb(255 255 255 / 0.16);
+  --text: #f4f6f8;
+  --muted: #97a3b6;
+  --accent: #ff4d6d; /* текст и иконки: контраст 6:1 на --bg */
+  --accent-solid: #e11d48; /* заливка кнопок: белый текст 4.7:1 */
+  --accent-solid-hover: #be123c; /* светлее нельзя: #f43f5e даёт белому тексту 3.7:1 */
+  --accent-soft: rgb(255 42 85 / 0.12);
+  --glow: rgb(255 42 85 / 0.45); /* фирменный неон #ff2a55 — только свечения */
+  --gold: #f5a524;
+  --success: #10b981;
+  --danger: #ef4444;
+  --code-bg: #0a0c11;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --card: #f1f3f6;
+  --card-hover: #e8ebf0;
+  --border: rgb(15 23 42 / 0.1);
+  --border-strong: rgb(15 23 42 / 0.2);
+  --text: #0f172a;
+  --muted: #5b6678;
+  --accent: #be123c;
+  --accent-solid: #e11d48;
+  --accent-solid-hover: #be123c;
+  --accent-soft: rgb(225 29 72 / 0.1);
+  --glow: rgb(225 29 72 / 0.25);
+  --gold: #b45309;
+  --success: #047857;
+  --danger: #dc2626;
+  --code-bg: #ffffff;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-solid: var(--accent-solid);
+  --color-accent-solid-hover: var(--accent-solid-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-gold: var(--gold);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-code-bg: var(--code-bg);
+
+  /* Шрифты подключает next/font в app/layout.tsx; все три с кириллицей */
+  --font-display: var(--font-unbounded), var(--font-onest), system-ui, sans-serif;
+  --font-sans: var(--font-onest), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "Cascadia Code", monospace;
+}
+
+@theme {
+  /* Анимация: ease-out по умолчанию, интерфейс до 300 мс (скиллы emilkowal-animations, design-with-taste) */
+  --ease-snappy: cubic-bezier(0.23, 1, 0.32, 1); /* появление, реакция на действие */
+  --ease-onscreen: cubic-bezier(0.77, 0, 0.175, 1); /* перемещение по экрану */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* шторки и панели */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* исчезновение */
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-glow: 0 0 24px var(--glow);
+}
+
+@layer base {
+  html {
+    background-color: var(--bg);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--accent-soft);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Лигатуры в коде путают новичков: «<=» не должно превращаться в «≤» */
+  code,
+  kbd,
+  pre,
+  samp,
+  .font-mono {
+    font-variant-ligatures: none;
+    font-feature-settings:
+      "calt" 0,
+      "liga" 0;
+  }
+}
