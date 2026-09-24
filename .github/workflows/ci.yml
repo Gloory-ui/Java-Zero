@@ -23,6 +23,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - run: npm ci
 
       - name: Biome
@@ -33,6 +38,10 @@ jobs:
 
       - name: Юнит-тесты
         run: npm test
+
+      # Каждое эталонное решение проходит тесты, каждый стартовый код компилируется и проваливается
+      - name: Контент курса
+        run: npm run content:check
 
       - name: Сборка
         run: npm run build
