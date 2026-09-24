@@ -161,3 +161,28 @@
 .tok-func {
   color: var(--code-func);
 }
+
+/* Конфетти за закрытый квест (components/game/confetti.tsx): вылет вверх и падение с затуханием */
+@keyframes confetti-burst {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--r));
+    opacity: 0;
+  }
+}
+
+.confetti-piece {
+  animation: confetti-burst 1100ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+}

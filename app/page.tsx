@@ -165,7 +165,9 @@ export default function Home() {
             <p className={`font-mono text-xs tracking-[0.2em] text-gold uppercase ${enter}`}>
               Java с нуля · подготовка к КТ
             </p>
-            <h1 className={`font-display text-4xl leading-tight font-semibold sm:text-5xl ${enter} delay-[40ms]`}>
+            {/* Заголовок — самый крупный элемент первого экрана (LCP): без анимации появления, иначе Chrome
+                не засчитывает его, пока длится переход от opacity 0 */}
+            <h1 className="font-display text-4xl leading-tight font-semibold sm:text-5xl">
               Java с нуля до сданной контрольной
             </h1>
             <p className={`text-lg text-muted ${enter} delay-[80ms]`}>
@@ -190,12 +192,16 @@ export default function Home() {
             <h2 id="how" className="font-display text-2xl font-semibold">
               Как устроен этап
             </h2>
-            <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Этапы идут по порядку, поэтому это линия времени, а не ряд одинаковых карточек */}
+            <ol className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
               {STEPS.map((step, i) => (
-                <li key={step.title} className="flex flex-col gap-2 rounded-lg border border-border bg-bg p-5">
+                <li
+                  key={step.title}
+                  className="relative flex flex-col gap-2 border-t border-border-strong pt-5 before:absolute before:-top-px before:left-0 before:h-0.5 before:w-10 before:bg-accent"
+                >
                   <span className="font-mono text-xs text-accent">0{i + 1}</span>
                   <h3 className="font-semibold">{step.title}</h3>
-                  <p className="text-sm text-muted">{step.text}</p>
+                  <p className="text-sm leading-relaxed text-muted">{step.text}</p>
                 </li>
               ))}
             </ol>
@@ -214,18 +220,19 @@ export default function Home() {
               Вся карта курса
             </ButtonLink>
           </div>
-          <ol className="mt-8 grid gap-3 sm:grid-cols-2">
+          <ol className="mt-8 divide-y divide-border border-y border-border">
             {course.map((quest) => (
-              <li key={quest.id} className="flex items-start gap-4 rounded-lg border border-border p-5">
-                <span className="text-2xl" aria-hidden="true">
-                  {quest.rank.icon}
-                </span>
-                <span className="min-w-0">
-                  <span className="block font-mono text-xs text-muted">
-                    {quest.num} · {plural(quest.stages.length, STAGES)}
-                  </span>
-                  <span className="mt-1 block font-semibold">{quest.title}</span>
+              <li key={quest.id} className="flex items-center gap-4 py-4">
+                <span className="w-8 shrink-0 font-mono text-xs text-muted">{quest.num}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold">{quest.title}</span>
                   <span className="block text-sm text-muted">{quest.subtitle}</span>
+                </span>
+                <span className="hidden shrink-0 text-sm text-muted sm:block">
+                  {plural(quest.stages.length, STAGES)}
+                </span>
+                <span className="shrink-0 text-xl" title={`Ранг за квест: ${quest.rank.title}`} aria-hidden="true">
+                  {quest.rank.icon}
                 </span>
               </li>
             ))}

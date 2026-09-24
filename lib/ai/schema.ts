@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { MENTOR_MESSAGE_MAX } from "./limits";
 
-export const MENTOR_MESSAGE_MAX = 2000;
+export { MENTOR_MESSAGE_MAX };
 
 /** Запрос к AI-ментору. Размеры ограничены: больше в промпт не нужно, а лишнее стоит денег. */
 export const mentorRequestSchema = z.object({

@@ -11,7 +11,11 @@ const components: Components = {
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   strong: ({ children }) => <strong className="font-semibold text-text">{children}</strong>,
   pre: ({ children }) => (
-    <pre className="my-4 overflow-x-auto rounded-md border border-border bg-code-bg p-4 font-mono text-[13px] leading-relaxed">
+    <pre
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: прокручиваемая область должна получать фокус (WCAG 2.1.1)
+      tabIndex={0}
+      className="my-4 overflow-x-auto rounded-md border border-border bg-code-bg p-4 font-mono text-[13px] leading-relaxed"
+    >
       {children}
     </pre>
   ),

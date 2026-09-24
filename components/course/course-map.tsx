@@ -33,7 +33,10 @@ export function CourseMap({ course }: { course: QuestOutline[] }) {
           return (
             <li
               key={quest.id}
-              className={cn("rounded-lg border border-border bg-surface p-4 sm:p-5", !open && "opacity-60")}
+              className={cn(
+                "rounded-lg border bg-surface p-4 sm:p-5",
+                open ? "border-border" : "border-dashed border-border-strong",
+              )}
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <div>
@@ -52,7 +55,10 @@ export function CourseMap({ course }: { course: QuestOutline[] }) {
                   )}
                 </div>
                 <span className="text-sm text-muted" title="Ранг за прохождение квеста">
-                  {quest.rank.icon} {quest.rank.title}
+                  <span className={cn(!open && "grayscale")} aria-hidden="true">
+                    {open ? quest.rank.icon : "🔒"}
+                  </span>{" "}
+                  {quest.rank.title}
                 </span>
               </div>
               <div className="mt-3 h-1 overflow-hidden rounded-full bg-card" aria-hidden="true">

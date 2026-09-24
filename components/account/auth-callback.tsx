@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ButtonLink } from "@/components/ui/button";
 import { safeNext } from "@/lib/account/actions";
-import { loadSupabase } from "@/lib/account/session";
+import { loadSupabase, startAccount } from "@/lib/account/session";
 
 const MESSAGES: Record<string, string> = {
   otp_expired: "Ссылка для входа устарела. Запроси новую.",
@@ -46,7 +46,8 @@ export function AuthCallback() {
           );
           return;
         }
-        router.replace(next);
+        // Сессия появилась только что: поднимаем подписку и синхронизацию прогресса
+        void startAccount({ force: true }).then(() => router.replace(next));
       })
       .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : String(e)));
     return () => {

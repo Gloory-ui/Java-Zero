@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Confetti } from "@/components/game/confetti";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, ButtonLink, buttonClasses } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -14,7 +15,7 @@ import type { DuelQuestion } from "@/lib/game/duel";
 import { checkFailed, runFinished, stagePassed } from "@/lib/game/events";
 import { EngineRestartedError, getEngine, useEngine } from "@/lib/java/engine";
 import { type Diagnostic, ioInputs, judge } from "@/lib/java/judge";
-import { isStagePassed, isStageUnlocked, nextStage } from "@/lib/progress/selectors";
+import { isQuestCompleted, isStagePassed, isStageUnlocked, nextStage } from "@/lib/progress/selectors";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
 import { SOLUTION_UNLOCK_ATTEMPTS, stageKey } from "@/lib/progress/types";
 import { CodeEditor, type CodeEditorHandle } from "./code-editor";
@@ -80,6 +81,8 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
   const [solutionOpen, setSolutionOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [editorVersion, setEditorVersion] = useState(0);
+  /** Этой сдачей закрыт весь квест: редкий момент, его отмечаем громче обычного */
+  const [questClosed, setQuestClosed] = useState(false);
 
   const saved = progress.stages[key];
   const passed = isStagePassed(progress, questId, stage.id);
@@ -166,6 +169,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
     store.saveCode(key, source);
     store.recordAttempt(key, source);
     setOutcome({ kind: "running", mode: "check", cold: useEngine.getState().status !== "ready" });
+    setQuestClosed(false);
     try {
       const { compile, runs } = await getEngine().check(quest.fileName, source, ioInputs(stage.tests));
       setDiagnostics(compile.diagnostics);
@@ -180,8 +184,10 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
       }
       const verdicts = judge(stage.tests, source, runs);
       const allPassed = verdicts.every((v) => v.passed);
-      if (allPassed) stagePassed(key, course);
-      else checkFailed(key);
+      if (allPassed) {
+        const firstPass = stagePassed(key, course);
+        setQuestClosed(firstPass && isQuestCompleted(useProgress.getState(), quest));
+      } else checkFailed(key);
       setOutcome({ kind: "checked", verdicts, passed: allPassed });
     } catch (error) {
       setOutcome({
@@ -192,7 +198,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
             : `Java-движок не ответил: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
-  }, [busy, course, key, quest.fileName, stage.tests]);
+  }, [busy, course, key, quest, stage.tests]);
 
   const runWithInput = useCallback(async () => {
     if (busy) return;
@@ -262,13 +268,21 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
   const continueTo = hydrated ? nextStage(progress, course) : null;
 
   const success = (
-    <div className="flex flex-col gap-3 rounded-lg border border-success/40 bg-success/10 p-4 starting:opacity-0 starting:motion-safe:translate-y-1 motion-safe:transition-[opacity,translate] motion-safe:duration-300 motion-safe:ease-snappy">
-      <p className="font-display text-base font-semibold text-success">Этап сдан</p>
+    <div className="relative flex flex-col gap-3 rounded-lg border border-success/40 bg-success/10 p-4 starting:opacity-0 starting:motion-safe:translate-y-1 motion-safe:transition-[opacity,translate] motion-safe:duration-300 motion-safe:ease-snappy">
+      {questClosed && <Confetti />}
+      <p className="font-display text-base font-semibold text-success">
+        {questClosed ? `Квест «${quest.title}» закрыт` : "Этап сдан"}
+      </p>
+      {questClosed && (
+        <p className="text-sm">
+          Ранг {quest.rank.icon} {quest.rank.title} твой. Он уже в профиле и на карте курса.
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         {next ? (
           <ButtonLink href={stageHref(questId, next.id)}>Следующий этап →</ButtonLink>
         ) : (
-          <ButtonLink href="/course">Квест пройден — к карте курса</ButtonLink>
+          <ButtonLink href="/course">Квест пройден: открыть карту курса</ButtonLink>
         )}
       </div>
       {stage.loopTracer && <LoopTracer rows={stage.loopTracer.rows} cols={stage.loopTracer.cols} />}
@@ -413,7 +427,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
             )}
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-surface px-3 py-2">
+          <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-border bg-surface px-3 py-2 [scrollbar-width:none] sm:flex-wrap">
             <Button onClick={runCheck} disabled={busy || !hydrated}>
               {busy && outcome.mode === "check" ? "Проверяю…" : "Проверить"}
             </Button>
