@@ -12,7 +12,7 @@ import {
 import { useProgress } from "@/lib/progress/store";
 import type { ProgressData } from "@/lib/progress/types";
 import type { Supabase } from "@/lib/supabase/client";
-import { accountsEnabled } from "@/lib/supabase/config";
+import { AUTH_STORAGE_KEY, accountsEnabled } from "@/lib/supabase/config";
 import { type AccountUser, useAccount } from "./store";
 
 const PUSH_DELAY_MS = 1500;
@@ -181,9 +181,24 @@ function applySession(session: Session | null) {
 
 let started = false;
 
-/** Запускается один раз на вкладку из AccountProvider. */
-export async function startAccount() {
+function hasStoredSession(): boolean {
+  try {
+    return localStorage.getItem(AUTH_STORAGE_KEY) !== null;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Запускается один раз на вкладку из AccountProvider. Гостю библиотека Supabase (~270 КБ) не нужна: без сохранённой
+ * сессии статус сразу «не вошёл», а клиент грузится только при входе (force из /auth/callback).
+ */
+export async function startAccount({ force = false }: { force?: boolean } = {}) {
   if (started || !accountsEnabled) return;
+  if (!force && !hasStoredSession()) {
+    useAccount.setState({ status: "signed-out" });
+    return;
+  }
   started = true;
   try {
     const supabase = await loadSupabase();

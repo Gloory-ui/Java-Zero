@@ -7,3 +7,6 @@ const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT
 export const supabaseConfig = url && key ? { url, key } : null;
 
 export const accountsEnabled = supabaseConfig !== null;
+
+/** Ключ localStorage, где supabase-js хранит сессию */
+export const AUTH_STORAGE_KEY = "java-zero-auth";

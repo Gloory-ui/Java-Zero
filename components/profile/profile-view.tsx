@@ -145,14 +145,13 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
                 className={cn(
                   "flex items-center gap-3 rounded-md border px-3 py-2",
                   current ? "border-border-strong bg-card" : "border-transparent",
-                  !reached && "opacity-50",
                 )}
               >
-                <span className="text-xl" aria-hidden="true">
+                <span className={cn("text-xl", !reached && "opacity-40 grayscale")} aria-hidden="true">
                   {r.icon}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-mono text-sm">{r.title}</span>
+                  <span className={cn("block font-mono text-sm", !reached && "text-muted")}>{r.title}</span>
                   <span className="block text-xs text-muted">{condition}</span>
                 </span>
                 {current ? (
@@ -175,14 +174,14 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
                 key={a.id}
                 className={cn(
                   "flex items-start gap-3 rounded-lg border p-4",
-                  at ? "border-gold/50 bg-surface" : "border-border opacity-60",
+                  at ? "border-gold/50 bg-surface" : "border-dashed border-border-strong",
                 )}
               >
-                <span className={cn("text-2xl", !at && "grayscale")} aria-hidden="true">
+                <span className={cn("text-2xl", !at && "opacity-40 grayscale")} aria-hidden="true">
                   {a.icon}
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-semibold">{a.title}</span>
+                  <span className={cn("block font-semibold", !at && "text-muted")}>{a.title}</span>
                   <span className="block text-sm text-muted">{a.desc}</span>
                   <span className="mt-1 block text-xs text-muted">
                     {at ? `Открыта ${dateFormat.format(at)}` : "Ещё не открыта"}

@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { supabaseConfig } from "./config";
+import { AUTH_STORAGE_KEY, supabaseConfig } from "./config";
 import type { Database } from "./database";
 
 export type Supabase = SupabaseClient<Database>;
@@ -20,7 +20,7 @@ export function getSupabase(): Supabase | null {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: false,
-      storageKey: "java-zero-auth",
+      storageKey: AUTH_STORAGE_KEY,
     },
   });
   return client;

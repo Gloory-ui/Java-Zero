@@ -27,9 +27,12 @@ export function JavaCode({ code, className }: { code: string; className?: string
   );
 }
 
+// tabIndex: длинную строку на телефоне можно прокрутить и с клавиатуры
 export function CodeBlock({ code, className }: { code: string; className?: string }) {
   return (
     <pre
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: прокручиваемая область должна получать фокус (WCAG 2.1.1)
+      tabIndex={0}
       className={cn(
         "overflow-x-auto rounded-md border border-border bg-code-bg p-4 text-[13px] leading-relaxed",
         className,

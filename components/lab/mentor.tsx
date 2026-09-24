@@ -5,8 +5,9 @@ import { type FormEvent, type KeyboardEvent, useCallback, useEffect, useRef, use
 import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import { askMentor, MentorError, useMentor } from "@/lib/ai/client";
+import { MENTOR_MESSAGE_MAX } from "@/lib/ai/limits";
 import { PERSONA_INFO } from "@/lib/ai/personas";
-import { MENTOR_MESSAGE_MAX, type MentorRequestInput } from "@/lib/ai/schema";
+import type { MentorRequestInput } from "@/lib/ai/schema";
 import { cn } from "@/lib/cn";
 import { useProgress } from "@/lib/progress/store";
 import type { Persona } from "@/lib/progress/types";

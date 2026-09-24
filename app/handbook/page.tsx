@@ -118,7 +118,12 @@ export default function HandbookPage() {
         </Section>
 
         <Section id="types" title="Примитивные типы и String">
-          <div className="overflow-x-auto rounded-md border border-border">
+          <section
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: прокручиваемая таблица должна получать фокус (WCAG 2.1.1)
+            tabIndex={0}
+            aria-label="Таблица типов данных"
+            className="overflow-x-auto rounded-md border border-border"
+          >
             <table className="w-full text-left text-sm">
               <thead className="bg-card text-muted">
                 <tr>
@@ -149,7 +154,7 @@ export default function HandbookPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         </Section>
 
         <Section id="division" title="Деление и остаток">
