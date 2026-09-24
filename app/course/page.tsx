@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AccountMenu } from "@/components/account/account-menu";
 import { CourseMap } from "@/components/course/course-map";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getCourse } from "@/lib/content/load";
@@ -17,7 +18,10 @@ export default function CoursePage() {
         <Link href="/" className="font-display text-base font-semibold">
           Java-Zero
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <AccountMenu />
+        </div>
       </header>
       <main className="flex flex-col gap-6">
         <h1 className="font-display text-3xl font-semibold">Карта курса</h1>
