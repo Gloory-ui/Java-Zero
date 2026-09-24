@@ -1,0 +1,70 @@
+id: guess-number
+badge: КТ 1 // ЗАДАНИЕ 05
+title: Игра «Угадай число» с лимитом попыток
+hint: while (attempts < maxAttempts) { attempts++; int guess = sc.nextInt(); if (guess == target) { System.out.println("Угадал!"); break; } else if (guess < target) System.out.println("больше"); else System.out.println("меньше"); }
+sampleInput: |
+  10
+  90
+  42
+quiz:
+  question: Что выводит программа, если пользователь ввел 20, а загадано 50?
+  options:
+    - меньше
+    - больше
+    - ошибка
+    - выход
+  correct: 1
+  hint: "Загаданное число 50 больше введенного 20, поэтому подсказка: «больше»."
+exam:
+  - q: Какой цикл лучше всего подходит для игры 'Угадай число' с ограничением попыток?
+    options:
+      - Только бесконечный цикл без условий
+      - while (attempts < maxAttempts) или for (int i = 1; i <= maxAttempts; i++) с прерыванием break при победе
+      - Рекурсия без базового случая
+      - Оператор switch
+    correct: 1
+    explain: Цикл while или for с ограничением по счетчику гарантирует, что программа завершится, даже если пользователь не угадал число.
+    advice: Объясни преподавателю условие остановки цикла.
+memory:
+  stack:
+    - method: main()
+      vars:
+        - int target = 42
+        - int attempts = 5
+        - guess < target -> больше
+  heap:
+    - obj: Scanner
+      data: Interactive console stream
+tests:
+  - name: Подсказки и победа с третьей попытки
+    stdin: |
+      10
+      90
+      42
+    stdout: |
+      больше
+      меньше
+      Угадал!
+  - name: Угадывает с первой попытки
+    stdin: |
+      42
+    stdout: |
+      Угадал!
+  - name: Останавливается после пяти попыток
+    stdin: |
+      1
+      1
+      1
+      1
+      1
+      1
+    stdout: |
+      больше
+      больше
+      больше
+      больше
+      больше
+  - kind: source
+    name: Ввод через Scanner
+    pattern: new\s+Scanner\s*\(\s*System\.in\s*\)
+    message: Создай Scanner sc = new Scanner(System.in)

@@ -1,0 +1,45 @@
+id: nested-loops
+badge: ПОДГОТОВКА 04 / 06
+title: "Вложенные циклы: сетки и таблицы"
+hint: for (int i = 1; i <= 3; i++) { for (int j = 1; j <= 3; j++) { System.out.print((i * j) + "\t"); } System.out.println(); }
+quiz:
+  question: Какой спецсимвол добавляет табуляцию (отступ колонки)?
+  options:
+    - \n
+    - \t
+    - \r
+    - \b
+  correct: 1
+  hint: \t означает Tab (табуляция).
+exam:
+  - q: Сколько всего раз выполнится тело внутреннего цикла for (int j = 1; j <= 10; j++), если внешний цикл делает 10 шагов?
+    options:
+      - 20 раз
+      - 100 раз (10 * 10)
+      - 10 раз
+      - 50 раз
+    correct: 1
+    explain: На каждый 1 шаг внешнего цикла внутренний делает 10 шагов. 10 * 10 = 100 итераций.
+    advice: "Сложность вложенных циклов перемножается: O(N * M)."
+memory:
+  stack:
+    - method: main()
+      vars:
+        - row i = 1..3
+        - col j = 1..3
+  heap:
+    - obj: Console Grid
+      data: 1\t2\t3\n2\t4\t6\n3\t6\t9
+loopTracer:
+  rows: 3
+  cols: 3
+tests:
+  - name: Печатает таблицу 3×3 через табуляцию
+    stdout: |
+      1	2	3	
+      2	4	6	
+      3	6	9	
+  - kind: source
+    name: Два вложенных цикла for
+    pattern: \bfor\s*\([^)]*\)[\s\S]*\bfor\s*\(
+    message: Внутри внешнего for нужен второй for

@@ -1,0 +1,11 @@
+id: loops_prep
+num: "01"
+title: Подготовка к КТ 1
+subtitle: Циклы for/while, break, флаги
+fileName: LoopsPrep.java
+order: 2
+unlockAfter: basics
+rank:
+  title: ОПЕРАТОР ЦИКЛА
+  icon: 🌀
+  color: "#38bdf8"

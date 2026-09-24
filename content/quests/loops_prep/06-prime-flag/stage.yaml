@@ -1,0 +1,44 @@
+id: prime-flag
+badge: ПОДГОТОВКА 06 / 06
+title: Флаги и алгоритм простого числа
+hint: for (int j = 2; j < n; j++) { if (n % j == 0) { isPrime = false; break; } } if (isPrime) System.out.println("Простое");
+quiz:
+  question: Является ли число 2 простым?
+  options:
+    - Да, это единственное четное простое число
+    - Нет, все четные числа составные
+    - Зависит от JVM
+    - Только в дробных типах
+  correct: 0
+  hint: 2 делится только на 1 и на 2, значит оно простое.
+exam:
+  - q: Почему число 1 не считается простым числом?
+    options:
+      - Потому что 1 — четное число
+      - По математическому определению у простого числа должно быть ровно ДВА различных натуральных делителя (1 и само число)
+      - Это ограничение языка Java
+      - Потому что 1 делится на 0
+    correct: 1
+    explain: У единицы только 1 делитель. У простых чисел ровно 2 различных делителя.
+    advice: "Запомни: простые числа начинаются строго с двойки (2, 3, 5...)."
+memory:
+  stack:
+    - method: isPrime(7)
+      vars:
+        - boolean isPrime = true
+        - divider = 2..6
+  heap:
+    - obj: Boolean flag
+      data: "true"
+tests:
+  - name: Для n = 7 выводит «Простое»
+    stdout: |
+      Простое
+  - kind: source
+    name: Флаг boolean isPrime
+    pattern: \bboolean\s+isPrime\b
+    message: "Заведи флаг: boolean isPrime = true;"
+  - kind: source
+    name: Выход из цикла через break
+    pattern: \bbreak\s*;
+    message: Останови цикл оператором break
