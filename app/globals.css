@@ -23,6 +23,15 @@
   --success: #10b981;
   --danger: #ef4444;
   --code-bg: #0a0c11;
+  /* Подсветка Java: все цвета ≥ 4.5:1 на --code-bg, включая номера строк — по ним сверяют ошибки */
+  --code-text: #e6e9ee;
+  --code-keyword: #ff7a93;
+  --code-type: #7cc4ff;
+  --code-string: #7ee2a8;
+  --code-number: #f5b042;
+  --code-comment: #7d8799;
+  --code-func: #d7b4ff;
+  --code-lineno: #7d8799;
 }
 
 [data-theme="light"] {
@@ -44,6 +53,14 @@
   --success: #047857;
   --danger: #dc2626;
   --code-bg: #ffffff;
+  --code-text: #1f2533;
+  --code-keyword: #c2185b;
+  --code-type: #0b62a8;
+  --code-string: #1b7a3e;
+  --code-number: #a14d00;
+  --code-comment: #687385;
+  --code-func: #7a3fb8;
+  --code-lineno: #687385;
 }
 
 @theme inline {
@@ -63,6 +80,8 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-code-bg: var(--code-bg);
+  --color-code-text: var(--code-text);
+  --color-code-comment: var(--code-comment);
 
   /* Шрифты подключает next/font в app/layout.tsx; все три с кириллицей */
   --font-display: var(--font-unbounded), var(--font-onest), system-ui, sans-serif;
