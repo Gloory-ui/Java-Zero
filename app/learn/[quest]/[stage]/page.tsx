@@ -4,6 +4,7 @@ import { Lab } from "@/components/lab/lab";
 import { Markdown } from "@/components/markdown";
 import { findStage, getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
+import { duelQuestions } from "@/lib/game/duel";
 
 export const dynamicParams = false;
 
@@ -44,6 +45,10 @@ export default async function StagePage({ params }: PageProps<"/learn/[quest]/[s
         tests: stage.tests,
         starter: stage.starter,
         solution: stage.solution,
+        duel: duelQuestions(
+          quest.stages.map((s) => s.exam),
+          stage.index,
+        ),
       }}
       theory={
         <article>

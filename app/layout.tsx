@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Onest, Unbounded } from "next/font/google";
+import { Toaster } from "@/components/game/toaster";
 import "./globals.css";
 
 const display = Unbounded({ subsets: ["latin", "cyrillic"], variable: "--font-unbounded", display: "swap" });
@@ -37,7 +38,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: статичная строка без пользовательских данных */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }
