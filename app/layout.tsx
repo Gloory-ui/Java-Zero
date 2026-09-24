@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Onest, Unbounded } from "next/font/google";
+import { AccountProvider } from "@/components/account/account-provider";
 import { Toaster } from "@/components/game/toaster";
 import "./globals.css";
 
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         {children}
         <Toaster />
+        <AccountProvider />
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import Link from "next/link";
 import { cn } from "@/lib/cn";
 import type { QuestOutline } from "@/lib/content/outline";
 import { userRank } from "@/lib/game/ranks";
@@ -17,8 +18,9 @@ export function LabStatus({ course }: { course: QuestOutline[] }) {
 
   return (
     <div className={cn("flex items-center gap-1", !hydrated && "invisible")}>
-      <span
-        className="inline-flex h-8 items-center gap-1 rounded-full border border-border px-2.5 font-mono text-xs"
+      <Link
+        href="/profile"
+        className="inline-flex h-8 items-center gap-1 rounded-full border border-border px-2.5 font-mono text-xs transition-colors duration-150 ease-snappy hover:border-border-strong"
         title={`Серия: ${streak} ${streak === 1 ? "этап" : "этапов"} подряд без проваленных проверок. Ранг: ${rank.title}`}
       >
         <span aria-hidden="true">{rank.icon}</span>
@@ -39,7 +41,7 @@ export function LabStatus({ course }: { course: QuestOutline[] }) {
             </motion.span>
           </AnimatePresence>
         </span>
-      </span>
+      </Link>
       <button
         type="button"
         onClick={() => useProgress.getState().setSound(!soundOn)}
