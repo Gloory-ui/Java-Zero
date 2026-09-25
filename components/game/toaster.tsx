@@ -29,6 +29,7 @@ export function Toaster() {
 
 function kicker(toast: Toast): string {
   if (toast.tone === "daily") return "Квест дня";
+  if (toast.tone === "level") return "Новый уровень";
   if (toast.tone === "egg") return toast.rarity ? "Тайный знак найден" : "Пасхалка";
   return toast.rarity ? `Достижение · ${RARITY_LABEL[toast.rarity]}` : "Достижение";
 }
@@ -36,7 +37,11 @@ function kicker(toast: Toast): string {
 function ToastCard({ toast }: { toast: Toast }) {
   const dismiss = useToasts((s) => s.dismiss);
   const reduceMotion = useReducedMotion();
-  const color = toast.rarity ? RARITY_COLOR[toast.rarity] : toast.tone === "daily" ? "var(--success)" : "var(--accent)";
+  const color = toast.rarity
+    ? RARITY_COLOR[toast.rarity]
+    : toast.tone === "daily"
+      ? "var(--success)"
+      : "var(--neon-user)";
 
   useEffect(() => {
     const id = setTimeout(() => dismiss(toast.id), SHOW_MS);

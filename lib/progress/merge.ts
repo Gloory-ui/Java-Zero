@@ -1,5 +1,6 @@
 import { achievementXp } from "@/lib/game/achievements";
-import { passedStageXp } from "@/lib/game/xp";
+import { activeDays, streakInfo } from "@/lib/game/streak";
+import { levelInfo, passedStageXp, totalXp } from "@/lib/game/xp";
 import type { AchievementRow, DailyQuestRow, ProfileRow, StageProgressRow } from "@/lib/supabase/database";
 import {
   EMPTY_PROGRESS,
@@ -167,7 +168,22 @@ export function dailyToRow(userId: string, key: string, done: { at: number; xp: 
   return { user_id: userId, day, quest_id: questId, xp: done.xp, completed_at: new Date(done.at).toISOString() };
 }
 
-export type ProfilePatch = Pick<ProfileRow, "id" | "persona" | "streak" | "stats" | "sound" | "last_stage">;
+type Summary = Pick<ProfileRow, "xp_total" | "level" | "stages_passed" | "streak_days" | "best_streak">;
+
+/** Сводка для публичной страницы и таблицы лидеров: считается из прогресса при каждой синхронизации */
+export function progressSummary(p: ProgressData): Summary {
+  const xp = totalXp(p);
+  const streak = streakInfo(activeDays(p));
+  return {
+    xp_total: xp,
+    level: levelInfo(xp).level,
+    stages_passed: Object.values(p.stages).filter((s) => s.passedAt).length,
+    streak_days: streak.current,
+    best_streak: streak.best,
+  };
+}
+
+export type ProfilePatch = Pick<ProfileRow, "id" | "persona" | "streak" | "stats" | "sound" | "last_stage"> & Summary;
 
 export function profilePatch(userId: string, p: ProgressData): ProfilePatch {
   return {
@@ -177,6 +193,7 @@ export function profilePatch(userId: string, p: ProgressData): ProfilePatch {
     stats: p.stats,
     sound: p.sound,
     last_stage: p.lastStage ?? null,
+    ...progressSummary(p),
   };
 }
 
@@ -189,6 +206,7 @@ export function diffProgress(prev: ProgressData | null, next: ProgressData) {
   const dailyKeys = Object.keys(next.dailyDone).filter((key) => !prev?.dailyDone[key]);
   const profileChanged =
     !prev ||
+    JSON.stringify(progressSummary(prev)) !== JSON.stringify(progressSummary(next)) ||
     prev.cleanRun !== next.cleanRun ||
     prev.stats !== next.stats ||
     prev.persona !== next.persona ||

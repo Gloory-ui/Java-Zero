@@ -5,6 +5,7 @@ import { GameBootstrap } from "@/components/game/game-bootstrap";
 import { Toaster } from "@/components/game/toaster";
 import { getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
+import { ACCENTS, DEFAULT_LOOK } from "@/lib/profile/cosmetics";
 import { SITE_INDEXED, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -29,8 +30,12 @@ export const viewport: Viewport = {
   ],
 };
 
-// Тема ставится до первой отрисовки, иначе светлая тема мигает тёмной. Ключ тот же, что у сайта до v1.0
-const themeScript = `try{document.documentElement.dataset.theme=localStorage.getItem("java_zero_theme")==="light"?"light":"dark"}catch(e){}`;
+// Тема ставится до первой отрисовки, иначе светлая тема мигает тёмной. Ключ тот же, что у сайта до v1.0.
+// Там же — цвет неона из профиля: иначе уровень и ранг на мгновение мелькают фирменным красным
+const accentColors = JSON.stringify(
+  Object.fromEntries(ACCENTS.filter((a) => a.id !== DEFAULT_LOOK.accent).map((a) => [a.id, a.color])),
+);
+const themeScript = `try{var d=document.documentElement;d.dataset.theme=localStorage.getItem("java_zero_theme")==="light"?"light":"dark";var p=JSON.parse(localStorage.getItem("java-zero-profile")||"{}"),c=${accentColors}[p.state&&p.state.accent];if(c)d.style.setProperty("--neon-user",c)}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

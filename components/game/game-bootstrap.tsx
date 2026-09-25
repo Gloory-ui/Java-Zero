@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { NeonSync } from "@/components/profile/use-look";
 import type { QuestOutline } from "@/lib/content/outline";
 import { bootstrapGame, registerCourse } from "@/lib/game/events";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
@@ -21,5 +22,10 @@ export function GameBootstrap({ course }: { course: QuestOutline[] }) {
     if (hydrated) bootstrapGame();
   }, [hydrated, owner]);
 
-  return <Celebration />;
+  return (
+    <>
+      <Celebration />
+      <NeonSync />
+    </>
+  );
 }

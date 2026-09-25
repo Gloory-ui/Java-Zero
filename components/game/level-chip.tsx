@@ -62,7 +62,7 @@ export function LevelChip({ className, compact = false }: { className?: string; 
       )}
       title={`${rank.title} · уровень ${level.level}: ${level.into} из ${level.need} XP. Серия: ${plural(streak.current, DAYS)}`}
     >
-      <span className="relative grid size-7 place-items-center" style={{ color: rank.color }}>
+      <span className="relative grid size-7 place-items-center text-neon-ink">
         <svg viewBox="0 0 28 28" className="absolute inset-0 -rotate-90" aria-hidden="true">
           <circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="2.5" />
           <circle

@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/course`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE_URL}/handbook`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/achievements`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${SITE_URL}/leaderboard`, changeFrequency: "daily", priority: 0.5 },
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
   ];
   const stages: MetadataRoute.Sitemap = getCourse().flatMap((quest) =>

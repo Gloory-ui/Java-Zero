@@ -83,8 +83,14 @@ describe("слияние локального и облачного прогре
       removedStageKeys: ["basics/remainder"],
       achievementIds: ["zero_shield"],
       dailyKeys: [],
-      profileChanged: false,
+      // Новое достижение меняет опыт в сводке публичного профиля
+      profileChanged: true,
     });
+    const codeOnly: ProgressData = {
+      ...local,
+      stages: { ...local.stages, "basics/remainder": { ...local.stages["basics/remainder"], code: "x" } },
+    };
+    expect(diffProgress(local, codeOnly).profileChanged).toBe(false);
     expect(diffProgress(local, { ...local, cleanRun: 0 }).profileChanged).toBe(true);
   });
 

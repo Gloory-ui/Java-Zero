@@ -12,7 +12,7 @@ import { CHEST_ID, dailyContext, findDaily, newlyCompleted, pickDaily } from "./
 import { localDay } from "./day";
 import type { Verdict } from "./duel";
 import { type Rank, rankForLevel } from "./ranks";
-import { isKtKey, levelInfo, stageXpParts, totalXp, type XpPart } from "./xp";
+import { isKtKey, levelInfo, MAX_LEVEL, stageXpParts, totalXp, type XpPart } from "./xp";
 
 // ——— Отклик: карточки, «+XP», праздничные экраны ———
 
@@ -21,7 +21,7 @@ export type Toast = {
   icon: IconName;
   title: string;
   desc: string;
-  tone: "achievement" | "daily" | "egg";
+  tone: "achievement" | "daily" | "egg" | "level";
   rarity?: Rarity;
   xp?: number;
 };
@@ -117,10 +117,19 @@ function settle(xpBefore: number, event?: GameEvent, silent = false) {
   useXpGain.setState({ gain: { id: nextId++, xp: xpAfter - xpBefore } });
   const before = levelInfo(xpBefore).level;
   const after = levelInfo(xpAfter).level;
-  if (after > before) {
-    const rank = rankForLevel(after);
-    useCelebration.setState({
-      current: { kind: "level", level: after, ...(rank.title !== rankForLevel(before).title ? { rank } : {}) },
+  if (after <= before) return;
+  // Уровни растут часто: обычный — короткая карточка, новый ранг и каждая сотня — праздничный экран
+  const rank = rankForLevel(after);
+  const newRank = rank.title !== rankForLevel(before).title;
+  const milestone = Math.floor(after / 100) > Math.floor(before / 100) || after === MAX_LEVEL;
+  if (newRank || milestone) {
+    useCelebration.setState({ current: { kind: "level", level: after, ...(newRank ? { rank } : {}) } });
+  } else {
+    useToasts.getState().push({
+      icon: rank.icon,
+      title: `Уровень ${after}`,
+      desc: `${rank.title}. До следующего ранга — меньше, чем кажется.`,
+      tone: "level",
     });
   }
 }

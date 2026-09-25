@@ -36,7 +36,6 @@ export function Celebration() {
   const level = current?.level ?? 1;
   const rank = current?.kind === "level" && current.rank ? current.rank : rankForLevel(level);
   const newRank = current?.kind === "level" && current.rank !== undefined;
-  const neon = { "--neon": rank.color } as React.CSSProperties;
 
   return (
     <dialog
@@ -50,12 +49,11 @@ export function Celebration() {
           <Confetti />
           <motion.div
             className="neon-ring rounded-3xl p-[3px]"
-            style={neon}
             initial={reduceMotion ? { opacity: 0 } : { scale: 0.6, rotate: -12, opacity: 0 }}
             animate={{ scale: 1, rotate: 0, opacity: 1 }}
             transition={reduceMotion ? { duration: 0.2 } : { type: "spring", damping: 14, stiffness: 180 }}
           >
-            <div className="grid size-24 place-items-center rounded-[21px] bg-card" style={{ color: rank.color }}>
+            <div className="grid size-24 place-items-center rounded-[21px] bg-card text-neon-ink">
               <Icon name={rank.icon} className="size-12" strokeWidth={1.5} />
             </div>
           </motion.div>
@@ -84,11 +82,7 @@ export function Celebration() {
               >
                 Уровень <CountUp value={level} duration={0.8} />
               </h2>
-              {newRank && (
-                <p className="font-display text-lg font-semibold" style={{ color: rank.color }}>
-                  {rank.title}
-                </p>
-              )}
+              {newRank && <p className="font-display text-lg font-semibold text-neon-ink">{rank.title}</p>}
             </>
           )}
 

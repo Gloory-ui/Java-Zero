@@ -10,6 +10,8 @@ const PAGES = [
   "/privacy",
   "/learn/basics/program-structure",
   "/achievements",
+  "/leaderboard",
+  "/u/nobody_here",
   "/no-such-page",
 ];
 
