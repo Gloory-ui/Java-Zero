@@ -6,6 +6,7 @@ import {
   mergeProgress,
   mergeStage,
   progressFromRows,
+  progressOnSignIn,
   stageToRow,
 } from "@/lib/progress/merge";
 import { EMPTY_PROGRESS, type ProgressData } from "@/lib/progress/types";
@@ -90,6 +91,24 @@ describe("слияние локального и облачного прогре
     expect(isSyncableKey("kt1/guess-number")).toBe(true);
     expect(isSyncableKey("../x")).toBe(false);
     expect(isSyncableKey("Basics/Upper")).toBe(false);
+  });
+});
+
+describe("чей прогресс в браузере при входе", () => {
+  it("гостевой прогресс сливается с аккаунтом", () => {
+    const merged = progressOnSignIn(local, null, remote, "user-a");
+    expect(Object.keys(merged.stages)).toContain("basics/remainder");
+    expect(Object.keys(merged.stages)).toContain("kt1/guess-number");
+  });
+
+  it("прогресс этого же аккаунта тоже сливается: изменения, сделанные без сети, не теряются", () => {
+    expect(progressOnSignIn(local, "user-a", remote, "user-a").streak).toBe(4);
+    expect(Object.keys(progressOnSignIn(local, "user-a", remote, "user-a").stages)).toHaveLength(3);
+  });
+
+  it("прогресс другого аккаунта не подмешивается: новый аккаунт получает только своё", () => {
+    expect(progressOnSignIn(local, "user-a", remote, "user-b")).toBe(remote);
+    expect(progressOnSignIn(local, "user-a", EMPTY_PROGRESS, "user-b")).toBe(EMPTY_PROGRESS);
   });
 });
 

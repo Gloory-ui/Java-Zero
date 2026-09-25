@@ -4,9 +4,9 @@ import type { Session, User } from "@supabase/supabase-js";
 import {
   diffProgress,
   isSyncableKey,
-  mergeProgress,
   profilePatch,
   progressFromRows,
+  progressOnSignIn,
   stageToRow,
 } from "@/lib/progress/merge";
 import { useProgress } from "@/lib/progress/store";
@@ -173,8 +173,10 @@ async function startSync(uid: string) {
     if (userId !== uid) return;
 
     const remote = progressFromRows(profile.data, stages.data ?? [], achievements.data ?? []);
-    const merged = mergeProgress(snapshot(), remote);
-    useProgress.getState().replace(merged);
+    const store = useProgress.getState();
+    const merged = progressOnSignIn(snapshot(), store.owner, remote, uid);
+    store.replace(merged);
+    store.setOwner(uid);
     await upload(supabase, uid, remote, merged, true);
     if (userId !== uid) return;
 
@@ -195,10 +197,20 @@ async function startSync(uid: string) {
   }
 }
 
+/**
+ * Сессии нет: если в браузере лежит прогресс аккаунта, убираем его — он сохранён в облаке, а следующий человек
+ * (или другой аккаунт) должен начать с чистого листа. Гостевой прогресс не трогаем.
+ */
+async function dropAccountProgress() {
+  await ensureHydrated();
+  if (useProgress.getState().owner) useProgress.getState().clearAfterSignOut();
+}
+
 function applySession(session: Session | null) {
   if (!session) {
     stopSync();
     useAccount.setState({ status: "signed-out", user: null, sync: "idle", error: undefined });
+    void dropAccountProgress();
     return;
   }
   const user = toUser(session.user);
@@ -228,6 +240,7 @@ export async function startAccount({ force = false }: { force?: boolean } = {}) 
   if (started || !accountsEnabled) return;
   if (!force && !hasStoredSession()) {
     useAccount.setState({ status: "signed-out" });
+    void dropAccountProgress();
     return;
   }
   started = true;

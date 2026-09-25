@@ -55,6 +55,19 @@ export function mergeProgress(local: ProgressData, remote: ProgressData): Progre
   };
 }
 
+/**
+ * Прогресс в браузере при входе в аккаунт uid. Гостевой (owner = null) или этого же аккаунта — сливается с облаком.
+ * Прогресс другого аккаунта не подмешивается: иначе все аккаунты в одном браузере получали бы один и тот же прогресс.
+ */
+export function progressOnSignIn(
+  local: ProgressData,
+  localOwner: string | null,
+  remote: ProgressData,
+  uid: string,
+): ProgressData {
+  return localOwner !== null && localOwner !== uid ? remote : mergeProgress(local, remote);
+}
+
 const time = (iso: string | null) => (iso ? Date.parse(iso) : undefined);
 const iso = (ms: number | undefined) => (ms === undefined ? null : new Date(ms).toISOString());
 

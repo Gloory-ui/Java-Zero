@@ -13,6 +13,14 @@ import {
   type StageProgress,
 } from "./types";
 
+type Ownership = {
+  /**
+   * Чей прогресс лежит в браузере: id аккаунта или null, если это прогресс гостя.
+   * Без этой отметки прогресс вышедшего аккаунта считался гостевым и копировался в следующий аккаунт.
+   */
+  owner: string | null;
+};
+
 type Actions = {
   openStage: (key: string) => void;
   saveCode: (key: string, code: string) => void;
@@ -31,6 +39,9 @@ type Actions = {
   setPersona: (persona: Persona) => void;
   setSound: (on: boolean) => void;
   replace: (data: ProgressData) => void;
+  setOwner: (owner: string | null) => void;
+  /** Выход из аккаунта: прогресс аккаунта остаётся в облаке, браузер снова «чистый гость». Звук — настройка устройства */
+  clearAfterSignOut: () => void;
   resetQuest: (questId: string) => void;
 };
 
@@ -72,10 +83,11 @@ const storage: StateStorage = {
   },
 };
 
-export const useProgress = create<ProgressData & Actions>()(
+export const useProgress = create<ProgressData & Ownership & Actions>()(
   persist(
     (set, get) => ({
       ...EMPTY_PROGRESS,
+      owner: null,
 
       openStage: (key) =>
         set((s) => ({
@@ -129,7 +141,19 @@ export const useProgress = create<ProgressData & Actions>()(
 
       setPersona: (persona) => set({ persona }),
       setSound: (sound) => set({ sound }),
-      replace: (data) => set(data),
+      // lastStage задаём явно: set сливает объекты, и без этого остался бы этап предыдущего аккаунта
+      replace: (data) => set({ ...data, lastStage: data.lastStage }),
+      setOwner: (owner) => set({ owner }),
+      clearAfterSignOut: () =>
+        set((s) => ({
+          stages: {},
+          streak: 0,
+          achievements: {},
+          persona: EMPTY_PROGRESS.persona,
+          sound: s.sound,
+          lastStage: undefined,
+          owner: null,
+        })),
 
       resetQuest: (questId) =>
         set((s) => ({
@@ -142,13 +166,14 @@ export const useProgress = create<ProgressData & Actions>()(
       storage: createJSONStorage(() => storage),
       // Прогресс живёт в браузере: подтягиваем его после монтирования, иначе HTML сервера и клиента разойдутся
       skipHydration: true,
-      partialize: ({ stages, streak, achievements, persona, sound, lastStage }) => ({
+      partialize: ({ stages, streak, achievements, persona, sound, lastStage, owner }) => ({
         stages,
         streak,
         achievements,
         persona,
         sound,
         lastStage,
+        owner,
       }),
     },
   ),
