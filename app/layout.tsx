@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Onest, Unbounded } from "next/font/google";
 import { AccountProvider } from "@/components/account/account-provider";
+import { GameBootstrap } from "@/components/game/game-bootstrap";
 import { Toaster } from "@/components/game/toaster";
+import { getCourse } from "@/lib/content/load";
+import { toOutline } from "@/lib/content/outline";
 import { SITE_INDEXED, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -44,6 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         {children}
         <Toaster />
+        <GameBootstrap course={toOutline(getCourse())} />
         <AccountProvider />
       </body>
     </html>

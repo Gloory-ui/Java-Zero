@@ -90,5 +90,6 @@ test("настоящая Java: ошибка компиляции, затем с�
 
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("java-zero-progress") ?? "{}"));
   expect(saved.state.stages["basics/program-structure"].passedAt).toBeGreaterThan(0);
-  expect(saved.state.streak).toBe(1);
+  expect(saved.state.cleanRun).toBe(1);
+  expect(saved.state.stages["basics/program-structure"].xp).toBe(50);
 });

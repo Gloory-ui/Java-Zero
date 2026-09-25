@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import { explainCompileError, explainRuntimeError, runtimeErrorLine } from "@/lib/java/explain";
 import type { CompileResult, Diagnostic, RunResult, RunStatus, TestVerdict } from "@/lib/java/judge";
@@ -133,8 +134,8 @@ function Verdicts({ verdicts }: { verdicts: TestVerdict[] }) {
         {verdicts.map((v) => (
           <li key={v.name} className="rounded-md border border-border bg-card px-3 py-2">
             <div className="flex items-baseline gap-2 text-sm">
-              <span aria-hidden="true" className={v.passed ? "text-success" : "text-danger"}>
-                {v.passed ? "✓" : "✗"}
+              <span className={cn("self-center", v.passed ? "text-success" : "text-danger")}>
+                <Icon name={v.passed ? "check" : "x"} className="size-4" strokeWidth={2.5} />
               </span>
               <span className={v.passed ? "text-muted" : "font-medium"}>{v.name}</span>
               <span className="sr-only">{v.passed ? "пройден" : "не пройден"}</span>

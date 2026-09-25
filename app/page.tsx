@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteFooter, SiteHeader } from "@/components/site/site-header";
 import { StartButton } from "@/components/site/start-button";
 import { ButtonLink } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
 import { plural, QUESTS, STAGES } from "@/lib/plural";
@@ -103,9 +104,7 @@ function LabPreview() {
             className="flex items-center gap-2 starting:opacity-0 transition-opacity duration-300 ease-snappy"
             style={{ transitionDelay: `${500 + i * 250}ms` }}
           >
-            <span className="text-success" aria-hidden="true">
-              ✓
-            </span>
+            <Icon name="check" className="size-4 text-success" />
             {test}
           </span>
         ))}
@@ -113,7 +112,7 @@ function LabPreview() {
           className="mt-1 font-mono text-xs tracking-widest text-success uppercase starting:opacity-0 transition-opacity duration-300"
           style={{ transitionDelay: "1300ms" }}
         >
-          Этап сдан · серия 🔥 3
+          Этап сдан · +70 XP · серия 3 дня
         </span>
       </figcaption>
     </figure>
@@ -130,7 +129,10 @@ const STEPS = [
     title: "Защита у профессора",
     text: "Вопросы на время, как на экзамене. Быстрый верный ответ бьёт критом, ошибки бьют по нервам.",
   },
-  { title: "Серия и ранги", text: "Сдаёшь этапы подряд без провалов, и растёт серия. За закрытые квесты дают ранги." },
+  {
+    title: "Опыт, уровни и квесты дня",
+    text: "Этапы, достижения и три квеста дня дают опыт. Растёт уровень, с ним ранг, а серия считает дни подряд.",
+  },
 ];
 
 const FAQ = [
@@ -231,8 +233,12 @@ export default function Home() {
                 <span className="hidden shrink-0 text-sm text-muted sm:block">
                   {plural(quest.stages.length, STAGES)}
                 </span>
-                <span className="shrink-0 text-xl" title={`Ранг за квест: ${quest.rank.title}`} aria-hidden="true">
-                  {quest.rank.icon}
+                <span
+                  className="shrink-0"
+                  title={`Титул за квест: ${quest.rank.title}`}
+                  style={{ color: quest.rank.color }}
+                >
+                  <Icon name={quest.rank.icon} className="size-5" />
                 </span>
               </li>
             ))}

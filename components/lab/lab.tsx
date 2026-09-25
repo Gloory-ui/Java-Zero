@@ -13,7 +13,8 @@ import { cn } from "@/lib/cn";
 import type { QuestOutline } from "@/lib/content/outline";
 import type { Stage } from "@/lib/content/schema";
 import type { DuelQuestion } from "@/lib/game/duel";
-import { checkFailed, runFinished, stagePassed } from "@/lib/game/events";
+import { checkFinished, runFinished } from "@/lib/game/events";
+import type { XpPart } from "@/lib/game/xp";
 import { EngineRestartedError, getEngine, useEngine } from "@/lib/java/engine";
 import { type Diagnostic, ioInputs, judge } from "@/lib/java/judge";
 import { isQuestCompleted, isStagePassed, isStageUnlocked, nextStage } from "@/lib/progress/selectors";
@@ -85,6 +86,8 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
   const [editorVersion, setEditorVersion] = useState(0);
   /** Этой сдачей закрыт весь квест: редкий момент, его отмечаем громче обычного */
   const [questClosed, setQuestClosed] = useState(false);
+  /** Из чего сложился опыт за первую сдачу: показываем в панели «Этап сдан» */
+  const [passXp, setPassXp] = useState<XpPart[] | null>(null);
 
   const saved = progress.stages[key];
   const passed = isStagePassed(progress, questId, stage.id);
@@ -172,11 +175,12 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
     store.recordAttempt(key, source);
     setOutcome({ kind: "running", mode: "check", cold: useEngine.getState().status !== "ready" });
     setQuestClosed(false);
+    setPassXp(null);
     try {
       const { compile, runs } = await getEngine().check(quest.fileName, source, ioInputs(stage.tests));
       setDiagnostics(compile.diagnostics);
       if (!compile.compiled) {
-        checkFailed(key);
+        checkFinished(key, source, false);
         setOutcome(
           compile.fatal && compile.diagnostics.length === 0
             ? { kind: "engine-error", message: `Не удалось подготовить программу к запуску: ${compile.fatal}` }
@@ -186,10 +190,11 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
       }
       const verdicts = judge(stage.tests, source, runs);
       const allPassed = verdicts.every((v) => v.passed);
-      if (allPassed) {
-        const firstPass = stagePassed(key, course);
-        setQuestClosed(firstPass && isQuestCompleted(useProgress.getState(), quest));
-      } else checkFailed(key);
+      const result = checkFinished(key, source, allPassed);
+      if (result?.firstPass) {
+        setPassXp(result.parts);
+        setQuestClosed(isQuestCompleted(useProgress.getState(), quest));
+      }
       setOutcome({ kind: "checked", verdicts, passed: allPassed });
     } catch (error) {
       setOutcome({
@@ -200,7 +205,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
             : `Java-движок не ответил: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
-  }, [busy, course, key, quest, stage.tests]);
+  }, [busy, key, quest, stage.tests]);
 
   const runWithInput = useCallback(async () => {
     if (busy) return;
@@ -225,7 +230,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
     ) : tab === "pitfalls" ? (
       pitfalls
     ) : tab === "quiz" ? (
-      <Quiz quiz={stage.quiz} />
+      <Quiz quiz={stage.quiz} stageKey={key} />
     ) : tab === "duel" ? (
       <Duel questions={stage.duel} />
     ) : stage.memory ? (
@@ -280,8 +285,24 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
       </p>
       {questClosed && (
         <p className="text-sm">
-          Ранг {quest.rank.icon} {quest.rank.title} твой. Он уже в профиле и на карте курса.
+          Титул <span className="font-semibold">{quest.rank.title}</span> твой: поставь его в профиль.
         </p>
+      )}
+      {passXp && (
+        <ul className="flex flex-wrap gap-1.5" aria-label="Опыт за этап">
+          {passXp.map((part) => (
+            <li
+              key={part.label}
+              className="rounded-full border border-border bg-surface px-2.5 py-0.5 font-mono text-[11px] tabular-nums"
+            >
+              {part.label}{" "}
+              <span className={part.xp < 0 ? "text-danger" : "font-semibold text-text"}>
+                {part.xp > 0 ? "+" : ""}
+                {part.xp} XP
+              </span>
+            </li>
+          ))}
+        </ul>
       )}
       <div className="flex flex-wrap gap-2">
         {next ? (
@@ -356,7 +377,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
             </span>
           )}
         </nav>
-        <LabStatus course={course} />
+        <LabStatus />
         <div className="hidden md:block">
           <EngineStatus />
         </div>

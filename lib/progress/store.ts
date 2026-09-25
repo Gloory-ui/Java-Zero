@@ -6,7 +6,10 @@ import { createJSONStorage, persist, type StateStorage } from "zustand/middlewar
 import { readLegacyProgress } from "./legacy";
 import {
   codeHash,
+  type DailyMetric,
+  type DailyState,
   EMPTY_PROGRESS,
+  type GameStats,
   MAX_ATTEMPTS_KEPT,
   type Persona,
   type ProgressData,
@@ -19,6 +22,8 @@ type Ownership = {
    * Без этой отметки прогресс вышедшего аккаунта считался гостевым и копировался в следующий аккаунт.
    */
   owner: string | null;
+  /** Прогресс перенесён со старой системы наград: один раз показать, сколько опыта начислено */
+  upgradeNotice?: boolean;
 };
 
 type Actions = {
@@ -26,16 +31,23 @@ type Actions = {
   saveCode: (key: string, code: string) => void;
   /** Запоминает вариант кода; возвращает число разных попыток */
   recordAttempt: (key: string, code: string) => number;
-  /** true — этап сдан впервые */
-  markPassed: (key: string) => boolean;
-  /** Проваленная проверка: серия обнуляется, у этапа растёт счётчик провалов */
+  /** true — этап сдан впервые; xp фиксируется у этапа */
+  markPassed: (key: string, xp: number) => boolean;
+  /** Проваленная проверка: серия без ошибок обнуляется, у этапа растёт счётчик провалов */
   failCheck: (key: string) => void;
   markHint: (key: string) => void;
   /** true — шпора открыта впервые на этапе (серия сбрасывается) */
   takeCheat: (key: string) => boolean;
   viewSolution: (key: string) => void;
-  /** true — ачивка открыта впервые */
-  unlockAchievement: (id: string) => boolean;
+  /** Открывает достижения, которых ещё нет; возвращает открытые сейчас */
+  unlockAchievements: (ids: string[]) => string[];
+  /** Начало дня: квесты дня выбраны, счётчики с нуля */
+  startDay: (day: string, quests: string[]) => void;
+  /** События дня. seen — ключ разового события: второй раз за день не засчитывается */
+  bumpDaily: (metrics: DailyMetric[], seen?: string) => void;
+  addStats: (delta: GameStats) => void;
+  completeDaily: (done: Record<string, { at: number; xp: number }>) => void;
+  dismissUpgradeNotice: () => void;
   setPersona: (persona: Persona) => void;
   setSound: (on: boolean) => void;
   replace: (data: ProgressData) => void;
@@ -46,7 +58,24 @@ type Actions = {
 };
 
 export const STORAGE_KEY = "java-zero-progress";
-const STORAGE_VERSION = 1;
+export const STORAGE_VERSION = 2;
+
+/**
+ * Версия 1 → 2: серия этапов без ошибок переименована в cleanRun, появились квесты дня и счётчики.
+ * Опыт сданных этапов досчитывается по их флагам, достижения — при первой загрузке (GameBootstrap).
+ */
+export function migrateProgress(persisted: unknown, version: number): unknown {
+  if (version >= 2 || typeof persisted !== "object" || persisted === null) return persisted;
+  const { streak, ...rest } = persisted as { streak?: unknown; stages?: Record<string, StageProgress> };
+  const passedAny = Object.values(rest.stages ?? {}).some((s) => s.passedAt);
+  return {
+    ...rest,
+    cleanRun: typeof streak === "number" ? streak : 0,
+    dailyDone: {},
+    stats: {},
+    ...(passedAny ? { upgradeNotice: true } : {}),
+  };
+}
 
 const touch = (s: ProgressData, key: string): StageProgress => s.stages[key] ?? { attempts: [] };
 
@@ -62,7 +91,8 @@ const storage: StateStorage = {
       if (current !== null) return current;
       const legacy = readLegacyProgress((key) => localStorage.getItem(key));
       if (!legacy) return null;
-      const migrated = JSON.stringify({ state: legacy, version: STORAGE_VERSION });
+      const upgradeNotice = Object.values(legacy.stages).some((st) => st.passedAt);
+      const migrated = JSON.stringify({ state: { ...legacy, upgradeNotice }, version: STORAGE_VERSION });
       localStorage.setItem(name, migrated);
       return migrated;
     } catch {
@@ -108,17 +138,20 @@ export const useProgress = create<ProgressData & Ownership & Actions>()(
       },
 
       // Серия растёт только за первую сдачу этапа: перепроверка сданного не должна её накручивать
-      markPassed: (key) => {
+      markPassed: (key, xp) => {
         const stage = touch(get(), key);
         if (stage.passedAt) return false;
-        set((s) => ({ streak: s.streak + 1, stages: { ...s.stages, [key]: { ...stage, passedAt: Date.now() } } }));
+        set((s) => ({
+          cleanRun: s.cleanRun + 1,
+          stages: { ...s.stages, [key]: { ...stage, passedAt: Date.now(), xp } },
+        }));
         return true;
       },
 
       failCheck: (key) =>
         set((s) => {
           const stage = touch(s, key);
-          return { streak: 0, stages: { ...s.stages, [key]: { ...stage, fails: (stage.fails ?? 0) + 1 } } };
+          return { cleanRun: 0, stages: { ...s.stages, [key]: { ...stage, fails: (stage.fails ?? 0) + 1 } } };
         }),
 
       markHint: (key) => set((s) => ({ stages: { ...s.stages, [key]: { ...touch(s, key), hintUsed: true } } })),
@@ -126,29 +159,58 @@ export const useProgress = create<ProgressData & Ownership & Actions>()(
       takeCheat: (key) => {
         const stage = touch(get(), key);
         if (stage.cheatUsed) return false;
-        set((s) => ({ streak: 0, stages: { ...s.stages, [key]: { ...stage, cheatUsed: true } } }));
+        set((s) => ({ cleanRun: 0, stages: { ...s.stages, [key]: { ...stage, cheatUsed: true } } }));
         return true;
       },
 
       viewSolution: (key) =>
         set((s) => ({ stages: { ...s.stages, [key]: { ...touch(s, key), solutionViewed: true } } })),
 
-      unlockAchievement: (id) => {
-        if (get().achievements[id]) return false;
-        set((s) => ({ achievements: { ...s.achievements, [id]: Date.now() } }));
-        return true;
+      unlockAchievements: (ids) => {
+        const fresh = [...new Set(ids)].filter((id) => !get().achievements[id]);
+        if (fresh.length === 0) return [];
+        const now = Date.now();
+        set((s) => ({ achievements: { ...s.achievements, ...Object.fromEntries(fresh.map((id) => [id, now])) } }));
+        return fresh;
       },
+
+      startDay: (day, quests) => set({ daily: { day, quests, counters: {}, seen: [] } }),
+
+      bumpDaily: (metrics, seen) =>
+        set((s) => {
+          const daily = s.daily;
+          if (!daily || (seen && daily.seen.includes(seen))) return {};
+          const counters = { ...daily.counters };
+          for (const m of metrics) counters[m] = (counters[m] ?? 0) + 1;
+          const next: DailyState = { ...daily, counters, seen: seen ? [...daily.seen, seen] : daily.seen };
+          return { daily: next };
+        }),
+
+      addStats: (delta) =>
+        set((s) => {
+          const stats = { ...s.stats };
+          for (const [k, v] of Object.entries(delta) as [keyof GameStats, number][]) stats[k] = (stats[k] ?? 0) + v;
+          return { stats };
+        }),
+
+      completeDaily: (done) => set((s) => ({ dailyDone: { ...s.dailyDone, ...done } })),
+
+      dismissUpgradeNotice: () => set({ upgradeNotice: false }),
 
       setPersona: (persona) => set({ persona }),
       setSound: (sound) => set({ sound }),
-      // lastStage задаём явно: set сливает объекты, и без этого остался бы этап предыдущего аккаунта
-      replace: (data) => set({ ...data, lastStage: data.lastStage }),
+      // lastStage и daily задаём явно: set сливает объекты, и без этого остались бы данные предыдущего аккаунта
+      replace: (data) => set({ ...data, lastStage: data.lastStage, daily: data.daily }),
       setOwner: (owner) => set({ owner }),
       clearAfterSignOut: () =>
         set((s) => ({
           stages: {},
-          streak: 0,
+          cleanRun: 0,
           achievements: {},
+          dailyDone: {},
+          stats: {},
+          daily: undefined,
+          upgradeNotice: false,
           persona: EMPTY_PROGRESS.persona,
           sound: s.sound,
           lastStage: undefined,
@@ -164,16 +226,21 @@ export const useProgress = create<ProgressData & Ownership & Actions>()(
       name: STORAGE_KEY,
       version: STORAGE_VERSION,
       storage: createJSONStorage(() => storage),
+      migrate: migrateProgress,
       // Прогресс живёт в браузере: подтягиваем его после монтирования, иначе HTML сервера и клиента разойдутся
       skipHydration: true,
-      partialize: ({ stages, streak, achievements, persona, sound, lastStage, owner }) => ({
-        stages,
-        streak,
-        achievements,
-        persona,
-        sound,
-        lastStage,
-        owner,
+      partialize: (s) => ({
+        stages: s.stages,
+        cleanRun: s.cleanRun,
+        achievements: s.achievements,
+        dailyDone: s.dailyDone,
+        stats: s.stats,
+        daily: s.daily,
+        persona: s.persona,
+        sound: s.sound,
+        lastStage: s.lastStage,
+        owner: s.owner,
+        upgradeNotice: s.upgradeNotice,
       }),
     },
   ),

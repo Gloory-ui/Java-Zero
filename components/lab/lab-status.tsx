@@ -1,47 +1,17 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import Link from "next/link";
+import { LevelChip } from "@/components/game/level-chip";
 import { cn } from "@/lib/cn";
-import type { QuestOutline } from "@/lib/content/outline";
-import { userRank } from "@/lib/game/ranks";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
 
-/** Серия, ранг и звук в шапке лаборатории. До загрузки прогресса место зарезервировано, чтобы шапка не прыгала. */
-export function LabStatus({ course }: { course: QuestOutline[] }) {
+/** Уровень, серия дней и звук в шапке лаборатории. До загрузки прогресса место зарезервировано, чтобы шапка не прыгала. */
+export function LabStatus() {
   const hydrated = useProgressHydrated();
-  const streak = useProgress((s) => s.streak);
-  const stages = useProgress((s) => s.stages);
   const soundOn = useProgress((s) => s.sound);
-  const reduceMotion = useReducedMotion();
-  const rank = userRank({ streak, stages }, course);
 
   return (
     <div className={cn("flex items-center gap-1", !hydrated && "invisible")}>
-      <Link
-        href="/profile"
-        className="inline-flex h-8 items-center gap-1 rounded-full border border-border px-2.5 font-mono text-xs transition-colors duration-150 ease-snappy hover:border-border-strong"
-        title={`Серия: ${streak} ${streak === 1 ? "этап" : "этапов"} подряд без проваленных проверок. Ранг: ${rank.title}`}
-      >
-        <span aria-hidden="true">{rank.icon}</span>
-        <span className="sr-only">Ранг {rank.title}. Серия:</span>
-        <span aria-hidden="true" className={streak > 0 ? "text-gold" : "text-muted"}>
-          🔥
-        </span>
-        <span className="relative inline-grid overflow-hidden tabular-nums">
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.span
-              key={streak}
-              initial={reduceMotion ? { opacity: 0 } : { y: "-100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={reduceMotion ? { opacity: 0 } : { y: "100%", opacity: 0 }}
-              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            >
-              {streak}
-            </motion.span>
-          </AnimatePresence>
-        </span>
-      </Link>
+      <LevelChip compact />
       <button
         type="button"
         onClick={() => useProgress.getState().setSound(!soundOn)}

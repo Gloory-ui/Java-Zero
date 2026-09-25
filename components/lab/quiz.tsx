@@ -3,9 +3,10 @@
 import { useId, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { StageMeta } from "@/lib/content/schema";
+import { quizAnswered } from "@/lib/game/events";
 
 /** Вопрос на понимание перед кодом: ответ сразу с объяснением, выбор можно менять. */
-export function Quiz({ quiz }: { quiz: StageMeta["quiz"] }) {
+export function Quiz({ quiz, stageKey }: { quiz: StageMeta["quiz"]; stageKey: string }) {
   const name = useId();
   const [picked, setPicked] = useState<number | null>(null);
   const right = picked === quiz.correct;
@@ -33,7 +34,10 @@ export function Quiz({ quiz }: { quiz: StageMeta["quiz"] }) {
                 name={name}
                 value={i}
                 checked={picked === i}
-                onChange={() => setPicked(i)}
+                onChange={() => {
+                  setPicked(i);
+                  quizAnswered(stageKey, i === quiz.correct);
+                }}
                 className="sr-only"
               />
               <span className="font-mono text-xs text-muted" aria-hidden="true">

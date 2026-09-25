@@ -1,7 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { loadCourse } from "@/lib/content/load";
-import { toOutline } from "@/lib/content/outline";
-import { achievementsForPass, achievementsForRun } from "@/lib/game/achievements";
 import {
   answer,
   bossDamage,
@@ -13,8 +10,6 @@ import {
   startDuel,
   verdict,
 } from "@/lib/game/duel";
-import { STARTER_RANK, STREAK_RANK, userRank } from "@/lib/game/ranks";
-import type { RunResult } from "@/lib/java/judge";
 
 const q = (n: number): DuelQuestion => ({
   q: `Вопрос ${n}`,
@@ -73,46 +68,5 @@ describe("дуэль", () => {
     expect(duelQuestions(exams, 0).map((x) => x.q)).toEqual(["Вопрос 0"]);
     expect(duelQuestions(exams, 2).map((x) => x.q)).toEqual(["Вопрос 2", "Вопрос 1", "Вопрос 0"]);
     expect(duelQuestions(exams, 6)).toHaveLength(DUEL_MAX_QUESTIONS);
-  });
-});
-
-describe("ачивки", () => {
-  it("за сдачу этапов привязаны к id, а не к номерам", () => {
-    expect(achievementsForPass("basics/program-structure", { attempts: [] }, 1)).toEqual(["first_var"]);
-    expect(achievementsForPass("basics/program-structure", { attempts: [], cheatUsed: true }, 1)).toEqual([]);
-    expect(achievementsForPass("basics/arithmetic", { attempts: [], fails: 1 }, 1)).toEqual([]);
-    // Старые этапы больше не первые в курсе и ачивок не дают
-    expect(achievementsForPass("basics/memory-boxes", { attempts: [] }, 1)).toEqual([]);
-    expect(achievementsForPass("basics/arithmetic", { attempts: [] }, 1)).toEqual(["division_safe"]);
-    expect(achievementsForPass("calc/switch-zero", { attempts: [], hintUsed: true }, 1)).toEqual([]);
-    expect(achievementsForPass("calc/factorial", { attempts: [] }, 3)).toEqual(["stack_safe", "streak_master"]);
-  });
-
-  it("«Живой ввод» — только настоящий Scanner, непустой ввод и нормальное завершение", () => {
-    const ok: RunResult = { status: "ok", exitCode: 0, ms: 5, stdout: "", error: "" };
-    const code = "Scanner sc = new Scanner(System.in);";
-    expect(achievementsForRun(code, "5\n", ok)).toEqual(["input_master"]);
-    expect(achievementsForRun(code, "  ", ok)).toEqual([]);
-    expect(achievementsForRun(`// ${code}`, "5\n", ok)).toEqual([]);
-    expect(achievementsForRun(code, "5\n", { ...ok, status: "exception" })).toEqual([]);
-  });
-});
-
-describe("ранги", () => {
-  const course = toOutline(loadCourse());
-  const passAll = (questId: string) => {
-    const quest = course.find((x) => x.id === questId);
-    return Object.fromEntries((quest?.stages ?? []).map((s) => [`${questId}/${s.id}`, { attempts: [], passedAt: 1 }]));
-  };
-
-  it("с нуля — БАЙТ-ПАДАВАН, дальше ранг старшего закрытого квеста", () => {
-    expect(userRank({ stages: {}, streak: 0 }, course)).toEqual(STARTER_RANK);
-    expect(userRank({ stages: passAll("basics"), streak: 0 }, course).title).toBe("СИНТАКСИЧЕСКИЙ ЮНГА");
-    const stages = { ...passAll("basics"), ...passAll("loops_prep"), ...passAll("kt1") };
-    expect(userRank({ stages, streak: 0 }, course).title).toBe("ГРОЗА СЕССИИ");
-  });
-
-  it("серия от пяти перекрывает ранг квеста", () => {
-    expect(userRank({ stages: passAll("basics"), streak: 5 }, course)).toEqual(STREAK_RANK);
   });
 });

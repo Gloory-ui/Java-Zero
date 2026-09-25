@@ -4,11 +4,13 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { type FormEvent, type KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { askMentor, MentorError, useMentor } from "@/lib/ai/client";
 import { MENTOR_MESSAGE_MAX } from "@/lib/ai/limits";
 import { PERSONA_INFO } from "@/lib/ai/personas";
 import type { MentorRequestInput } from "@/lib/ai/schema";
 import { cn } from "@/lib/cn";
+import { mentorAsked } from "@/lib/game/events";
 import { useProgress } from "@/lib/progress/store";
 import type { Persona } from "@/lib/progress/types";
 
@@ -83,6 +85,7 @@ export function Mentor({ stageKey, getContext }: { stageKey: string; getContext:
           (partial) => update({ text: partial }),
           controller.signal,
         );
+        mentorAsked();
       } catch (error) {
         if (controller.signal.aborted) update({ text: "_Остановлено._" });
         else
@@ -162,7 +165,7 @@ export function Mentor({ stageKey, getContext }: { stageKey: string; getContext:
               >
                 {PERSONA_INFO.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.icon} {p.label}
+                    {p.label}
                   </option>
                 ))}
               </select>
@@ -173,7 +176,7 @@ export function Mentor({ stageKey, getContext }: { stageKey: string; getContext:
               aria-label="Закрыть ментора"
               className="grid size-8 place-items-center rounded-md text-muted hover:bg-card hover:text-text"
             >
-              ✕
+              <Icon name="x" className="size-4" />
             </button>
           </header>
 
