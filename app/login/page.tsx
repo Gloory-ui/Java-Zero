@@ -20,6 +20,13 @@ export default function LoginPage() {
         </p>
       </div>
       <LoginForm />
+      <p className="text-xs text-muted">
+        Какие данные хранит аккаунт и как их удалить —{" "}
+        <Link href="/privacy" className="underline underline-offset-2 hover:text-text">
+          политика конфиденциальности
+        </Link>
+        .
+      </p>
     </main>
   );
 }

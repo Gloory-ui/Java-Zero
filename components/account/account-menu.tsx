@@ -2,15 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { buttonClasses } from "@/components/ui/button";
 import { useAccount } from "@/lib/account/store";
 import { cn } from "@/lib/cn";
 
+/** Аватар из GitHub/Google; если картинка не загрузилась (блокировщик, удалённое фото), показываем первую букву имени. */
 export function Avatar({ name, src, size = "sm" }: { name: string | null; src: string | null; size?: "sm" | "lg" }) {
   const box = size === "lg" ? "size-16 text-2xl" : "size-8 text-sm";
-  if (src) {
-    // biome-ignore lint/performance/noImgElement: аватар с GitHub/Google, next/image потребовал бы список доменов
-    return <img src={src} alt="" referrerPolicy="no-referrer" className={cn("rounded-full object-cover", box)} />;
+  const [broken, setBroken] = useState<string | null>(null);
+  if (src && broken !== src) {
+    return (
+      // biome-ignore lint/performance/noImgElement: аватар с GitHub/Google, next/image потребовал бы список доменов
+      <img
+        src={src}
+        alt=""
+        referrerPolicy="no-referrer"
+        onError={() => setBroken(src)}
+        className={cn("rounded-full object-cover", box)}
+      />
+    );
   }
   return (
     <span className={cn("grid place-items-center rounded-full bg-accent-solid font-semibold text-white", box)}>

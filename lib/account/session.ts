@@ -13,6 +13,7 @@ import { useProgress } from "@/lib/progress/store";
 import type { ProgressData } from "@/lib/progress/types";
 import type { Supabase } from "@/lib/supabase/client";
 import { AUTH_STORAGE_KEY, accountsEnabled } from "@/lib/supabase/config";
+import { describeSyncError, retryDelay } from "./errors";
 import { type AccountUser, useAccount } from "./store";
 
 const PUSH_DELAY_MS = 1500;
@@ -35,7 +36,10 @@ function toUser(user: User): AccountUser {
     id: user.id,
     email: user.email ?? null,
     name: meta.full_name ?? meta.name ?? meta.user_name ?? user.email?.split("@")[0] ?? null,
-    avatar: typeof meta.avatar_url === "string" ? meta.avatar_url : null,
+    // GitHub кладёт ссылку в avatar_url, Google — в avatar_url и picture
+    avatar:
+      [meta.avatar_url, meta.picture].find((v): v is string => typeof v === "string" && v.startsWith("https://")) ??
+      null,
   };
 }
 
@@ -55,6 +59,12 @@ let userId: string | null = null;
 let lastSynced: ProgressData | null = null;
 let unsubscribe: (() => void) | null = null;
 let timer: ReturnType<typeof setTimeout> | undefined;
+let retryTimer: ReturnType<typeof setTimeout> | undefined;
+let retryAttempt = 0;
+
+function failed(error: unknown) {
+  useAccount.setState({ sync: "error", error: describeSyncError(error) });
+}
 
 async function upload(supabase: Supabase, uid: string, prev: ProgressData | null, next: ProgressData, byValue = false) {
   const diff = diffProgress(prev, next);
@@ -114,8 +124,9 @@ async function flush() {
     lastSynced = next;
     useAccount.setState({ sync: "synced", syncedAt: Date.now(), error: undefined });
   } catch (error) {
-    // lastSynced не двигаем: при следующем изменении уйдёт всё, что не дошло
-    useAccount.setState({ sync: "error", error: error instanceof Error ? error.message : String(error) });
+    // lastSynced не двигаем: следующая попытка отправит всё, что не дошло
+    failed(error);
+    timer = setTimeout(() => void flush(), retryDelay(1));
   }
 }
 
@@ -123,19 +134,31 @@ const onHide = () => {
   if (document.visibilityState === "hidden") void flush();
 };
 
+const onOnline = () => {
+  if (!userId) return;
+  if (lastSynced) void flush();
+  else void startSync(userId);
+};
+
 function stopSync() {
   clearTimeout(timer);
+  clearTimeout(retryTimer);
   unsubscribe?.();
   unsubscribe = null;
   userId = null;
   lastSynced = null;
   if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onHide);
+  if (typeof window !== "undefined") window.removeEventListener("online", onOnline);
 }
 
-/** Вход: облачный прогресс сливается с локальным, результат уходит обратно, дальше изменения отправляются сами. */
+/**
+ * Вход: облачный прогресс сливается с локальным, результат уходит обратно, дальше изменения отправляются сами.
+ * Если первая попытка сорвалась (нет сети, база ещё не готова), повторяем с растущей паузой и при появлении сети.
+ */
 async function startSync(uid: string) {
   stopSync();
   userId = uid;
+  window.addEventListener("online", onOnline);
   useAccount.setState({ sync: "syncing" });
   try {
     const supabase = await loadSupabase();
@@ -161,9 +184,14 @@ async function startSync(uid: string) {
       timer = setTimeout(() => void flush(), PUSH_DELAY_MS);
     });
     document.addEventListener("visibilitychange", onHide);
+    retryAttempt = 0;
     useAccount.setState({ sync: "synced", syncedAt: Date.now(), error: undefined });
   } catch (error) {
-    useAccount.setState({ sync: "error", error: error instanceof Error ? error.message : String(error) });
+    if (userId !== uid) return;
+    failed(error);
+    retryTimer = setTimeout(() => {
+      if (userId === uid) void startSync(uid);
+    }, retryDelay(retryAttempt++));
   }
 }
 
@@ -176,7 +204,10 @@ function applySession(session: Session | null) {
   const user = toUser(session.user);
   const previous = useAccount.getState().user;
   useAccount.setState({ status: "signed-in", user });
-  if (previous?.id !== user.id || userId !== user.id) void startSync(user.id);
+  if (previous?.id !== user.id || userId !== user.id) {
+    retryAttempt = 0;
+    void startSync(user.id);
+  }
 }
 
 let started = false;
@@ -210,7 +241,7 @@ export async function startAccount({ force = false }: { force?: boolean } = {}) 
       setTimeout(() => applySession(session), 0);
     });
   } catch (error) {
-    useAccount.setState({ status: "signed-out", sync: "error", error: String(error) });
+    useAccount.setState({ status: "signed-out", sync: "error", error: describeSyncError(error) });
   }
 }
 
