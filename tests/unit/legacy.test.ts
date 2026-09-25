@@ -49,7 +49,7 @@ describe("перенос прогресса со старого сайта", () 
     expect(current.attempts).toEqual([codeHash("int a;"), codeHash("int b;")]);
 
     expect(data.stages["loops_prep/nested-loops"]).toBeUndefined();
-    expect(data.streak).toBe(2);
+    expect(data.cleanRun).toBe(2);
     expect(data.achievements).toEqual({ first_var: NOW });
     expect(data.persona).toBe("dushny");
     expect(data.sound).toBe(false);
@@ -65,7 +65,7 @@ describe("перенос прогресса со старого сайта", () 
       java_zero_code_saves_kt1: "not json",
     };
     const data = readLegacyProgress((key) => broken[key] ?? null, NOW);
-    expect(data?.streak).toBe(0);
+    expect(data?.cleanRun).toBe(0);
     expect(data?.achievements).toEqual({});
     expect(data?.persona).toBe("chill");
     expect(data?.sound).toBe(true);

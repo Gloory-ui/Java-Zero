@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { CourseMap } from "@/components/course/course-map";
+import { DailyQuests } from "@/components/game/daily-quests";
+import { LevelCard } from "@/components/game/level-card";
 import { SiteFooter, SiteHeader } from "@/components/site/site-header";
 import { getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
@@ -15,6 +17,8 @@ export default function CoursePage() {
       <SiteHeader />
       <main className="mx-auto flex min-h-[70dvh] max-w-3xl flex-col gap-6 px-4 py-10">
         <h1 className="font-display text-3xl font-semibold">Карта курса</h1>
+        <LevelCard />
+        <DailyQuests />
         <CourseMap course={toOutline(getCourse())} />
       </main>
       <SiteFooter />

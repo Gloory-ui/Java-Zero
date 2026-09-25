@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useEffect, useRef } from "react";
+import { Icon } from "@/components/ui/icon";
 
 /**
  * Модальное окно на нативном <dialog>: фокус внутри, Esc закрывает, фон затемняется.
@@ -41,7 +42,7 @@ export function Dialog({
           aria-label="Закрыть"
           className="grid size-8 place-items-center rounded-md text-muted hover:bg-card hover:text-text"
         >
-          ✕
+          <Icon name="x" className="size-4" />
         </button>
       </div>
       <div className="max-h-[70vh] overflow-auto p-5">{children}</div>

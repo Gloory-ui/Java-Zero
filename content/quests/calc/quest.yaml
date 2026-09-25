@@ -7,6 +7,6 @@ order: 4
 unlockAfter: kt1
 rank:
   title: УКРОТИТЕЛЬ СТЕКА
-  icon: ⚡
+  icon: zap
   color: "#10b981"
 stageBadge: "ЭТАП {n} / {total}"

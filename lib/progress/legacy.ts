@@ -92,8 +92,10 @@ export function readLegacyProgress(read: Read, now = Date.now()): ProgressData |
 
   return {
     stages,
-    streak: int(read("java_zero_streak")),
+    cleanRun: int(read("java_zero_streak")),
     achievements,
+    dailyDone: {},
+    stats: {},
     persona: PERSONAS.includes(persona as Persona) ? (persona as Persona) : "chill",
     sound: read("java_zero_sound") !== "false",
     ...(activeStage ? { lastStage: `${activeQuest}/${activeStage}` } : {}),

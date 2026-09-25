@@ -7,6 +7,6 @@ order: 2
 unlockAfter: basics
 rank:
   title: ОПЕРАТОР ЦИКЛА
-  icon: 🌀
+  icon: repeat
   color: "#38bdf8"
 stageBadge: "ПОДГОТОВКА {n} / {total}"

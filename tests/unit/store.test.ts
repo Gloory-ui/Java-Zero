@@ -11,8 +11,10 @@ describe("стор прогресса", () => {
   it("выход из аккаунта очищает прогресс и владельца, звук остаётся настройкой устройства", () => {
     const store = useProgress.getState();
     store.openStage("basics/memory-boxes");
-    store.markPassed("basics/memory-boxes");
-    store.unlockAchievement("first_var");
+    store.markPassed("basics/memory-boxes", 70);
+    store.unlockAchievements(["first_var"]);
+    store.completeDaily({ "2026-09-25/pass_one": { at: 1, xp: 30 } });
+    store.addStats({ runs: 3 });
     store.setPersona("dushny");
     store.setSound(false);
     store.setOwner("user-a");
@@ -22,7 +24,9 @@ describe("стор прогресса", () => {
     const after = useProgress.getState();
     expect(after.stages).toEqual({});
     expect(after.achievements).toEqual({});
-    expect(after.streak).toBe(0);
+    expect(after.cleanRun).toBe(0);
+    expect(after.dailyDone).toEqual({});
+    expect(after.stats).toEqual({});
     expect(after.persona).toBe("chill");
     expect(after.lastStage).toBeUndefined();
     expect(after.owner).toBeNull();
@@ -34,5 +38,30 @@ describe("стор прогресса", () => {
     expect(useProgress.getState().lastStage).toBe("kt1/guess-number");
     useProgress.getState().replace({ ...EMPTY_PROGRESS });
     expect(useProgress.getState().lastStage).toBeUndefined();
+  });
+
+  it("первая сдача фиксирует опыт этапа и растит серию без ошибок, повторная — нет", () => {
+    const store = useProgress.getState();
+    expect(store.markPassed("basics/arithmetic", 70)).toBe(true);
+    expect(useProgress.getState().markPassed("basics/arithmetic", 999)).toBe(false);
+    expect(useProgress.getState().stages["basics/arithmetic"].xp).toBe(70);
+    expect(useProgress.getState().cleanRun).toBe(1);
+    useProgress.getState().failCheck("basics/strings");
+    expect(useProgress.getState().cleanRun).toBe(0);
+  });
+
+  it("счётчики дня: разовое событие засчитывается один раз", () => {
+    const store = useProgress.getState();
+    store.startDay("2026-09-25", ["quiz_two"]);
+    store.bumpDaily(["quizRight"], "quiz:basics/strings");
+    store.bumpDaily(["quizRight"], "quiz:basics/strings");
+    store.bumpDaily(["run"]);
+    store.bumpDaily(["run"]);
+    expect(useProgress.getState().daily?.counters).toEqual({ quizRight: 1, run: 2 });
+  });
+
+  it("достижения открываются один раз", () => {
+    expect(useProgress.getState().unlockAchievements(["first_var", "first_var"])).toEqual(["first_var"]);
+    expect(useProgress.getState().unlockAchievements(["first_var", "egg_phonk"])).toEqual(["egg_phonk"]);
   });
 });

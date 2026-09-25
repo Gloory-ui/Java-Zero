@@ -25,12 +25,14 @@ test("вернувшийся студент продолжает со следу
       JSON.stringify({
         state: {
           stages: { "basics/memory-boxes": { attempts: [], passedAt: 1 } },
-          streak: 1,
+          cleanRun: 1,
           achievements: {},
+          dailyDone: {},
+          stats: {},
           persona: "chill",
           sound: true,
         },
-        version: 1,
+        version: 2,
       }),
     ),
   );
@@ -85,8 +87,12 @@ test("превью закрыто от поисковиков", async ({ page })
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
 });
 
-test("нет горизонтальной прокрутки", async ({ page }) => {
-  await page.goto("/");
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  expect(overflow).toBeLessThanOrEqual(0);
+test("нет горизонтальной прокрутки даже на узком телефоне", async ({ page }) => {
+  // 375 px — iPhone SE/mini: шапка с чипом уровня должна влезать
+  await page.setViewportSize({ width: 375, height: 800 });
+  for (const path of ["/", "/course", "/profile", "/achievements", "/learn/basics/program-structure"]) {
+    await page.goto(path);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow, path).toBeLessThanOrEqual(0);
+  }
 });

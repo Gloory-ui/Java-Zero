@@ -2,7 +2,10 @@
 
 import type { Session, User } from "@supabase/supabase-js";
 import {
+  achievementToRow,
+  dailyToRow,
   diffProgress,
+  isSyncableDailyKey,
   isSyncableKey,
   profilePatch,
   progressFromRows,
@@ -44,8 +47,18 @@ function toUser(user: User): AccountUser {
 }
 
 function snapshot(): ProgressData {
-  const { stages, streak, achievements, persona, sound, lastStage } = useProgress.getState();
-  return { stages, streak, achievements, persona, sound, ...(lastStage ? { lastStage } : {}) };
+  const { stages, cleanRun, achievements, dailyDone, stats, daily, persona, sound, lastStage } = useProgress.getState();
+  return {
+    stages,
+    cleanRun,
+    achievements,
+    dailyDone,
+    stats,
+    persona,
+    sound,
+    ...(daily ? { daily } : {}),
+    ...(lastStage ? { lastStage } : {}),
+  };
 }
 
 async function ensureHydrated() {
@@ -87,12 +100,13 @@ async function upload(supabase: Supabase, uid: string, prev: ProgressData | null
     jobs.push(supabase.from("stage_progress").upsert(rows));
   }
   if (diff.achievementIds.length > 0) {
-    const rows = diff.achievementIds.map((id) => ({
-      user_id: uid,
-      achievement_id: id,
-      unlocked_at: new Date(next.achievements[id]).toISOString(),
-    }));
+    const rows = diff.achievementIds.map((id) => achievementToRow(uid, id, next.achievements[id]));
     jobs.push(supabase.from("achievements").upsert(rows, { ignoreDuplicates: true }));
+  }
+  const dailyKeys = diff.dailyKeys.filter(isSyncableDailyKey);
+  if (dailyKeys.length > 0) {
+    const rows = dailyKeys.map((key) => dailyToRow(uid, key, next.dailyDone[key]));
+    jobs.push(supabase.from("daily_quests").upsert(rows, { ignoreDuplicates: true }));
   }
   for (const key of diff.removedStageKeys.filter(isSyncableKey)) {
     const [questId, stageId] = key.split("/");
@@ -114,6 +128,7 @@ async function flush() {
     !diff.profileChanged &&
     diff.stageKeys.length === 0 &&
     diff.achievementIds.length === 0 &&
+    diff.dailyKeys.length === 0 &&
     diff.removedStageKeys.length === 0;
   if (nothing) return;
 
@@ -163,16 +178,17 @@ async function startSync(uid: string) {
   try {
     const supabase = await loadSupabase();
     await ensureHydrated();
-    const [profile, stages, achievements] = await Promise.all([
+    const [profile, stages, achievements, daily] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
       supabase.from("stage_progress").select("*").eq("user_id", uid),
       supabase.from("achievements").select("*").eq("user_id", uid),
+      supabase.from("daily_quests").select("*").eq("user_id", uid),
     ]);
-    const error = profile.error ?? stages.error ?? achievements.error;
+    const error = profile.error ?? stages.error ?? achievements.error ?? daily.error;
     if (error) throw error;
     if (userId !== uid) return;
 
-    const remote = progressFromRows(profile.data, stages.data ?? [], achievements.data ?? []);
+    const remote = progressFromRows(profile.data, stages.data ?? [], achievements.data ?? [], daily.data ?? []);
     const store = useProgress.getState();
     const merged = progressOnSignIn(snapshot(), store.owner, remote, uid);
     store.replace(merged);

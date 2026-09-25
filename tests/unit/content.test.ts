@@ -59,7 +59,7 @@ describe("схема контента", () => {
   it("ловит id с пробелами и имя файла не по правилам Java", () => {
     expect(stageSchema.safeParse({ ...stage, id: "Мой этап" }).success).toBe(false);
     const quest = { id: "kt2", num: "КТ", title: "КТ 2", subtitle: "…", order: 5, unlockAfter: "calc" };
-    const rank = { title: "Ранг", icon: "⭐", color: "#ffffff" };
+    const rank = { title: "Ранг", icon: "star", color: "#ffffff" };
     expect(questSchema.safeParse({ ...quest, rank, fileName: "KT2.java" }).success).toBe(true);
     expect(questSchema.safeParse({ ...quest, rank, fileName: "kt2.java" }).success).toBe(false);
   });

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ICON_NAMES } from "@/lib/icons";
 
 const slug = z.string().regex(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/, "латиница, цифры, - или _");
 const javaFileName = z.string().regex(/^[A-Z][A-Za-z0-9_]*\.java$/, "имя публичного класса + .java");
@@ -81,7 +82,8 @@ export const questSchema = z.object({
   /** Квест, который нужно закрыть, чтобы открыть этот; null — открыт сразу */
   unlockAfter: slug.nullable(),
   /** Звание за закрытие квеста */
-  rank: z.object({ title: z.string().min(1), icon: z.string().min(1), color: hexColor }),
+  // Титул за квест; icon — имя SVG-иконки из lib/icons.ts
+  rank: z.object({ title: z.string().min(1), icon: z.enum(ICON_NAMES), color: hexColor }),
   /** Шаблон метки этапа: {n} — номер, {total} — число этапов (оба с ведущим нулём) */
   stageBadge: z.string().min(1).default("ЭТАП {n} / {total}"),
 });

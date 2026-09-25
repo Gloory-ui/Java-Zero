@@ -9,21 +9,24 @@ const PAGES = [
   "/login",
   "/privacy",
   "/learn/basics/program-structure",
+  "/achievements",
   "/no-such-page",
 ];
 
 /** Студент старого курса сдал «Коробки памяти»: открыт этап с таблицей в теории, на карте видны пометки «новый» */
-const RETURNING = ["/course", "/learn/basics/memory-boxes"];
+const RETURNING = ["/course", "/learn/basics/memory-boxes", "/profile", "/achievements"];
 
 const SEEDED = JSON.stringify({
   state: {
-    stages: { "basics/memory-boxes": { attempts: [], passedAt: 1 } },
-    streak: 1,
-    achievements: {},
+    stages: { "basics/memory-boxes": { attempts: [], passedAt: 1, xp: 70 } },
+    cleanRun: 1,
+    achievements: { egg_phonk: 1, first_var: 2 },
+    dailyDone: {},
+    stats: {},
     persona: "chill",
     sound: true,
   },
-  version: 1,
+  version: 2,
 });
 
 const CASES = [...PAGES.map((path) => ({ path, seeded: false })), ...RETURNING.map((path) => ({ path, seeded: true }))];

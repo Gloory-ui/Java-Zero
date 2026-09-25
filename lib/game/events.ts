@@ -3,13 +3,28 @@
 import { create } from "zustand";
 import { sound } from "@/lib/audio";
 import type { QuestOutline } from "@/lib/content/outline";
+import type { IconName } from "@/lib/icons";
 import type { RunResult } from "@/lib/java/judge";
 import { useProgress } from "@/lib/progress/store";
-import { type AchievementId, achievementsForPass, achievementsForRun, findAchievement } from "./achievements";
+import type { DailyMetric } from "@/lib/progress/types";
+import { type Achievement, evaluateAchievements, type GameEvent, type Rarity } from "./achievements";
+import { CHEST_ID, dailyContext, findDaily, newlyCompleted, pickDaily } from "./daily";
+import { localDay } from "./day";
 import type { Verdict } from "./duel";
-import { userRank } from "./ranks";
+import { type Rank, rankForLevel } from "./ranks";
+import { isKtKey, levelInfo, stageXpParts, totalXp, type XpPart } from "./xp";
 
-export type Toast = { id: number; icon: string; title: string; desc: string; tone: "achievement" | "rank" | "egg" };
+// ——— Отклик: карточки, «+XP», праздничные экраны ———
+
+export type Toast = {
+  id: number;
+  icon: IconName;
+  title: string;
+  desc: string;
+  tone: "achievement" | "daily" | "egg";
+  rarity?: Rarity;
+  xp?: number;
+};
 
 type ToastStore = { items: Toast[]; push: (toast: Omit<Toast, "id">) => void; dismiss: (id: number) => void };
 
@@ -22,62 +37,217 @@ export const useToasts = create<ToastStore>((set) => ({
   dismiss: (id) => set((s) => ({ items: s.items.filter((t) => t.id !== id) })),
 }));
 
-function grant(id: AchievementId) {
-  if (!useProgress.getState().unlockAchievement(id)) return;
-  const achievement = findAchievement(id);
-  if (!achievement) return;
-  useToasts
-    .getState()
-    .push({ icon: achievement.icon, title: achievement.title, desc: achievement.desc, tone: "achievement" });
-  sound.achievement();
+/** «+60 XP» вылетает у чипа уровня: туда студент смотрит, чтобы увидеть рост */
+export const useXpGain = create<{ gain: { id: number; xp: number } | null }>(() => ({ gain: null }));
+
+export type Celebration =
+  | { kind: "level"; level: number; rank?: Rank }
+  | { kind: "upgrade"; xp: number; level: number; achievements: number };
+
+export const useCelebration = create<{ current: Celebration | null; close: () => void }>((set) => ({
+  current: null,
+  close: () => set({ current: null }),
+}));
+
+// ——— Курс для проверки достижений: его регистрирует GameBootstrap в корневом layout ———
+
+let course: QuestOutline[] = [];
+
+export function registerCourse(outline: QuestOutline[]) {
+  course = outline;
 }
 
-/** Этап сдан: отметка, серия, ачивки и новый ранг. Возвращает true, если этап сдан впервые. */
-export function stagePassed(key: string, course: QuestOutline[]): boolean {
+/** Квесты дня выбираются при первом событии дня и дальше не меняются */
+export function ensureDay() {
   const store = useProgress.getState();
-  const before = store.stages[key] ?? { attempts: [] };
-  const rankBefore = userRank(store, course);
+  const today = localDay();
+  if (store.daily?.day === today) return;
+  store.startDay(today, pickDaily(today, dailyContext(store, course)));
+}
 
-  const firstPass = store.markPassed(key);
-  sound.success();
-  if (!firstPass) return false;
+function toastAchievement(a: Achievement) {
+  useToasts.getState().push({
+    icon: a.icon,
+    title: a.title,
+    desc: a.desc,
+    tone: a.secret ? "egg" : "achievement",
+    rarity: a.rarity,
+    xp: a.xp,
+  });
+}
 
-  const after = useProgress.getState();
-  for (const id of achievementsForPass(key, before, after.streak)) grant(id);
+/**
+ * После события: засчитать квесты дня, открыть достижения, показать прирост опыта и новый уровень.
+ * silent — пересчёт при загрузке: награды выдаются без карточек и звуков.
+ */
+function settle(xpBefore: number, event?: GameEvent, silent = false) {
+  const store = useProgress.getState();
 
-  const rankAfter = userRank(after, course);
-  if (rankAfter.title !== rankBefore.title) {
-    useToasts.getState().push({
-      icon: rankAfter.icon,
-      title: `Новый ранг: ${rankAfter.title}`,
-      desc: "Он уже на карте курса и в профиле.",
-      tone: "rank",
+  const done = newlyCompleted(store);
+  if (Object.keys(done).length > 0) {
+    store.completeDaily(done);
+    if (!silent) {
+      for (const [key, { xp }] of Object.entries(done)) {
+        const id = key.slice(11);
+        const t = findDaily(id);
+        useToasts.getState().push(
+          id === CHEST_ID
+            ? { icon: "gift", title: "Сундук дня открыт", desc: "Все три квеста дня выполнены.", tone: "daily", xp }
+            : {
+                icon: t?.icon ?? "circle-check",
+                title: "Квест дня выполнен",
+                desc: t?.title ?? "",
+                tone: "daily",
+                xp,
+              },
+        );
+      }
+    }
+  }
+
+  const earned = evaluateAchievements(useProgress.getState(), course, event);
+  const fresh = new Set(store.unlockAchievements(earned.map((a) => a.id)));
+  if (!silent && fresh.size > 0) {
+    for (const a of earned) if (fresh.has(a.id)) toastAchievement(a);
+    sound.achievement();
+  }
+
+  const xpAfter = totalXp(useProgress.getState());
+  if (silent || xpAfter <= xpBefore) return;
+  useXpGain.setState({ gain: { id: nextId++, xp: xpAfter - xpBefore } });
+  const before = levelInfo(xpBefore).level;
+  const after = levelInfo(xpAfter).level;
+  if (after > before) {
+    const rank = rankForLevel(after);
+    useCelebration.setState({
+      current: { kind: "level", level: after, ...(rank.title !== rankForLevel(before).title ? { rank } : {}) },
     });
   }
-  return true;
 }
 
-/** Проверка провалена: ошибка компиляции или несданные тесты. */
-export function checkFailed(key: string) {
-  useProgress.getState().failCheck(key);
-  sound.error();
+const currentXp = () => totalXp(useProgress.getState());
+
+// ——— События ———
+
+export type PassResult = { firstPass: boolean; parts: XpPart[]; xp: number };
+
+/**
+ * Проверка кода закончилась: passed — все тесты пройдены. Для первой сдачи возвращает, из чего сложился опыт.
+ * Ошибка компиляции — тоже проваленная проверка.
+ */
+export function checkFinished(key: string, source: string, passed: boolean): PassResult | null {
+  ensureDay();
+  const store = useProgress.getState();
+  const xpBefore = currentXp();
+  store.bumpDaily(["check"]);
+
+  if (!passed) {
+    store.failCheck(key);
+    sound.error();
+    settle(xpBefore, { type: "check", source });
+    return null;
+  }
+
+  const before = store.stages[key] ?? { attempts: [] };
+  const isKt = isKtKey(key);
+  const parts = stageXpParts(before, isKt);
+  const xp = parts.reduce((sum, p) => sum + p.xp, 0);
+  const firstPass = store.markPassed(key, xp);
+  sound.success();
+  if (!firstPass) {
+    settle(xpBefore, { type: "check", source });
+    return { firstPass: false, parts: [], xp: 0 };
+  }
+
+  const metrics: DailyMetric[] = ["pass"];
+  if (!before.fails) metrics.push("passFirstTry");
+  if (!before.hintUsed) metrics.push("passNoHint");
+  if (isKt) metrics.push("passKt");
+  store.bumpDaily(metrics);
+  settle(xpBefore, { type: "pass", key, before, at: Date.now(), source });
+  return { firstPass: true, parts, xp };
 }
 
 export function runFinished(source: string, stdin: string, run: RunResult) {
-  for (const id of achievementsForRun(source, stdin, run)) grant(id);
+  ensureDay();
+  const store = useProgress.getState();
+  const xpBefore = currentXp();
+  const ok = run.status === "ok" || (run.status === "exit" && run.exitCode === 0);
+  store.addStats({ runs: 1 });
+  store.bumpDaily(ok && stdin.trim() !== "" ? ["run", "runInput"] : ["run"]);
+  settle(xpBefore, { type: "run", source, stdin, run });
 }
 
-export function duelFinished(result: Verdict) {
-  if (result === "excellent") grant("exam_challenger");
+export function duelFinished(verdict: Verdict, percent: number) {
+  ensureDay();
+  const store = useProgress.getState();
+  const xpBefore = currentXp();
+  if (verdict === "excellent") {
+    store.addStats({ duelExcellent: 1, duelGood: 1 });
+    store.bumpDaily(["duelGood", "duelExcellent"]);
+  } else if (verdict === "good") {
+    store.addStats({ duelGood: 1 });
+    store.bumpDaily(["duelGood"]);
+  }
+  settle(xpBefore, { type: "duel", verdict, percent });
+}
+
+/** Верный ответ на квиз засчитывается один раз в день на этап: перещёлкивание вариантов опыт не даёт */
+export function quizAnswered(key: string, right: boolean) {
+  if (!right) return;
+  ensureDay();
+  const store = useProgress.getState();
+  const seen = `quiz:${key}`;
+  if (store.daily?.seen.includes(seen)) return;
+  const xpBefore = currentXp();
+  store.addStats({ quizRight: 1 });
+  store.bumpDaily(["quizRight"], seen);
+  settle(xpBefore);
+}
+
+export function mentorAsked() {
+  ensureDay();
+  const store = useProgress.getState();
+  const xpBefore = currentXp();
+  store.addStats({ mentor: 1 });
+  store.bumpDaily(["mentor"]);
+  settle(xpBefore);
 }
 
 /** Пасхалка: три быстрых клика по логотипу */
 export function phonkDrop() {
   sound.phonk808();
-  useToasts.getState().push({
-    icon: "🎧",
-    title: "PHONK BASS ACTIVATED",
-    desc: "Кибер-ядро платформы разогнано до предела.",
-    tone: "egg",
+  const xpBefore = currentXp();
+  const unlocked = Boolean(useProgress.getState().achievements.egg_phonk);
+  settle(xpBefore, { type: "egg", egg: "phonk" });
+  if (unlocked) {
+    useToasts.getState().push({
+      icon: "headphones",
+      title: "PHONK BASS ACTIVATED",
+      desc: "Кибер-ядро платформы разогнано до предела.",
+      tone: "egg",
+    });
+  }
+}
+
+/**
+ * Пересчёт при загрузке и после входа в аккаунт: достижения, заслуженные раньше, выдаются тихо.
+ * Если прогресс только что перенесён со старой системы — один раз показываем, сколько опыта начислено.
+ */
+export function bootstrapGame() {
+  const store = useProgress.getState();
+  ensureDay();
+  settle(currentXp(), undefined, true);
+  if (!useProgress.getState().upgradeNotice) return;
+  const after = useProgress.getState();
+  const xp = totalXp(after);
+  useCelebration.setState({
+    current: {
+      kind: "upgrade",
+      xp,
+      level: levelInfo(xp).level,
+      achievements: Object.keys(after.achievements).length,
+    },
   });
+  store.dismissUpgradeNotice();
 }

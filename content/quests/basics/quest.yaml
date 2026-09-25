@@ -7,6 +7,6 @@ order: 1
 unlockAfter: null
 rank:
   title: СИНТАКСИЧЕСКИЙ ЮНГА
-  icon: 📦
+  icon: package
   color: "#a855f7"
 stageBadge: "ЭТАП {n} / {total}"

@@ -33,7 +33,7 @@ export function BrandLogo() {
       href="/"
       onClick={onClick}
       aria-label="Java-Zero, на главную"
-      className="flex items-center gap-2 font-display text-base font-semibold"
+      className="flex shrink-0 items-center gap-2 font-display text-base font-semibold whitespace-nowrap"
     >
       <span
         aria-hidden="true"

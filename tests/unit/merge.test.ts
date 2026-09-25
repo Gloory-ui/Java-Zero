@@ -14,7 +14,7 @@ import { EMPTY_PROGRESS, type ProgressData } from "@/lib/progress/types";
 const local: ProgressData = {
   ...EMPTY_PROGRESS,
   persona: "dushny",
-  streak: 2,
+  cleanRun: 2,
   stages: {
     "basics/memory-boxes": { attempts: ["a", "b"], passedAt: 200, code: "local", hintUsed: true },
     "basics/remainder": { attempts: ["c"], fails: 1, startedAt: 300 },
@@ -25,7 +25,7 @@ const local: ProgressData = {
 
 const remote: ProgressData = {
   ...EMPTY_PROGRESS,
-  streak: 4,
+  cleanRun: 4,
   stages: {
     "basics/memory-boxes": { attempts: ["b", "z"], passedAt: 100, code: "cloud", cheatUsed: true },
     "kt1/guess-number": { attempts: [], passedAt: 900 },
@@ -48,7 +48,7 @@ describe("слияние локального и облачного прогре
   it("этапы объединяются, серия — максимум, ачивки — самая ранняя дата, настройки — с устройства", () => {
     const merged = mergeProgress(local, remote);
     expect(Object.keys(merged.stages).sort()).toEqual(["basics/memory-boxes", "basics/remainder", "kt1/guess-number"]);
-    expect(merged.streak).toBe(4);
+    expect(merged.cleanRun).toBe(4);
     expect(merged.achievements).toEqual({ first_var: 400, streak_master: 800 });
     expect(merged.persona).toBe("dushny");
     expect(merged.lastStage).toBe("basics/remainder");
@@ -82,9 +82,10 @@ describe("слияние локального и облачного прогре
       stageKeys: ["basics/memory-boxes"],
       removedStageKeys: ["basics/remainder"],
       achievementIds: ["zero_shield"],
+      dailyKeys: [],
       profileChanged: false,
     });
-    expect(diffProgress(local, { ...local, streak: 0 }).profileChanged).toBe(true);
+    expect(diffProgress(local, { ...local, cleanRun: 0 }).profileChanged).toBe(true);
   });
 
   it("ключи этапов проверяются так же, как в схеме БД", () => {
@@ -102,7 +103,7 @@ describe("чей прогресс в браузере при входе", () => 
   });
 
   it("прогресс этого же аккаунта тоже сливается: изменения, сделанные без сети, не теряются", () => {
-    expect(progressOnSignIn(local, "user-a", remote, "user-a").streak).toBe(4);
+    expect(progressOnSignIn(local, "user-a", remote, "user-a").cleanRun).toBe(4);
     expect(Object.keys(progressOnSignIn(local, "user-a", remote, "user-a").stages)).toHaveLength(3);
   });
 

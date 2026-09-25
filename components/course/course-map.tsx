@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import type { QuestOutline } from "@/lib/content/outline";
 import { plural, STAGES } from "@/lib/plural";
@@ -71,11 +72,13 @@ export function CourseMap({ course }: { course: QuestOutline[] }) {
                     <p className="mt-1 text-sm text-muted">Откроется после квеста «{unlockAfter.title}».</p>
                   )}
                 </div>
-                <span className="text-sm text-muted" title="Ранг за прохождение квеста">
-                  <span className={cn(!open && "grayscale")} aria-hidden="true">
-                    {open ? quest.rank.icon : "🔒"}
-                  </span>{" "}
-                  {quest.rank.title}
+                <span className="text-sm text-muted" title="Титул за прохождение квеста">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span style={open ? { color: quest.rank.color } : undefined}>
+                      <Icon name={open ? quest.rank.icon : "lock"} className="size-4" />
+                    </span>
+                    {quest.rank.title}
+                  </span>
                 </span>
               </div>
               <div className="mt-3 h-1 overflow-hidden rounded-full bg-card" aria-hidden="true">
@@ -90,14 +93,14 @@ export function CourseMap({ course }: { course: QuestOutline[] }) {
                   const unlocked = isStageUnlocked(progress, course, quest, index);
                   const label = (
                     <>
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          "font-mono text-xs",
-                          done ? "text-success" : unlocked ? "text-accent" : "text-muted",
+                      <span className={cn(done ? "text-success" : unlocked ? "text-accent" : "text-muted")}>
+                        {done ? (
+                          <Icon name="check" className="size-3.5" strokeWidth={2.5} />
+                        ) : unlocked ? (
+                          <Icon name="arrow-right" className="size-3.5" />
+                        ) : (
+                          <Icon name="lock" className="size-3.5 opacity-60" />
                         )}
-                      >
-                        {done ? "✓" : unlocked ? "→" : "·"}
                       </span>
                       <span className="min-w-0 truncate">{stage.title}</span>
                       {skipped.has(stageKey(quest.id, stage.id)) && (

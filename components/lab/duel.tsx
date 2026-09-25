@@ -3,6 +3,7 @@
 import { motion, useAnimationControls, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { useMentor } from "@/lib/ai/client";
 import { sound } from "@/lib/audio";
 import { cn } from "@/lib/cn";
@@ -125,10 +126,10 @@ export function Duel({ questions }: { questions: DuelQuestion[] }) {
     const after = next(duel);
     setDuel(after);
     if (after.phase === "summary") {
-      const result = verdict(after).verdict;
+      const { verdict: result, percent } = verdict(after);
       if (result === "excellent") sound.success();
       else if (result !== "good") sound.error();
-      duelFinished(result);
+      duelFinished(result, percent);
     }
   };
 
@@ -235,9 +236,12 @@ export function Duel({ questions }: { questions: DuelQuestion[] }) {
         <span>
           Вопрос {duel.index + 1} из {duel.questions.length}
         </span>
-        <span className={cn("tabular-nums", !feedback && left <= 5 && "text-danger")} aria-live="off">
-          {feedback ? "" : `⏱ ${left} с`}
-        </span>
+        {!feedback && (
+          <span className={cn("flex items-center gap-1 tabular-nums", left <= 5 && "text-danger")} aria-live="off">
+            <Icon name="timer" className="size-3.5" />
+            {left} с
+          </span>
+        )}
       </div>
 
       <p className="font-medium leading-relaxed">{question.q}</p>
@@ -270,16 +274,26 @@ export function Duel({ questions }: { questions: DuelQuestion[] }) {
       {feedback && last && (
         <div className="flex flex-col gap-3 rounded-md border border-border bg-surface p-4 text-sm starting:opacity-0 motion-safe:transition-opacity motion-safe:duration-200">
           <output
-            className={cn("block font-medium", last.right ? (last.crit ? "text-gold" : "text-success") : "text-danger")}
+            className={cn(
+              "flex items-start gap-2 font-medium",
+              last.right ? (last.crit ? "text-gold" : "text-success") : "text-danger",
+            )}
           >
-            {last.right
-              ? last.crit
-                ? `⚡ Критический удар! −${last.damage} HP, ответ за ${last.seconds} с.`
-                : `✓ Верно, −${last.damage} HP профессору.`
-              : last.choice === null
-                ? "⏱ Время вышло: на защите отвечают быстро."
-                : "✗ Неверно. Замечание в лист защиты."}
-            {last.knockedOut && " Нервы на нуле: профессор ставит незачёт."}
+            <Icon
+              name={last.right ? (last.crit ? "zap" : "check") : last.choice === null ? "timer" : "x"}
+              className="mt-0.5 size-4"
+              strokeWidth={2.5}
+            />
+            <span>
+              {last.right
+                ? last.crit
+                  ? `Критический удар! −${last.damage} HP, ответ за ${last.seconds} с.`
+                  : `Верно, −${last.damage} HP профессору.`
+                : last.choice === null
+                  ? "Время вышло: на защите отвечают быстро."
+                  : "Неверно. Замечание в лист защиты."}
+              {last.knockedOut && " Нервы на нуле: профессор ставит незачёт."}
+            </span>
           </output>
           <p className="leading-relaxed text-text/90">
             <span className="font-medium">Разбор: </span>

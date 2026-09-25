@@ -12,6 +12,14 @@ test("прогресс старого сайта переносится при �
   });
 
   await page.goto("/course");
+  // Прогресс перенесён со старой системы: один раз показываем начисленный опыт.
+  // 4 этапа × 70 + по 25 за «Архитектор памяти», «Точность I» (4 этапа с первой проверки) и «Снайпер I» (серия 3)
+  const upgrade = page.getByRole("dialog", { name: /Уровень/ });
+  await expect(upgrade).toBeVisible();
+  await expect(upgrade.getByText("355 XP")).toBeVisible();
+  await upgrade.getByRole("button", { name: "Продолжить" }).click();
+  await expect(upgrade).toBeHidden();
+
   await expect(page.getByText("00 · 2 из 8")).toBeVisible();
   await expect(page.getByText("01 · 2 из 6")).toBeVisible();
   await expect(page.getByRole("link", { name: "Продолжить" })).toHaveAttribute(
@@ -20,8 +28,9 @@ test("прогресс старого сайта переносится при �
   );
 
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("java-zero-progress") ?? "{}"));
-  expect(saved.state.streak).toBe(3);
-  expect(Object.keys(saved.state.achievements)).toEqual(["first_var"]);
+  expect(saved.state.cleanRun).toBe(3);
+  expect(saved.state.upgradeNotice).toBe(false);
+  expect(Object.keys(saved.state.achievements).sort()).toEqual(["first_var", "precision_3", "streak_master"]);
   // Старые ключи остаются на случай отката
   expect(await page.evaluate(() => localStorage.getItem("java_zero_streak"))).toBe("3");
 });

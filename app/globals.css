@@ -186,3 +186,92 @@
     display: none;
   }
 }
+
+/* ——— Неон игровой системы (components/game): цвет задаёт --neon на элементе, по умолчанию фирменный ———
+   Бесконечные анимации двигают только transform псевдоэлементов: их считает видеокарта, страница не перерисовывается */
+
+/* Кольцо вокруг аватара и эмблемы ранга: блик бегает по кругу. Вращение равномерное, поэтому linear */
+.neon-ring {
+  --neon: var(--accent);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--neon) 35%, transparent);
+}
+
+.neon-ring::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  z-index: -1;
+  background: conic-gradient(var(--neon), transparent 25%, var(--neon) 50%, transparent 75%, var(--neon));
+  animation: neon-spin 6s linear infinite;
+}
+
+@keyframes neon-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.neon-glow {
+  --neon: var(--accent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--neon) 55%, transparent),
+    0 0 18px color-mix(in oklab, var(--neon) 40%, transparent),
+    inset 0 0 18px color-mix(in oklab, var(--neon) 12%, transparent);
+}
+
+.neon-text {
+  --neon: var(--accent);
+  text-shadow: 0 0 14px color-mix(in oklab, var(--neon) 65%, transparent);
+}
+
+/* Незаполненная часть полосы опыта: диагональная штриховка медленно бежит вправо.
+   Слой шире полосы на один период (14 px) и сдвигается ровно на период — стык не виден */
+.xp-stripes {
+  --neon: var(--gold);
+  position: relative;
+  overflow: hidden;
+}
+
+.xp-stripes::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 -14px;
+  background-image: linear-gradient(
+    -45deg,
+    color-mix(in oklab, var(--neon) 40%, transparent) 25%,
+    transparent 25%,
+    transparent 50%,
+    color-mix(in oklab, var(--neon) 40%, transparent) 50%,
+    color-mix(in oklab, var(--neon) 40%, transparent) 75%,
+    transparent 75%
+  );
+  background-size: 14px 14px;
+  animation: xp-stripes 1.4s linear infinite;
+}
+
+@keyframes xp-stripes {
+  to {
+    transform: translateX(14px);
+  }
+}
+
+/* Светлая тема: свечение слабее, иначе оно пачкает белый фон */
+[data-theme="light"] .neon-glow {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--neon) 60%, transparent),
+    0 0 10px color-mix(in oklab, var(--neon) 22%, transparent);
+}
+
+[data-theme="light"] .neon-text {
+  text-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-ring::before,
+  .xp-stripes::before {
+    animation: none;
+  }
+}

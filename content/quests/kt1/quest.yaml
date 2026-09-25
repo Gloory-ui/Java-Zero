@@ -7,6 +7,6 @@ order: 3
 unlockAfter: loops_prep
 rank:
   title: ГРОЗА СЕССИИ
-  icon: ⚔️
+  icon: swords
   color: "#ff2a55"
 stageBadge: "КТ 1 // ЗАДАНИЕ {n}"

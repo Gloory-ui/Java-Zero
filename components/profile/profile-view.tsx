@@ -2,19 +2,23 @@
 
 import { useState } from "react";
 import { Avatar } from "@/components/account/account-menu";
+import { AchievementsPanel } from "@/components/game/achievements-panel";
+import { DailyQuests } from "@/components/game/daily-quests";
+import { LevelCard } from "@/components/game/level-card";
+import { useGame } from "@/components/game/use-game";
 import { Button, ButtonLink } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { signOut } from "@/lib/account/actions";
 import { useAccount } from "@/lib/account/store";
 import { PERSONA_INFO } from "@/lib/ai/personas";
 import { cn } from "@/lib/cn";
 import type { QuestOutline } from "@/lib/content/outline";
-import { ACHIEVEMENTS } from "@/lib/game/achievements";
-import { STARTER_RANK, STREAK_RANK, STREAK_RANK_AT, userRank } from "@/lib/game/ranks";
-import { isQuestCompleted, questProgress } from "@/lib/progress/selectors";
+import { achievementCatalog } from "@/lib/game/achievements";
+import { dailyQuestsDone } from "@/lib/game/daily";
+import { RANKS } from "@/lib/game/ranks";
+import { questProgress } from "@/lib/progress/selectors";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
 import { EMPTY_PROGRESS } from "@/lib/progress/types";
-
-const dateFormat = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric" });
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -83,79 +87,108 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
   const progress = hydrated ? stored : EMPTY_PROGRESS;
   const user = useAccount((s) => s.user);
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
+  const { level, rank, streak } = useGame();
 
-  const rank = userRank(progress, course);
   const stagesTotal = course.reduce((sum, q) => sum + q.stages.length, 0);
   const stagesPassed = Object.values(progress.stages).filter((s) => s.passedAt).length;
-  const questsDone = course.filter((q) => isQuestCompleted(progress, q)).length;
-  const unlocked = Object.keys(progress.achievements).filter((id) => ACHIEVEMENTS.some((a) => a.id === id)).length;
-  const ladder = [STARTER_RANK, ...course.map((q) => q.rank), STREAK_RANK];
+  const catalog = achievementCatalog(course);
+  const unlocked = catalog.filter((a) => progress.achievements[a.id]).length;
 
   const stats = [
-    { label: "Этапов сдано", value: `${stagesPassed} из ${stagesTotal}` },
-    { label: "Квестов закрыто", value: `${questsDone} из ${course.length}` },
-    { label: "Серия", value: `🔥 ${progress.streak}` },
-    { label: "Ачивки", value: `${unlocked} из ${ACHIEVEMENTS.length}` },
+    {
+      icon: "circle-check" as const,
+      tone: "var(--success)",
+      label: "Этапов сдано",
+      value: `${stagesPassed} из ${stagesTotal}`,
+    },
+    {
+      icon: "flame" as const,
+      tone: "var(--gold)",
+      label: "Серия дней",
+      value: String(streak.current),
+      note: `лучшая ${streak.best}${streak.freezes > 0 ? ` · заморозок: ${streak.freezes}` : ""}`,
+    },
+    { icon: "map" as const, tone: "#38bdf8", label: "Квестов дня", value: String(dailyQuestsDone(progress)) },
+    { icon: "trophy" as const, tone: "#a855f7", label: "Достижений", value: `${unlocked} из ${catalog.length}` },
   ];
 
   return (
     <div className={cn("flex flex-col gap-10", !hydrated && "opacity-0")}>
       <div className="flex items-center gap-4">
-        {user ? (
-          <Avatar name={user.name} src={user.avatar} size="lg" />
-        ) : (
-          <span className="grid size-16 place-items-center rounded-full bg-card text-3xl" aria-hidden="true">
-            {rank.icon}
-          </span>
-        )}
+        <div
+          className="neon-ring shrink-0 rounded-full p-[3px]"
+          style={{ "--neon": rank.color } as React.CSSProperties}
+        >
+          {user ? (
+            <Avatar name={user.name} src={user.avatar} size="lg" />
+          ) : (
+            <span className="grid size-16 place-items-center rounded-full bg-card" style={{ color: rank.color }}>
+              <Icon name={rank.icon} className="size-8" strokeWidth={1.5} />
+            </span>
+          )}
+        </div>
         <div className="min-w-0">
           <h1 className="truncate font-display text-2xl font-semibold">{user?.name ?? "Профиль"}</h1>
           <p className="mt-1 flex items-center gap-2 font-mono text-sm tracking-wide">
             <span className="size-2 rounded-full" style={{ backgroundColor: rank.color }} aria-hidden="true" />
-            {rank.icon} {rank.title}
+            {rank.title} · уровень {level.level}
           </p>
         </div>
       </div>
 
       <AccountCard />
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <LevelCard />
+
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Статистика">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-lg border border-border bg-surface p-4">
-            <dt className="text-xs text-muted">{s.label}</dt>
-            <dd className="mt-1 font-display text-lg font-semibold tabular-nums">{s.value}</dd>
-          </div>
+          <li
+            key={s.label}
+            className="flex flex-col items-center gap-2 rounded-xl border border-border bg-surface px-3 py-5 text-center"
+          >
+            <span
+              className="grid size-10 place-items-center rounded-lg"
+              style={{ backgroundColor: `color-mix(in oklab, ${s.tone} 16%, transparent)`, color: s.tone }}
+            >
+              <Icon name={s.icon} className="size-5" />
+            </span>
+            <p className="font-display text-2xl font-bold tabular-nums">{s.value}</p>
+            <p className="font-mono text-[11px] tracking-widest text-muted uppercase">{s.label}</p>
+            {s.note && <p className="text-xs text-muted">{s.note}</p>}
+          </li>
         ))}
-      </dl>
+      </ul>
+
+      <DailyQuests />
+
+      <AchievementsPanel course={course} />
 
       <Section title="Ранги">
-        <ol className="flex flex-col gap-2">
-          {ladder.map((r, i) => {
+        <p className="-mt-2 text-sm text-muted">
+          Ранг растёт вместе с уровнем. Опыт дают этапы, достижения и квесты дня.
+        </p>
+        <ol className="grid gap-2 sm:grid-cols-2">
+          {RANKS.map((r) => {
             const current = r.title === rank.title;
-            const reached = i === 0 || current || (r !== STREAK_RANK && isQuestCompleted(progress, course[i - 1]));
-            const condition =
-              i === 0
-                ? "С первого дня"
-                : r === STREAK_RANK
-                  ? `Серия от ${STREAK_RANK_AT} этапов подряд без провалов`
-                  : `Закрыть квест «${course[i - 1].title}»`;
+            const reached = level.level >= r.level;
             return (
               <li
                 key={r.title}
                 className={cn(
-                  "flex items-center gap-3 rounded-md border px-3 py-2",
-                  current ? "border-border-strong bg-card" : "border-transparent",
+                  "flex items-center gap-3 rounded-lg border px-3 py-2",
+                  current ? "neon-glow border-transparent bg-card" : "border-border",
                 )}
+                style={current ? ({ "--neon": r.color } as React.CSSProperties) : undefined}
               >
-                <span className={cn("text-xl", !reached && "opacity-40 grayscale")} aria-hidden="true">
-                  {r.icon}
+                <span className={cn(!reached && "opacity-40")} style={{ color: reached ? r.color : undefined }}>
+                  <Icon name={r.icon} className="size-5" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={cn("block font-mono text-sm", !reached && "text-muted")}>{r.title}</span>
-                  <span className="block text-xs text-muted">{condition}</span>
+                  <span className="block text-xs text-muted">с {r.level} уровня</span>
                 </span>
                 {current ? (
-                  <span className="text-xs text-gold">сейчас</span>
+                  <span className="text-xs font-semibold">сейчас</span>
                 ) : (
                   reached && <span className="text-xs text-success">получен</span>
                 )}
@@ -163,34 +196,6 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
             );
           })}
         </ol>
-      </Section>
-
-      <Section title="Ачивки">
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {ACHIEVEMENTS.map((a) => {
-            const at = progress.achievements[a.id];
-            return (
-              <li
-                key={a.id}
-                className={cn(
-                  "flex items-start gap-3 rounded-lg border p-4",
-                  at ? "border-gold/50 bg-surface" : "border-dashed border-border-strong",
-                )}
-              >
-                <span className={cn("text-2xl", !at && "opacity-40 grayscale")} aria-hidden="true">
-                  {a.icon}
-                </span>
-                <span className="min-w-0">
-                  <span className={cn("block font-semibold", !at && "text-muted")}>{a.title}</span>
-                  <span className="block text-sm text-muted">{a.desc}</span>
-                  <span className="mt-1 block text-xs text-muted">
-                    {at ? `Открыта ${dateFormat.format(at)}` : "Ещё не открыта"}
-                  </span>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
       </Section>
 
       <Section title="AI-ментор">
@@ -213,7 +218,10 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
                 className="sr-only"
               />
               <span className="font-semibold">
-                <span aria-hidden="true">{p.icon}</span> {p.label}
+                <span className="inline-flex items-center gap-2">
+                  <Icon name={p.icon} className="size-4 text-muted" />
+                  {p.label}
+                </span>
               </span>
               <span className="text-sm text-muted">{p.desc}</span>
             </label>
