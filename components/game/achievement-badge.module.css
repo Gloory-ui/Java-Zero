@@ -1,0 +1,282 @@
+/* Анимации значков: только transform и opacity, вне экрана — на паузе (data-paused) */
+
+.badge {
+  position: relative;
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  isolation: isolate;
+}
+
+.badge[data-paused] *,
+.badge[data-paused] {
+  animation-play-state: paused !important;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.masked {
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+}
+
+.spin {
+  position: absolute;
+  inset: -30%;
+  animation: spin var(--spin, 24s) linear infinite;
+}
+
+.spinReverse {
+  animation-direction: reverse;
+}
+
+.conic {
+  background: conic-gradient(from 0deg, var(--conic));
+}
+
+.ornament {
+  position: absolute;
+  inset: 0;
+  animation: spin calc(var(--spin, 24s) * 2.5) linear infinite reverse;
+}
+
+/* Декор вокруг рамки: слой шире значка, вращается только его часть */
+.decor {
+  inset: -20%;
+  opacity: 0.75;
+}
+
+.decorSpin {
+  position: absolute;
+  inset: 0;
+  animation: spin calc(var(--spin, 24s) * 3) linear infinite var(--delay, 0s);
+}
+
+/* Ореол за рамкой: закрученные лучи, как на голограмме */
+.halo {
+  inset: -24%;
+  mask-image: radial-gradient(closest-side, transparent 62%, #000 74%, transparent 92%);
+  -webkit-mask-image: radial-gradient(closest-side, transparent 62%, #000 74%, transparent 92%);
+}
+
+.haloRays {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, var(--halo) 0deg 1.5deg, transparent 1.5deg 12deg);
+  opacity: 0.55;
+  animation: spin calc(var(--spin, 24s) * 1.5) linear infinite;
+}
+
+.glow {
+  inset: -14%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--glow), transparent);
+  animation: breathe 3.2s ease-in-out infinite var(--delay, 0s);
+}
+
+.sheen {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -60%;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.4), transparent);
+  animation: sheen var(--sheen, 5s) ease-in-out infinite var(--delay, 0s);
+}
+
+.orbitDot {
+  position: absolute;
+  inset: 4%;
+  animation: spin calc(var(--spin, 24s) * 0.4) linear infinite var(--delay, 0s);
+}
+
+.orbitDot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 7%;
+  height: 7%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: 0 0 6px 1px var(--dot);
+}
+
+.sparkle {
+  position: absolute;
+  translate: -50% -50%;
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+
+.icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.icon > * {
+  grid-area: 1 / 1;
+}
+
+.glitchBase {
+  animation: glitch-base var(--glitch, 5s) steps(1) infinite var(--delay, 0s);
+}
+
+.glitchA,
+.glitchB,
+.glitchSlice {
+  opacity: 0;
+}
+
+.glitchA {
+  color: #22d3ee;
+  animation: glitch-a var(--glitch, 5s) steps(1) infinite var(--delay, 0s);
+}
+
+.glitchB {
+  color: #f43f5e;
+  animation: glitch-b var(--glitch, 5s) steps(1) infinite var(--delay, 0s);
+}
+
+.glitchSlice {
+  clip-path: inset(38% 0 42% 0);
+  animation: glitch-slice var(--glitch, 5s) steps(1) infinite var(--delay, 0s);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes sheen {
+  0% {
+    transform: translateX(0);
+  }
+  40%,
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.3) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(90deg);
+  }
+}
+
+@keyframes glitch-base {
+  0%,
+  86%,
+  100% {
+    transform: none;
+  }
+  87% {
+    transform: translate(4%, 0) skewX(12deg);
+  }
+  89% {
+    transform: translate(-3%, 1%);
+  }
+  91% {
+    transform: none;
+  }
+  93% {
+    transform: translate(2%, 0) skewX(-8deg);
+  }
+  94% {
+    transform: none;
+  }
+}
+
+@keyframes glitch-a {
+  0%,
+  86%,
+  95%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+  87% {
+    opacity: 0.85;
+    transform: translate(-7%, 2%);
+  }
+  90% {
+    opacity: 0.85;
+    transform: translate(5%, -2%);
+  }
+  93% {
+    opacity: 0.7;
+    transform: translate(-3%, 0);
+  }
+}
+
+@keyframes glitch-b {
+  0%,
+  86%,
+  95%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+  87% {
+    opacity: 0.85;
+    transform: translate(7%, -2%);
+  }
+  90% {
+    opacity: 0.85;
+    transform: translate(-5%, 2%);
+  }
+  93% {
+    opacity: 0.7;
+    transform: translate(3%, 1%);
+  }
+}
+
+@keyframes glitch-slice {
+  0%,
+  88%,
+  93%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+  89% {
+    opacity: 1;
+    transform: translateX(12%);
+  }
+  91% {
+    opacity: 1;
+    transform: translateX(-10%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge,
+  .badge * {
+    animation: none !important;
+  }
+}
