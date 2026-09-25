@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import { phonkDrop } from "@/lib/game/events";
+import { BrandMark } from "./brand-mark";
 
 const CLICK_GAP_MS = 700;
 
@@ -35,15 +36,13 @@ export function BrandLogo() {
       aria-label="Java-Zero, на главную"
       className="flex shrink-0 items-center gap-2 font-display text-base font-semibold whitespace-nowrap"
     >
-      <span
-        aria-hidden="true"
+      <BrandMark
+        size={28}
         className={cn(
-          "grid size-7 place-items-center rounded-md bg-accent-solid font-mono text-xs text-white transition-[scale,box-shadow] duration-300 ease-snappy",
+          "rounded-md transition-[scale,box-shadow] duration-300 ease-snappy",
           flash && "scale-110 shadow-glow",
         )}
-      >
-        J0
-      </span>
+      />
       <span className="hidden sm:inline">Java-Zero</span>
     </Link>
   );

@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
+import { BrandMark } from "@/components/site/brand-mark";
 
 export const alt = "Java-Zero: Java с нуля до сданной контрольной";
 export const size = { width: 1200, height: 630 };
@@ -46,21 +47,7 @@ export default async function OpengraphImage() {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 64,
-            height: 64,
-            borderRadius: 14,
-            background: "#e11d48",
-            fontFamily: DISPLAY,
-            fontSize: 26,
-          }}
-        >
-          J0
-        </div>
+        <BrandMark size={64} />
         <div style={{ fontFamily: DISPLAY, fontSize: 34 }}>Java-Zero</div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
