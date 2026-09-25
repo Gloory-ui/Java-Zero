@@ -37,7 +37,10 @@ const correctInRange = (q: { options: string[]; correct: number }) => q.correct 
 
 export const stageSchema = z.object({
   id: slug,
-  badge: z.string().min(1),
+  /** Метка этапа; обычно не нужна — её собирает загрузчик по шаблону stageBadge из quest.yaml */
+  badge: z.string().min(1).optional(),
+  /** Этап добавлен в уже идущий курс: на карте для студентов с прогрессом он помечен «Новый» */
+  isNew: z.boolean().optional(),
   title: z.string().min(1),
   /**
    * Подсказки по шагам: от направления мысли к почти готовому коду. Студент открывает их по одной;
@@ -79,6 +82,8 @@ export const questSchema = z.object({
   unlockAfter: slug.nullable(),
   /** Звание за закрытие квеста */
   rank: z.object({ title: z.string().min(1), icon: z.string().min(1), color: hexColor }),
+  /** Шаблон метки этапа: {n} — номер, {total} — число этапов (оба с ведущим нулём) */
+  stageBadge: z.string().min(1).default("ЭТАП {n} / {total}"),
 });
 
 export type IoTest = z.infer<typeof ioTestSchema>;
@@ -87,7 +92,9 @@ export type StageTest = z.infer<typeof stageTestSchema>;
 export type StageMeta = z.infer<typeof stageSchema>;
 export type QuestMeta = z.infer<typeof questSchema>;
 
-export type Stage = StageMeta & {
+export type Stage = Omit<StageMeta, "badge"> & {
+  /** Всегда задана: из stage.yaml или по шаблону квеста */
+  badge: string;
   questId: string;
   index: number;
   theory: string;

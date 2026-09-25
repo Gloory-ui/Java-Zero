@@ -25,7 +25,7 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
     id: "division_safe",
     icon: "➗",
     title: "Знаток типов",
-    desc: "Сдай этап про деление и остаток с первой проверки.",
+    desc: "Сдай этап про целое и дробное деление с первой проверки.",
   },
   {
     id: "input_master",
@@ -58,8 +58,9 @@ export function findAchievement(id: string): Achievement | undefined {
 /** Ачивки за сдачу этапа. stage — состояние этапа до отметки о сдаче, streak — серия после неё. */
 export function achievementsForPass(key: string, stage: StageProgress, streak: number): AchievementId[] {
   const earned: AchievementId[] = [];
-  if (key === "basics/memory-boxes" && !stage.cheatUsed && !stage.solutionViewed) earned.push("first_var");
-  if (key === "basics/remainder" && !stage.fails) earned.push("division_safe");
+  // Первый этап курса и этап про деление; id этапов, а не номера — порядок курса может меняться
+  if (key === "basics/program-structure" && !stage.cheatUsed && !stage.solutionViewed) earned.push("first_var");
+  if (key === "basics/arithmetic" && !stage.fails) earned.push("division_safe");
   if (key === "calc/switch-zero" && !stage.hintUsed) earned.push("zero_shield");
   if (key === "calc/factorial") earned.push("stack_safe");
   if (streak >= STREAK_MASTER_AT) earned.push("streak_master");

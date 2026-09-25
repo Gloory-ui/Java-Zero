@@ -1,4 +1,5 @@
 import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { JavaCode } from "./code-block";
 
 // Разметка теории и граблей: только безопасный Markdown (react-markdown не исполняет HTML из текста)
@@ -29,6 +30,19 @@ const components: Components = {
         {children}
       </code>
     ),
+  // Таблицы (GFM): на узком экране прокручиваются внутри блока, а не всей страницей
+  table: ({ children }) => (
+    <div
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: прокручиваемая таблица должна получать фокус (WCAG 2.1.1)
+      tabIndex={0}
+      className="my-4 overflow-x-auto rounded-md border border-border"
+    >
+      <table className="w-full text-left text-sm">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead className="bg-card text-muted">{children}</thead>,
+  th: ({ children }) => <th className="px-3 py-2 font-medium">{children}</th>,
+  td: ({ children }) => <td className="border-t border-border px-3 py-2 align-top">{children}</td>,
   a: ({ href, children }) => (
     <a href={href} className="text-accent underline underline-offset-2" target="_blank" rel="noreferrer">
       {children}
@@ -37,5 +51,9 @@ const components: Components = {
 };
 
 export function Markdown({ children }: { children: string }) {
-  return <ReactMarkdown components={components}>{children}</ReactMarkdown>;
+  return (
+    <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
+      {children}
+    </ReactMarkdown>
+  );
 }

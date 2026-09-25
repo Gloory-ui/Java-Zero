@@ -1,7 +1,7 @@
 id: calc
 num: "02"
 title: Калькулятор
-subtitle: Массивы, switch, рекурсия
+subtitle: switch, методы, массивы и рекурсия
 fileName: Calculator.java
 order: 4
 unlockAfter: kt1
@@ -9,3 +9,4 @@ rank:
   title: УКРОТИТЕЛЬ СТЕКА
   icon: ⚡
   color: "#10b981"
+stageBadge: "ЭТАП {n} / {total}"

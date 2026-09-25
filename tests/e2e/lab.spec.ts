@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-const STAGE = "/learn/basics/memory-boxes";
+const STAGE = "/learn/basics/program-structure";
 
 async function setCode(page: Page, code: string) {
   const editor = page.locator(".cm-content");
@@ -17,9 +17,9 @@ test("этап: теория, вкладки и квиз работают без
   });
 
   await page.goto(STAGE);
-  await expect(page).toHaveTitle(/Коробки памяти/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Коробки памяти");
-  await expect(page.getByRole("heading", { name: "Как компьютер хранит данные?" })).toBeVisible();
+  await expect(page).toHaveTitle(/Первая программа/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Первая программа");
+  await expect(page.getByRole("heading", { name: "Как устроена программа" })).toBeVisible();
 
   await page.getByRole("tab", { name: "Квиз" }).click();
   await expect(page.getByRole("tab", { name: "Квиз" })).toHaveAttribute("aria-selected", "true");
@@ -54,7 +54,7 @@ test("закрытый этап показывает, куда идти", async 
   await expect(page.getByRole("heading", { name: "Этап пока закрыт" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Продолжить с доступного этапа" })).toHaveAttribute(
     "href",
-    "/learn/basics/memory-boxes",
+    "/learn/basics/program-structure",
   );
 });
 
@@ -82,13 +82,13 @@ test("настоящая Java: ошибка компиляции, затем с�
 
   await setCode(
     page,
-    "public class Basics {\n    public static void main(String[] args) {\n        int a = 10;\n        double b = 2.5;\n        double result = a + b;\n        System.out.println(result);\n    }\n}\n",
+    'public class Basics {\n    public static void main(String[] args) {\n        System.out.println("Привет, Java!");\n        System.out.println("Я пишу первую программу");\n    }\n}\n',
   );
   await page.keyboard.press("ControlOrMeta+Enter");
   await expect(page.getByText("Этап сдан")).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText("Тесты: 4 из 4")).toBeVisible();
+  await expect(page.getByText("Тесты: 2 из 2")).toBeVisible();
 
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("java-zero-progress") ?? "{}"));
-  expect(saved.state.stages["basics/memory-boxes"].passedAt).toBeGreaterThan(0);
+  expect(saved.state.stages["basics/program-structure"].passedAt).toBeGreaterThan(0);
   expect(saved.state.streak).toBe(1);
 });

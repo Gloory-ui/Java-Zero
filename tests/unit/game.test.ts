@@ -78,10 +78,12 @@ describe("дуэль", () => {
 
 describe("ачивки", () => {
   it("за сдачу этапов привязаны к id, а не к номерам", () => {
-    expect(achievementsForPass("basics/memory-boxes", { attempts: [] }, 1)).toEqual(["first_var"]);
-    expect(achievementsForPass("basics/memory-boxes", { attempts: [], cheatUsed: true }, 1)).toEqual([]);
-    expect(achievementsForPass("basics/remainder", { attempts: [], fails: 1 }, 1)).toEqual([]);
-    expect(achievementsForPass("basics/remainder", { attempts: [] }, 1)).toEqual(["division_safe"]);
+    expect(achievementsForPass("basics/program-structure", { attempts: [] }, 1)).toEqual(["first_var"]);
+    expect(achievementsForPass("basics/program-structure", { attempts: [], cheatUsed: true }, 1)).toEqual([]);
+    expect(achievementsForPass("basics/arithmetic", { attempts: [], fails: 1 }, 1)).toEqual([]);
+    // Старые этапы больше не первые в курсе и ачивок не дают
+    expect(achievementsForPass("basics/memory-boxes", { attempts: [] }, 1)).toEqual([]);
+    expect(achievementsForPass("basics/arithmetic", { attempts: [] }, 1)).toEqual(["division_safe"]);
     expect(achievementsForPass("calc/switch-zero", { attempts: [], hintUsed: true }, 1)).toEqual([]);
     expect(achievementsForPass("calc/factorial", { attempts: [] }, 3)).toEqual(["stack_safe", "streak_master"]);
   });

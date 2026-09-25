@@ -12,7 +12,7 @@ test("ментор: вопрос уходит с контекстом этапа
     });
   });
 
-  await page.goto("/learn/basics/memory-boxes");
+  await page.goto("/learn/basics/program-structure");
   await page.getByRole("button", { name: "AI-ментор" }).click();
   const panel = page.getByRole("complementary", { name: "AI-ментор" });
   await expect(panel).toBeVisible();
@@ -22,7 +22,7 @@ test("ментор: вопрос уходит с контекстом этапа
 
   await expect(panel.getByText("Что не так?")).toBeVisible();
   await expect(panel.locator("strong", { hasText: "строку 3" })).toBeVisible();
-  expect(sent).toMatchObject({ stageKey: "basics/memory-boxes", message: "Что не так?", persona: "chill" });
+  expect(sent).toMatchObject({ stageKey: "basics/program-structure", message: "Что не так?", persona: "chill" });
   expect(String((sent as unknown as { code: string }).code)).toContain("public class Basics");
 
   await page.keyboard.press("Escape");
@@ -33,7 +33,7 @@ test("ментор: ошибка сервера показывается пон�
   await page.route("**/api/ai", (route) =>
     route.fulfill({ status: 429, json: { error: "Слишком много вопросов подряд. Ментор снова ответит через 3 мин." } }),
   );
-  await page.goto("/learn/basics/memory-boxes");
+  await page.goto("/learn/basics/program-structure");
   await page.getByRole("button", { name: "AI-ментор" }).click();
   await page.getByRole("button", { name: "Разбери мой код" }).click();
   await expect(page.getByText("Ментор снова ответит через 3 мин.")).toBeVisible();

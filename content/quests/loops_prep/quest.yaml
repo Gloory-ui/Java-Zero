@@ -9,3 +9,4 @@ rank:
   title: ОПЕРАТОР ЦИКЛА
   icon: 🌀
   color: "#38bdf8"
+stageBadge: "ПОДГОТОВКА {n} / {total}"
