@@ -1,7 +1,10 @@
 id: while-attempts
 badge: ПОДГОТОВКА 05 / 06
 title: Цикл while и лимит попыток
-hint: while (attempts < maxAttempts) { attempts++; System.out.println("Попытка " + attempts); }
+hints:
+  - "Цикл `while` повторяется, пока условие в скобках истинно: `attempts < maxAttempts`."
+  - Внутри цикла сначала увеличь счётчик `attempts++;`, потом печатай — так первая строка будет «Попытка 1», а не «Попытка 0».
+  - 'Печать: `System.out.println("Попытка " + attempts);` — пробел после слова стоит внутри кавычек.'
 quiz:
   question: Когда проверяется условие в цикле while?
   options:
@@ -22,14 +25,15 @@ exam:
     explain: Если переменная в условии цикла не изменяется, условие всегда истинно. Выполнение зациклится.
     advice: Всегда проверяй шаг изменения условий в циклах while.
 memory:
+  note: "Момент после цикла: attempts дорос до 3, условие 3 < 3 ложно, и цикл закончился."
   stack:
     - method: main()
       vars:
-        - int attempts = 0
+        - int attempts = 3
         - int maxAttempts = 3
   heap:
-    - obj: Input stream
-      data: User guesses
+    - obj: '"Попытка "'
+      data: "Строка-литерал. Склейка с числом каждый раз создаёт новую строку: «Попытка 1», «Попытка 2»…"
 tests:
   - name: Печатает три попытки
     stdout: |

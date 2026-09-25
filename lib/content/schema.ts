@@ -10,7 +10,11 @@ export const ioTestSchema = z.object({
   name: z.string().min(1),
   stdin: z.string().default(""),
   stdout: z.string(),
-  match: z.enum(["lines", "exact", "contains", "regex"]).default("lines"),
+  /**
+   * lines — построчно без хвостовых пробелов; tokens — построчно по словам: число пробелов, табуляции и пустые строки
+   * не важны (таблицы, числа через пробел); exact, contains, regex — для особых случаев. «ё» везде равна «е».
+   */
+  match: z.enum(["lines", "tokens", "exact", "contains", "regex"]).default("lines"),
 });
 
 /** Проверка структуры кода, когда по выводу её не видно (например, «используй break»). */
@@ -35,7 +39,11 @@ export const stageSchema = z.object({
   id: slug,
   badge: z.string().min(1),
   title: z.string().min(1),
-  hint: z.string().min(1),
+  /**
+   * Подсказки по шагам: от направления мысли к почти готовому коду. Студент открывает их по одной;
+   * целиком код показывает только «Решение» после пяти попыток.
+   */
+  hints: z.array(z.string().min(1)).min(1).max(4),
   /** Ввод, подставленный в поле stdin при ручном запуске */
   sampleInput: z.string().optional(),
   quiz: z
@@ -48,8 +56,10 @@ export const stageSchema = z.object({
         .refine(correctInRange, "exam.correct вне списка вариантов"),
     )
     .min(1),
+  /** Картина памяти в один момент; note объясняет, какой это момент и что видно */
   memory: z
     .object({
+      note: z.string().optional(),
       stack: z.array(z.object({ method: z.string(), vars: z.array(z.string()) })),
       heap: z.array(z.object({ obj: z.string(), data: z.string() })),
     })

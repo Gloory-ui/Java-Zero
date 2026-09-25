@@ -1,7 +1,10 @@
 id: guess-number
 badge: КТ 1 // ЗАДАНИЕ 05
 title: Игра «Угадай число» с лимитом попыток
-hint: while (attempts < maxAttempts) { attempts++; int guess = sc.nextInt(); if (guess == target) { System.out.println("Угадал!"); break; } else if (guess < target) System.out.println("больше"); else System.out.println("меньше"); }
+hints:
+  - "Цикл `while (attempts < maxAttempts)`: в начале каждого круга увеличь `attempts` и прочитай число `int guess = sc.nextInt();`."
+  - "Сравни `guess` с `target`: равно — «Угадал!» и `break;`; меньше — «больше»; иначе — «меньше»."
+  - "«больше» значит «загаданное число больше твоего»: эта подсказка печатается, когда `guess < target`."
 sampleInput: |
   10
   90
@@ -26,15 +29,18 @@ exam:
     explain: Цикл while или for с ограничением по счетчику гарантирует, что программа завершится, даже если пользователь не угадал число.
     advice: Объясни преподавателю условие остановки цикла.
 memory:
+  note: "Момент победы при вводе 10, 90, 42: третья попытка угадала. Сам Scanner — объект в куче, в стеке лежит только ссылка на него."
   stack:
     - method: main()
       vars:
+        - Scanner sc → объект в куче
         - int target = 42
-        - int attempts = 5
-        - guess < target -> больше
+        - int maxAttempts = 5
+        - int attempts = 3
+        - int guess = 42
   heap:
     - obj: Scanner
-      data: Interactive console stream
+      data: "Читает числа из ввода по одному: 10, потом 90, потом 42."
 tests:
   - name: Подсказки и победа с третьей попытки
     stdin: |

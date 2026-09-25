@@ -1,7 +1,10 @@
 id: primes-to-n
 badge: КТ 1 // ЗАДАНИЕ 06
 title: Простые числа от 2 до N и их подсчет
-hint: 'for (int i = 2; i <= n; i++) { boolean isPrime = true; for (int j = 2; j < i; j++) { if (i % j == 0) { isPrime = false; break; } } if (isPrime) { System.out.print(i + " "); count++; } } System.out.println("Количество простых чисел: " + count);'
+hints:
+  - Внешний цикл перебирает кандидатов от 2 до n. Для каждого заново заводи `boolean isPrime = true;` внутри внешнего цикла.
+  - "Внутренний цикл ищет делитель `j` от 2 до `i - 1`: нашёл `i % j == 0` — `isPrime = false; break;`."
+  - 'Простое печатай в строку через пробел: `System.out.print(i + " ");` и увеличивай `count`. После циклов — `System.out.println();` и строка с количеством.'
 sampleInput: |
   20
 quiz:
@@ -24,14 +27,16 @@ exam:
     explain: Любой делитель d > sqrt(n) имеет пару n/d < sqrt(n). Проверять числа выше корня математически бессмысленно.
     advice: Поделись этим фактом перед преподавателем!
 memory:
+  note: "Момент после циклов при вводе 20: найдено 8 простых — 2 3 5 7 11 13 17 19."
   stack:
     - method: main()
       vars:
-        - int N = 20
-        - int count = 8 (2, 3, 5, 7, 11, 13, 17, 19)
+        - Scanner sc → объект в куче
+        - int n = 20
+        - int count = 8
   heap:
-    - obj: Primes Buffer
-      data: 2 3 5 7 11 13 17 19
+    - obj: Scanner
+      data: Прочитал из ввода число 20.
 tests:
   - name: Простые до 20
     stdin: |
@@ -39,24 +44,28 @@ tests:
     stdout: |
       2 3 5 7 11 13 17 19 
       Количество простых чисел: 8
+    match: tokens
   - name: Простые до 30
     stdin: |
       30
     stdout: |
       2 3 5 7 11 13 17 19 23 29 
       Количество простых чисел: 10
+    match: tokens
   - name: "N = 2: одно простое число"
     stdin: |
       2
     stdout: |
       2 
       Количество простых чисел: 1
+    match: tokens
   - name: "N = 1: простых нет"
     stdin: |
       1
     stdout: |
       
       Количество простых чисел: 0
+    match: tokens
   - kind: source
     name: Ввод через Scanner
     pattern: new\s+Scanner\s*\(\s*System\.in\s*\)

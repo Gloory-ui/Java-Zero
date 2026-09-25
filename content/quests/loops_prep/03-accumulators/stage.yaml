@@ -1,7 +1,10 @@
 id: accumulators
 badge: ПОДГОТОВКА 03 / 06
 title: "Переменные-накопители: раздельные суммы"
-hint: for (int i = 1; i <= 10; i++) { if (i % 2 == 0) sumEven += i; else sumOdd += i; } System.out.println(sumEven); System.out.println(sumOdd);
+hints:
+  - Суммы уже объявлены до цикла — внутри цикла к ним только прибавляй.
+  - "Чётность: `i % 2 == 0`. Чётное прибавь к `sumEven`, иначе (`else`) — к `sumOdd`."
+  - "`sumEven += i;` значит `sumEven = sumEven + i;`. После цикла выведи две суммы, каждую своим `println`."
 quiz:
   question: Что означает оператор sum += i?
   options:
@@ -22,14 +25,13 @@ exam:
     explain: Область видимости (Scope) переменной внутри цикла ограничена одной итерацией. После закрывающей скобки блока она уничтожается.
     advice: Всегда объявляй накопители до начала цикла.
 memory:
+  note: Момент после цикла. Накопители объявлены до него, поэтому пережили все 10 кругов и хранят итог.
   stack:
     - method: main()
       vars:
         - int sumEven = 30
         - int sumOdd = 25
-  heap:
-    - obj: Output
-      data: '"Сумма четных: 30\nСумма нечетных: 25"'
+  heap: []
 tests:
   - name: Выводит сумму чётных и нечётных от 1 до 10
     stdout: |

@@ -1,7 +1,10 @@
 id: prime-flag
 badge: ПОДГОТОВКА 06 / 06
 title: Флаги и алгоритм простого числа
-hint: for (int j = 2; j < n; j++) { if (n % j == 0) { isPrime = false; break; } } if (isPrime) System.out.println("Простое");
+hints:
+  - Сначала считаем число простым (`isPrime = true`) и ищем делитель от 2 до n - 1.
+  - "Если `n % j == 0`, делитель найден: поставь `isPrime = false;` и выйди из цикла `break;`."
+  - 'После цикла: `if (isPrime) { System.out.println("Простое"); }`.'
 quiz:
   question: Является ли число 2 простым?
   options:
@@ -22,14 +25,13 @@ exam:
     explain: У единицы только 1 делитель. У простых чисел ровно 2 различных делителя.
     advice: "Запомни: простые числа начинаются строго с двойки (2, 3, 5...)."
 memory:
+  note: "Момент после цикла: у 7 делителей не нашлось, флаг остался true. boolean — простое значение, он лежит в стеке, как int."
   stack:
-    - method: isPrime(7)
+    - method: main()
       vars:
+        - int n = 7
         - boolean isPrime = true
-        - divider = 2..6
-  heap:
-    - obj: Boolean flag
-      data: "true"
+  heap: []
 tests:
   - name: Для n = 7 выводит «Простое»
     stdout: |

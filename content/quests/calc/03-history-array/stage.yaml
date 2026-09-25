@@ -1,7 +1,10 @@
 id: history-array
 badge: ЭТАП 03 / 04
 title: "Журнал вычислений: Массивы в Heap"
-hint: double[] history = new double[5]; history[0] = 10.5; System.out.println(history.length);
+hints:
+  - Массив создают через `new`, размер пишут в квадратных скобках.
+  - "`double[] history = new double[5];` — пять ячеек, в каждой пока 0.0. Первая ячейка имеет номер 0."
+  - "Запиши `history[0] = 10.5;` и выведи длину: `history.length` — без скобок."
 quiz:
   question: Чему равно history.length для new double[5]?
   options:
@@ -22,13 +25,13 @@ exam:
     explain: Все массивы в Java являются объектами и размещаются в Heap, а переменная хранит ссылку на них.
     advice: Повтори устройство кучи.
 memory:
+  note: Момент после записи в первую ячейку. Сам массив живёт в куче, а переменная history хранит ссылку на него.
   stack:
     - method: main()
       vars:
-        - double[] history = @0x99
-        - history[0] = 10.5
+        - double[] history → массив в куче
   heap:
-    - obj: double[5] Array
+    - obj: double[5]
       data: "[10.5, 0.0, 0.0, 0.0, 0.0]"
 tests:
   - name: Выводит длину массива

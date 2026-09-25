@@ -53,13 +53,22 @@ class JavaEngine {
   /** Поднимает и прогревает движок; повторные вызовы ждут того же запуска. */
   start(): Promise<void> {
     if (!this.booting) {
-      this.booting = this.boot().catch((error: unknown) => {
-        this.booting = null;
-        setStatus("failed", error instanceof Error ? error.message : String(error));
+      const attempt: Promise<void> = this.boot().catch((error: unknown) => {
+        // Сторож мог уже перезапустить движок: тогда эта попытка устарела и не должна затирать статус новой
+        if (this.booting === attempt) {
+          this.booting = null;
+          setStatus("failed", error instanceof Error ? error.message : String(error));
+        }
         throw error;
       });
+      this.booting = attempt;
     }
     return this.booting;
+  }
+
+  /** Ручной перезапуск, когда Java не запустилась (например, не загрузился CheerpJ из сети). */
+  retry(): void {
+    this.restart();
   }
 
   private async boot(): Promise<void> {
