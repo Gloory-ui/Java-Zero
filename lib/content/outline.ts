@@ -1,7 +1,7 @@
 import type { Quest } from "./schema";
 
 /** Лёгкое оглавление курса для клиента: без теории, кода и тестов. */
-export type StageOutline = { id: string; title: string; badge: string };
+export type StageOutline = { id: string; title: string; badge: string; isNew?: boolean };
 export type QuestOutline = Pick<
   Quest,
   "id" | "num" | "title" | "subtitle" | "fileName" | "order" | "unlockAfter" | "rank"
@@ -19,6 +19,6 @@ export function toOutline(course: Quest[]): QuestOutline[] {
     order: q.order,
     unlockAfter: q.unlockAfter,
     rank: q.rank,
-    stages: q.stages.map((s) => ({ id: s.id, title: s.title, badge: s.badge })),
+    stages: q.stages.map((s) => ({ id: s.id, title: s.title, badge: s.badge, ...(s.isNew ? { isNew: true } : {}) })),
   }));
 }

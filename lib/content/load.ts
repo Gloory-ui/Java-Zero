@@ -26,7 +26,21 @@ function subdirs(dir: string): string[] {
     .sort();
 }
 
-function loadStage(questDir: string, questId: string, dirName: string, index: number): Stage {
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** «ЭТАП {n} / {total}» → «ЭТАП 03 / 08»: при вставке этапа номера не нужно переписывать руками */
+export function stageBadge(template: string, index: number, total: number): string {
+  return template.replaceAll("{n}", pad(index + 1)).replaceAll("{total}", pad(total));
+}
+
+function loadStage(
+  questDir: string,
+  questId: string,
+  dirName: string,
+  index: number,
+  total: number,
+  badgeTemplate: string,
+): Stage {
   const dir = path.join(questDir, dirName);
   const match = STAGE_DIR.exec(dirName);
   if (!match) throw new Error(`${dir}: папка этапа должна называться NN-id, например 01-memory-boxes`);
@@ -37,6 +51,7 @@ function loadStage(questDir: string, questId: string, dirName: string, index: nu
 
   return {
     ...meta,
+    badge: meta.badge ?? stageBadge(badgeTemplate, index, total),
     questId,
     index,
     theory: read(path.join(dir, "theory.md")),
@@ -50,7 +65,8 @@ function loadQuest(dir: string): Quest {
   const meta = parseYaml(questSchema, path.join(dir, "quest.yaml"));
   const id = path.basename(dir);
   if (meta.id !== id) throw new Error(`${dir}: id «${meta.id}» не совпадает с именем папки`);
-  const stages = subdirs(dir).map((name, index) => loadStage(dir, id, name, index));
+  const names = subdirs(dir);
+  const stages = names.map((name, index) => loadStage(dir, id, name, index, names.length, meta.stageBadge));
   if (stages.length === 0) throw new Error(`${dir}: в квесте нет этапов`);
   return { ...meta, stages };
 }

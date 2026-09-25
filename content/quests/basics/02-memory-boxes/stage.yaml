@@ -1,0 +1,68 @@
+id: memory-boxes
+title: "Коробки памяти: int, double и вывод"
+hints:
+  - "Нужны три переменные: две для чисел и одна для суммы. Целое число — тип `int`, дробное — `double`."
+  - "Объявление переменной: тип, имя, `=`, значение и `;`. Например: `int a = 10;`"
+  - Сумму сохрани в `double result = a + b;` — int сложится с double, получится double. Выведи её через `System.out.println(result);`
+quiz:
+  question: Какой тип переменной нужен для хранения числа 3.14?
+  options:
+    - int
+    - double
+    - boolean
+    - char
+  correct: 1
+  hint: Числа с плавающей точкой в Java объявляются типом double.
+exam:
+  - q: Какой тип подойдёт для хранения количества студентов в группе?
+    options:
+      - int
+      - double
+      - String
+      - Любой из них
+    correct: 0
+    explain: Количество — целое число, для целых чисел нужен int. double хранит дробные числа, String — текст.
+    advice: Выбирай тип по тому, что будет храниться.
+  - q: "Что выведет код: int a = 10; a = 25; System.out.println(a);"
+    options:
+      - "10"
+      - "25"
+      - "35"
+      - 10 и 25
+    correct: 1
+    explain: Знак = перезаписывает значение. После a = 25 старое 10 забыто.
+    advice: Переменная хранит только последнее записанное значение.
+  - q: Почему int x = 3.5; не компилируется?
+    options:
+      - В int нельзя положить дробное число
+      - "Дробь нужно писать через запятую: 3,5"
+      - Число 3.5 слишком большое для int
+      - Переменная должна называться иначе
+    correct: 0
+    explain: int хранит только целые числа, и компилятор сам дробную часть не отбрасывает. Для дробей нужен double.
+    advice: "Лаборатория объяснит такую ошибку по-русски: «Тип double не помещается в int»."
+memory:
+  note: Момент, когда main дошёл до конца. Все три переменные — простые значения, они лежат прямо в стеке.
+  stack:
+    - method: main()
+      vars:
+        - int a = 10
+        - double b = 2.5
+        - double result = 12.5
+  heap: []
+tests:
+  - name: Выводит a + b
+    stdout: |
+      12.5
+  - kind: source
+    name: int a = 10
+    pattern: \bint\s+a\s*=\s*10\s*;
+    message: "Объяви переменную: int a = 10;"
+  - kind: source
+    name: double b = 2.5
+    pattern: \bdouble\s+b\s*=\s*2\.5\s*;
+    message: "Объяви переменную: double b = 2.5;"
+  - kind: source
+    name: double result = a + b
+    pattern: \bdouble\s+result\s*=\s*a\s*\+\s*b\s*;
+    message: "Сложи в переменную: double result = a + b;"

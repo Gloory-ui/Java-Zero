@@ -8,14 +8,31 @@ const PAGES = [
   "/profile",
   "/login",
   "/privacy",
-  "/learn/basics/memory-boxes",
+  "/learn/basics/program-structure",
   "/no-such-page",
 ];
 
+/** Студент старого курса сдал «Коробки памяти»: открыт этап с таблицей в теории, на карте видны пометки «новый» */
+const RETURNING = ["/course", "/learn/basics/memory-boxes"];
+
+const SEEDED = JSON.stringify({
+  state: {
+    stages: { "basics/memory-boxes": { attempts: [], passedAt: 1 } },
+    streak: 1,
+    achievements: {},
+    persona: "chill",
+    sound: true,
+  },
+  version: 1,
+});
+
+const CASES = [...PAGES.map((path) => ({ path, seeded: false })), ...RETURNING.map((path) => ({ path, seeded: true }))];
+
 for (const theme of ["dark", "light"] as const) {
-  for (const path of PAGES) {
-    test(`доступность ${path} (${theme})`, async ({ page }) => {
+  for (const { path, seeded } of CASES) {
+    test(`доступность ${path}${seeded ? " с прогрессом" : ""} (${theme})`, async ({ page }) => {
       await page.addInitScript((value) => localStorage.setItem("java_zero_theme", value), theme);
+      if (seeded) await page.addInitScript((value) => localStorage.setItem("java-zero-progress", value), SEEDED);
       await page.goto(path);
       await expect(page.locator("main, [role='main'], .cm-editor").first()).toBeVisible();
       // Анимации появления успевают закончиться, иначе axe меряет контраст полупрозрачного текста

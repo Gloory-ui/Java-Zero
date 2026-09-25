@@ -12,7 +12,7 @@ test("прогресс старого сайта переносится при �
   });
 
   await page.goto("/course");
-  await expect(page.getByText("00 · 2 из 2")).toBeVisible();
+  await expect(page.getByText("00 · 2 из 8")).toBeVisible();
   await expect(page.getByText("01 · 2 из 6")).toBeVisible();
   await expect(page.getByRole("link", { name: "Продолжить" })).toHaveAttribute(
     "href",
@@ -26,20 +26,28 @@ test("прогресс старого сайта переносится при �
   expect(await page.evaluate(() => localStorage.getItem("java_zero_streak"))).toBe("3");
 });
 
-test("защита: ошибка на единственном вопросе — досрочный незачёт, затем реванш", async ({ page }) => {
-  await page.goto("/learn/basics/memory-boxes");
+test("защита: две ошибки из трёх — досрочный незачёт, затем реванш", async ({ page }) => {
+  await page.goto("/learn/basics/program-structure");
   await page.getByRole("tab", { name: "Защита" }).click();
   await page.getByRole("button", { name: "Бросить вызов" }).click();
 
-  await expect(page.getByText("Вопрос 1 из 1")).toBeVisible();
-  // Верный вариант второй: жмём первый
+  // Верные ответы: 3, 1, 3. После первой ошибки защита продолжается
+  await expect(page.getByText("Вопрос 1 из 3")).toBeVisible();
   await page.keyboard.press("1");
-  await expect(page.getByText(/Неверно\. Замечание в лист защиты\. Нервы на нуле/)).toBeVisible();
+  await expect(page.getByText("Неверно. Замечание в лист защиты.")).toBeVisible();
+  await page.getByRole("button", { name: "Следующий вопрос →" }).click();
+  await expect(page.getByText("Вопрос 2 из 3")).toBeVisible();
+  await page.keyboard.press("2");
+  await expect(page.getByText(/Нервы на нуле/)).toBeVisible();
   await page.getByRole("button", { name: "К итогам →" }).click();
   await expect(page.getByRole("heading", { name: "Незачёт: нервы на нуле" })).toBeVisible();
 
   await page.getByRole("button", { name: "Ещё раз" }).click();
-  await page.keyboard.press("2");
+  for (const key of ["3", "1"]) {
+    await page.keyboard.press(key);
+    await page.getByRole("button", { name: "Следующий вопрос →" }).click();
+  }
+  await page.keyboard.press("3");
   await page.getByRole("button", { name: "К итогам →" }).click();
   await expect(page.getByRole("heading", { name: "Профессор повержен. Оценка 5" })).toBeVisible();
   await expect(page.getByText("Гроза преподов")).toBeVisible();

@@ -12,13 +12,13 @@ test("главная: заголовок, язык, кнопка первого 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Java с нуля до сданной контрольной");
   await expect(page.getByRole("link", { name: "Начать первый этап" }).first()).toHaveAttribute(
     "href",
-    "/learn/basics/memory-boxes",
+    "/learn/basics/program-structure",
   );
-  await expect(page.getByText("4 квеста, 18 этапов")).toBeVisible();
+  await expect(page.getByText("4 квеста, 26 этапов")).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test("вернувшийся студент продолжает с первого несданного этапа", async ({ page }) => {
+test("вернувшийся студент продолжает со следующего этапа после сданного", async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem(
       "java-zero-progress",
@@ -37,7 +37,7 @@ test("вернувшийся студент продолжает с первог
   await page.goto("/");
   await expect(page.getByRole("link", { name: "Продолжить с того же места" }).first()).toHaveAttribute(
     "href",
-    "/learn/basics/remainder",
+    "/learn/basics/arithmetic",
   );
 });
 

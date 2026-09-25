@@ -1,7 +1,7 @@
 id: basics
 num: "00"
 title: Фундамент Java
-subtitle: Память, типы, переменные
+subtitle: Программа, переменные, ввод и условия
 fileName: Basics.java
 order: 1
 unlockAfter: null
@@ -9,3 +9,4 @@ rank:
   title: СИНТАКСИЧЕСКИЙ ЮНГА
   icon: 📦
   color: "#a855f7"
+stageBadge: "ЭТАП {n} / {total}"

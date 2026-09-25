@@ -10,14 +10,22 @@ describe("курс из content/quests", () => {
     expect(course.map((q) => q.unlockAfter)).toEqual([null, "basics", "loops_prep", "kt1"]);
   });
 
-  it("18 этапов; у каждого есть теория, стартовый код, решение и тесты", () => {
+  it("26 этапов; у каждого есть теория, стартовый код, решение и тесты", () => {
     const stages = course.flatMap((q) => q.stages);
-    expect(stages).toHaveLength(18);
+    expect(stages).toHaveLength(26);
     for (const s of stages) {
       expect(s.theory.length, s.id).toBeGreaterThan(20);
       expect(s.starter, s.id).toContain("class");
       expect(s.solution, s.id).toContain("class");
       expect(s.tests.length, s.id).toBeGreaterThan(0);
+    }
+  });
+
+  it("по шаблону курса: три подсказки, три вопроса защиты и точный вывод в теории", () => {
+    for (const s of course.flatMap((q) => q.stages)) {
+      expect(s.hints, s.id).toHaveLength(3);
+      expect(s.exam, s.id).toHaveLength(3);
+      expect(s.theory, s.id).toContain("### Что должна вывести программа");
     }
   });
 

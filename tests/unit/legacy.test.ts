@@ -77,7 +77,9 @@ describe("перенос прогресса со старого сайта", () 
     for (const [questId, ids] of Object.entries(LEGACY_STAGES)) {
       const quest = course.find((q) => q.id === questId);
       expect(quest, questId).toBeDefined();
-      expect(quest?.stages.slice(0, ids.length).map((s) => s.id)).toEqual(ids);
+      // Новые этапы могут стоять между старыми: важно, что старые id существуют и идут в прежнем порядке
+      const present = quest?.stages.map((s) => s.id).filter((id) => ids.includes(id));
+      expect(present).toEqual(ids);
     }
   });
 });

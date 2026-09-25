@@ -19,7 +19,7 @@ test("ссылка входа без кода объясняет, что дел�
 test("профиль показывает статистику и ранг гостя", async ({ page }) => {
   await page.goto("/profile");
   await expect(page.getByText("Этапов сдано")).toBeVisible();
-  await expect(page.getByText("0 из 18")).toBeVisible();
+  await expect(page.getByText("0 из 26")).toBeVisible();
   await expect(page.getByText("БАЙТ-ПАДАВАН").first()).toBeVisible();
 
   await page.getByText("Душный препод").click();
