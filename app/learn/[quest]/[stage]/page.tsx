@@ -29,7 +29,9 @@ export default async function StagePage({ params }: PageProps<"/learn/[quest]/[s
   const { quest, stage } = found;
 
   return (
+    // key: переход на соседний этап — тот же маршрут, без ключа React сохранил бы результат и ввод прошлого этапа
     <Lab
+      key={`${quest.id}/${stage.id}`}
       course={toOutline(getCourse())}
       questId={quest.id}
       stageIndex={stage.index}
@@ -37,7 +39,7 @@ export default async function StagePage({ params }: PageProps<"/learn/[quest]/[s
         id: stage.id,
         title: stage.title,
         badge: stage.badge,
-        hint: stage.hint,
+        hints: stage.hints,
         sampleInput: stage.sampleInput,
         quiz: stage.quiz,
         memory: stage.memory,

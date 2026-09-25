@@ -1,7 +1,10 @@
 id: switch-zero
 badge: ЭТАП 02 / 04
 title: Конструкция switch и защита от 0
-hint: "case '/': if (b == 0) System.out.println(\"Ошибка: деление на ноль!\"); else System.out.println(a / b); break;"
+hints:
+  - Все операции уже готовы, кроме деления. Перед делением проверь, не ноль ли `b`.
+  - Внутри `case '/':` напиши `if (b == 0) { … } else { … }`.
+  - 'При нуле печатай `"Ошибка: деление на ноль!"`, иначе — результат `a / b`. `break;` после ветки уже стоит, оставь его.'
 sampleInput: |
   10 / 4
 quiz:
@@ -24,14 +27,19 @@ exam:
     explain: Вещественные числа в Java следуют стандарту IEEE 754, где деление ненулевого числа на 0.0 дает Infinity.
     advice: Всегда помни об особенности IEEE 754 для double.
 memory:
+  note: "Момент перед switch при вводе «10 / 4»: числа и знак уже прочитаны."
   stack:
     - method: main()
       vars:
+        - Scanner sc → объект в куче
+        - double a = 10.0
         - char op = '/'
-        - num2 == 0 -> Error
+        - double b = 4.0
   heap:
-    - obj: Jump Table
-      data: Switch binary offsets
+    - obj: Scanner
+      data: "Читает ввод по частям: число, знак, число."
+    - obj: String "/"
+      data: sc.next() вернул строку "/", а charAt(0) взял из неё символ '/'.
 tests:
   - name: "Сложение: 3 + 4"
     stdin: |

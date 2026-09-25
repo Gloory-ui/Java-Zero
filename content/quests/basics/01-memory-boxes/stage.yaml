@@ -1,7 +1,10 @@
 id: memory-boxes
 badge: ЭТАП 01 / 02
 title: "Коробки памяти: int, double и вывод"
-hint: int a = 10; double b = 2.5; double result = a + b; System.out.println(result);
+hints:
+  - "Нужны три переменные: две для чисел и одна для суммы. Целое число — тип `int`, дробное — `double`."
+  - "Объявление переменной: тип, имя, `=`, значение и `;`. Например: `int a = 10;`"
+  - Сумму сохрани в `double result = a + b;` — int сложится с double, получится double. Выведи её через `System.out.println(result);`
 quiz:
   question: Какой тип переменной нужен для хранения числа 3.14?
   options:
@@ -22,15 +25,14 @@ exam:
     explain: Примитивные типы (int, double) хранятся непосредственно в стековом фрейме. Ссылочные типы (String) хранятся в куче, а на стеке лежит ссылка.
     advice: Повтори разницу между стеком и кучей во вкладке «Память RAM».
 memory:
+  note: Момент, когда main дошёл до конца. Все три переменные — простые значения, они лежат прямо в стеке.
   stack:
     - method: main()
       vars:
-        - int a = 10 [4B]
-        - double b = 2.5 [8B]
-        - double result = 12.5 [8B]
-  heap:
-    - obj: String Pool
-      data: '"===" [Static String @0x10A]'
+        - int a = 10
+        - double b = 2.5
+        - double result = 12.5
+  heap: []
 tests:
   - name: Выводит a + b
     stdout: |

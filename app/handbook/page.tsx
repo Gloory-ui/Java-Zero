@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { CodeBlock } from "@/components/code-block";
 import { SiteFooter, SiteHeader } from "@/components/site/site-header";
+import { explainCompileError, HANDBOOK_ERRORS } from "@/lib/java/explain";
 
 export const metadata: Metadata = {
   title: "Справочник Java",
@@ -62,26 +63,11 @@ const TYPES = [
   ["String", "ссылка", "Строка, сам объект живёт в куче", 'String s = "Java";'],
 ];
 
-const ERRORS = [
-  [
-    'Syntax error, insert ";" to complete BlockStatements',
-    "Нет точки с запятой в конце строки, которую подсветил редактор.",
-  ],
-  ["x cannot be resolved to a variable", "Переменная не объявлена или объявлена в другом блоке { }. Проверь опечатки."],
-  [
-    "Type mismatch: cannot convert from double to int",
-    "В int кладут дробное число. Поменяй тип или приведи явно: (int) x.",
-  ],
-  [
-    "The local variable x may not have been initialized",
-    "Переменную объявили, но не присвоили значение до первого чтения.",
-  ],
-  [
-    "This method must return a result of type long",
-    "В методе есть путь, где нет return. Чаще всего забыт базовый случай.",
-  ],
-  ["Unreachable code", "Строка стоит после return, break или бесконечного цикла и никогда не выполнится."],
-];
+// Те же объяснения, что показывает лаборатория под ошибкой компиляции
+const ERRORS = HANDBOOK_ERRORS.flatMap((message) => {
+  const explained = explainCompileError(message);
+  return explained ? [{ message, ...explained }] : [];
+});
 
 export default function HandbookPage() {
   return (
@@ -259,14 +245,15 @@ char op = sc.next().charAt(0); // первый символ слова`}
 
         <Section id="errors" title="Частые ошибки компилятора">
           <p className="text-sm text-muted">
-            Компилятор пишет по-английски. Нажми на ошибку под редактором, чтобы перейти к строке, или спроси
-            AI-ментора.
+            Компилятор пишет по-английски. Лаборатория переводит его сообщения прямо под редактором; вот самые частые.
           </p>
           <dl className="flex flex-col gap-2">
-            {ERRORS.map(([message, meaning]) => (
-              <div key={message} className="rounded-md border border-border px-4 py-3">
-                <dt className="font-mono text-[13px] text-danger">{message}</dt>
-                <dd className="mt-1 text-sm">{meaning}</dd>
+            {ERRORS.map((e) => (
+              <div key={e.message} className="rounded-md border border-border px-4 py-3">
+                <dt className="font-mono text-[13px] text-danger">{e.message}</dt>
+                <dd className="mt-1 text-sm">
+                  <span className="font-medium">{e.title}.</span> {e.fix}
+                </dd>
               </div>
             ))}
           </dl>

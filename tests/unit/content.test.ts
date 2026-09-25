@@ -33,7 +33,7 @@ describe("схема контента", () => {
     id: "demo",
     badge: "ЭТАП",
     title: "Демо",
-    hint: "подсказка",
+    hints: ["подсказка"],
     quiz: { question: "?", options: ["а", "б"], correct: 1, hint: "почему" },
     exam: [{ q: "?", options: ["а", "б"], correct: 0, explain: "потому", advice: "повтори" }],
     tests: [{ name: "вывод", stdout: "1\n" }],

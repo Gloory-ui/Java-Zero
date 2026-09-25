@@ -34,6 +34,21 @@ test("этап: теория, вкладки и квиз работают без
   expect(errors).toEqual([]);
 });
 
+test("подсказки открываются по одной и не выдают решение целиком", async ({ page }) => {
+  await page.goto(STAGE);
+  const hintButton = page.getByRole("button", { name: /^Подсказк/ });
+  await hintButton.click();
+  await expect(page.getByText("Подсказки: 1 из 3")).toBeVisible();
+  await expect(hintButton).toHaveText("Подсказка 2 из 3");
+  await hintButton.click();
+  await hintButton.click();
+  await expect(page.getByText("Подсказки: 3 из 3")).toBeVisible();
+  await expect(hintButton).toBeDisabled();
+
+  await page.getByRole("button", { name: "Скрыть" }).click();
+  await expect(page.getByText("Подсказки: 3 из 3")).toBeHidden();
+});
+
 test("закрытый этап показывает, куда идти", async ({ page }) => {
   await page.goto("/learn/kt1/primes-to-n");
   await expect(page.getByRole("heading", { name: "Этап пока закрыт" })).toBeVisible();
@@ -60,8 +75,10 @@ test("настоящая Java: ошибка компиляции, затем с�
     "public class Basics {\n    public static void main(String[] args) {\n        int a = 10\n        System.out.println(a);\n    }\n}\n",
   );
   await page.getByRole("button", { name: "Проверить", exact: true }).click();
-  await expect(page.getByText("Код не компилируется: ошибок 1.")).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText("Код не компилируется: одна ошибка.")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText("строка 3")).toBeVisible();
+  // Ошибка ECJ объяснена по-русски, английский текст остаётся мелко для справки
+  await expect(page.getByText("Не хватает «;»")).toBeVisible();
 
   await setCode(
     page,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
-import { type EngineStatus as Status, useEngine } from "@/lib/java/engine";
+import { getEngine, type EngineStatus as Status, useEngine } from "@/lib/java/engine";
 
 const LABELS: Record<Status, string> = {
   off: "Java не запущена",
@@ -38,13 +38,24 @@ export function EngineStatus() {
 
   const seconds = Math.max(0, Math.round((now - since) / 1000));
   return (
-    <output
-      title={error}
-      className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 font-mono text-xs text-muted"
-    >
-      <span className={cn("size-2 rounded-full", DOT[status])} aria-hidden="true" />
-      {LABELS[status]}
-      {waiting && seconds > 1 ? ` · ${seconds} с` : ""}
-    </output>
+    <span className="inline-flex items-center gap-2">
+      <output
+        title={error}
+        className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 font-mono text-xs text-muted"
+      >
+        <span className={cn("size-2 rounded-full", DOT[status])} aria-hidden="true" />
+        {LABELS[status]}
+        {waiting && seconds > 1 ? ` · ${seconds} с` : ""}
+      </output>
+      {status === "failed" && (
+        <button
+          type="button"
+          onClick={() => getEngine().retry()}
+          className="rounded-full border border-border px-3 py-1 text-xs text-text transition-colors duration-150 ease-snappy hover:border-border-strong"
+        >
+          Перезапустить
+        </button>
+      )}
+    </span>
   );
 }

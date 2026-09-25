@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Confetti } from "@/components/game/confetti";
+import { Markdown } from "@/components/markdown";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, ButtonLink, buttonClasses } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -33,7 +34,7 @@ export type LabStage = Pick<
   | "id"
   | "title"
   | "badge"
-  | "hint"
+  | "hints"
   | "sampleInput"
   | "quiz"
   | "memory"
@@ -77,6 +78,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
   const [stdinOpen, setStdinOpen] = useState(false);
   const [stdin, setStdin] = useState(stage.sampleInput ?? "");
   const [hintOpen, setHintOpen] = useState(false);
+  const [hintStep, setHintStep] = useState(0);
   const [cheatOpen, setCheatOpen] = useState(false);
   const [solutionOpen, setSolutionOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -237,9 +239,12 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
     setTab(next);
   };
 
-  const toggleHint = () => {
-    if (!hintOpen) useProgress.getState().markHint(key);
-    setHintOpen((v) => !v);
+  // Подсказки открываются по одной: сначала направление мысли, в конце — почти готовый код
+  const hintTotal = stage.hints.length;
+  const showHint = () => {
+    if (hintStep === 0) useProgress.getState().markHint(key);
+    if (hintOpen || hintStep === 0) setHintStep((s) => Math.min(s + 1, hintTotal));
+    setHintOpen(true);
   };
 
   const openSolution = () => {
@@ -437,8 +442,18 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
             <Button variant="ghost" onClick={() => useMentor.getState().show()}>
               AI-ментор
             </Button>
-            <Button variant="ghost" onClick={toggleHint}>
-              Подсказка
+            <Button
+              variant="ghost"
+              onClick={showHint}
+              disabled={hintOpen && hintStep >= hintTotal}
+              aria-expanded={hintOpen}
+              aria-controls="lab-hints"
+            >
+              {hintStep === 0 || !hintOpen
+                ? "Подсказка"
+                : hintStep < hintTotal
+                  ? `Подсказка ${hintStep + 1} из ${hintTotal}`
+                  : "Подсказки открыты"}
             </Button>
             <Button
               variant="ghost"
@@ -498,10 +513,38 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
                 </div>
               </div>
             )}
-            {hintOpen && (
-              <div className="border-b border-border p-4 text-sm">
-                <p className="mb-1 font-medium">Подсказка</p>
-                <code className="block font-mono text-[13px] whitespace-pre-wrap text-code-text">{stage.hint}</code>
+            {hintOpen && hintStep > 0 && (
+              <div id="lab-hints" className="border-b border-border p-4 text-sm">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="font-medium">
+                    Подсказки: {hintStep} из {hintTotal}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setHintOpen(false)}
+                    className="text-xs text-muted underline-offset-2 hover:text-text hover:underline"
+                  >
+                    Скрыть
+                  </button>
+                </div>
+                <ol className="flex flex-col gap-2">
+                  {stage.hints.slice(0, hintStep).map((hint, i) => (
+                    <li
+                      key={hint}
+                      className="flex gap-3 starting:opacity-0 motion-safe:transition-opacity motion-safe:duration-200"
+                    >
+                      <span className="mt-0.5 font-mono text-xs text-accent">{i + 1}</span>
+                      <div className="min-w-0 [&_p]:my-0 [&_pre]:my-2">
+                        <Markdown>{hint}</Markdown>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                {hintStep < hintTotal && (
+                  <p className="mt-2 text-xs text-muted">
+                    Не помогло? Нажми «Подсказка» ещё раз — следующий шаг конкретнее.
+                  </p>
+                )}
               </div>
             )}
             {cheatOpen && (

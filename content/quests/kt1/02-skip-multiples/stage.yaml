@@ -1,7 +1,10 @@
 id: skip-multiples
 badge: КТ 1 // ЗАДАНИЕ 02
 title: Числа 1..50 без кратных 5 и 7, стоп на 41
-hint: for (int i = 1; i <= 50; i++) { if (i == 41) break; if (i % 5 == 0 || i % 7 == 0) continue; System.out.println(i); }
+hints:
+  - "Порядок проверок в теле цикла: сначала стоп на 41, потом пропуск кратных, потом печать."
+  - "Кратно 5 или 7: `i % 5 == 0 || i % 7 == 0` — `||` значит «или»."
+  - "`if (i == 41) break;` и `if (i % 5 == 0 || i % 7 == 0) continue;` стоят перед `System.out.println(i);`."
 quiz:
   question: Будет ли выведено число 35 в этом задании?
   options:
@@ -22,15 +25,12 @@ exam:
     explain: Когда i становится равным 41, оператор break немедленно прерывает цикл, поэтому 41 на экран не попадает.
     advice: Четко объясни преподавателю порядок выполнения строк в теле цикла.
 memory:
+  note: "Момент, когда сработал break: i равно 41, поэтому числа после 40 не напечатаны."
   stack:
     - method: main()
       vars:
-        - for i = 1..50
-        - "Stop: i == 41"
-        - "Skip: i % 5 == 0 || i % 7 == 0"
-  heap:
-    - obj: Console Log
-      data: Filtered stream
+        - int i = 41
+  heap: []
 tests:
   - name: Числа до 40 без кратных 5 и 7, стоп на 41
     stdout: |
@@ -62,6 +62,7 @@ tests:
       37
       38
       39
+    match: tokens
   - kind: source
     name: Выход из цикла через break
     pattern: \bbreak\s*;
