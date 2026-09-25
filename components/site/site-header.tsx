@@ -46,6 +46,9 @@ export function SiteFooter() {
           <Link href="/profile" className="hover:text-text">
             Профиль
           </Link>
+          <Link href="/privacy" className="hover:text-text">
+            Конфиденциальность
+          </Link>
           <a href="https://github.com/Gloory-ui/Java-Zero" className="hover:text-text" target="_blank" rel="noreferrer">
             Исходный код на GitHub
           </a>
