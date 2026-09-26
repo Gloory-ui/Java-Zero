@@ -1,0 +1,68 @@
+id: generic-stack
+title: "Свой обобщённый стек и стирание типов"
+hints:
+  - "`push`: если `size == data.length`, то `data = Arrays.copyOf(data, data.length * 2);`, потом `data[size++] = item;`."
+  - "`pop`: при `size == 0` брось `new IllegalStateException(\"Стек пуст\")`, иначе `T top = (T) data[--size];` и затри ячейку `data[size] = null;`."
+  - "`peek` — то же без снятия: `return (T) data[size - 1];` после проверки на пустоту."
+quiz:
+  question: Почему в обобщённом классе нельзя написать new T[10]?
+  options:
+    - Из-за стирания типов при запуске неизвестно, что такое T
+    - Массивы запрещены в классах
+    - T может быть только строкой
+    - Можно, это правильная запись
+  correct: 0
+  hint: Дженерики живут только во время компиляции.
+exam:
+  - q: Что напечатает new ArrayList<String>().getClass() == new ArrayList<Integer>().getClass()?
+    options:
+      - "true"
+      - "false"
+      - Ошибку компиляции
+      - ArrayList
+    correct: 0
+    explain: После стирания типов оба объекта — просто ArrayList. Параметры типа при запуске не существуют.
+    advice: Проверки типов дженериков выполняет только компилятор.
+  - q: Зачем в pop писать data[size] = null после снятия?
+    options:
+      - Чтобы массив не держал ссылку на снятый объект, и память могла освободиться
+      - Иначе pop не вернёт значение
+      - Так требует @SuppressWarnings
+      - Чтобы size уменьшился
+    correct: 0
+    explain: Объект, на который осталась ссылка из массива, сборщик мусора не удалит, хотя он стеку уже не нужен.
+    advice: Настоящий ArrayList тоже затирает ячейки при удалении.
+  - q: Что делает Arrays.copyOf(data, data.length * 2)?
+    options:
+      - Создаёт новый массив вдвое длиннее и копирует в него старые элементы
+      - Удваивает каждый элемент
+      - Меняет длину старого массива
+      - Копирует массив дважды
+    correct: 0
+    explain: Длина массива не меняется никогда. copyOf создаёт новый массив, копирует элементы, а лишние ячейки заполняет null.
+    advice: Так же растёт ArrayList, только в полтора раза.
+memory:
+  note: Момент после пятого push у стека чисел — массив уже расширялся дважды.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - MyStack<String> words → объект в куче
+        - MyStack<Integer> nums → объект в куче
+  heap:
+    - obj: MyStack (nums)
+      data: size = 5, data = Object[8]
+    - obj: Object[8]
+      data: "1, 2, 3, 4, 5, null, null, null"
+tests:
+  - name: Стек строк и чисел
+    stdout: |
+      Сверху: в
+      Снято: в
+      Снято: б
+      Размер: 1
+      Сумма: 15
+      Ошибка: Стек пуст
+  - kind: source
+    name: Массив растёт
+    pattern: 'Arrays\s*\.\s*copyOf\s*\('
+    message: "Расширяй массив через Arrays.copyOf(data, data.length * 2)"

@@ -1,0 +1,67 @@
+id: bounded-types
+title: "Ограничения типов: T extends"
+hints:
+  - "Ограничение пишется в объявлении параметра: `static <T extends Comparable<T>> T maxOf(List<T> list)`."
+  - "В цикле `for (T item : list)` сравнивай: `if (item.compareTo(best) > 0) best = item;`."
+  - "`average`: копи `sum += x.doubleValue();` в `double` и верни `sum / list.size()`."
+quiz:
+  question: Что даёт ограничение <T extends Number>?
+  options:
+    - На место T подставляются только числа, и у T доступны методы Number
+    - T становится наследником всех чисел
+    - T можно менять во время работы
+    - Ничего, это комментарий
+  correct: 0
+  hint: Компилятор теперь знает про T больше, чем «какой-то объект».
+exam:
+  - q: Почему для строк maxOf вернёт «яблоко», а не «апельсин»?
+    options:
+      - Строки сравниваются по алфавиту, а «я» идёт позже «г» и «а»
+      - Самое длинное слово побеждает
+      - Побеждает последнее слово
+      - Побеждает первое слово
+    correct: 0
+    explain: compareTo у строк сравнивает символ за символом. Первая буква «я» больше, чем «г» и «а», поэтому «яблоко» наибольшее.
+    advice: Длину строк так не сравнить — для неё нужен компаратор.
+  - q: Можно ли вызвать maxOf(List.of(new Object(), new Object()))?
+    options:
+      - Нет, Object не реализует Comparable — ошибка компиляции
+      - Да, вернётся первый объект
+      - Да, но при запуске будет исключение
+      - Да, сравнение пойдёт по адресам
+    correct: 0
+    explain: Ограничение проверяется при компиляции. Тип, который ему не подходит, передать нельзя.
+    advice: Лучше ошибка компиляции, чем падение у пользователя.
+  - q: Зачем в average вызывают doubleValue()?
+    options:
+      - Чтобы получить значение любого числа как double и сложить их
+      - Чтобы удвоить число
+      - Чтобы проверить, что это число
+      - Так требует List
+    correct: 0
+    explain: У Number есть doubleValue(), intValue() и другие методы. Через doubleValue() и Integer, и Double складываются одинаково.
+    advice: Без ограничения T extends Number метода doubleValue() у T не было бы.
+memory:
+  note: Момент конца maxOf для списка чисел.
+  stack:
+    - method: maxOf(List<T> list)
+      vars:
+        - List<T> list → [3, 9, 4]
+        - T best → Integer 9
+    - method: main(String[] args)
+      vars:
+        - вызвал maxOf(List.of(3, 9, 4))
+  heap:
+    - obj: List<Integer>
+      data: "3, 9, 4"
+tests:
+  - name: Максимум и среднее
+    stdout: |
+      9
+      яблоко
+      4.0
+      2.0
+  - kind: source
+    name: Ограничение Comparable
+    pattern: '<\s*T\s+extends\s+Comparable\s*<\s*T\s*>\s*>'
+    message: "Ограничь тип: <T extends Comparable<T>>"
