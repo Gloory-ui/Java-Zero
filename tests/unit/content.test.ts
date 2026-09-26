@@ -6,24 +6,56 @@ describe("курс из content/quests", () => {
   const course = loadCourse();
 
   it("общий курс идёт по цепочке без КТ: «Калькулятор» открывается сразу после «Циклов»", () => {
-    expect(course.map((q) => q.id)).toEqual(["basics", "loops_prep", "kt1", "calc", "arrays_prep", "kt2"]);
-    expect(course.map((q) => q.track)).toEqual(["course", "course", "group", "course", "course", "group"]);
-    expect(course.map((q) => q.unlockAfter)).toEqual([null, "basics", null, "loops_prep", "calc", null]);
+    expect(course.map((q) => q.id)).toEqual([
+      "basics",
+      "loops_prep",
+      "kt1",
+      "calc",
+      "arrays_prep",
+      "kt2",
+      "oop_prep",
+      "kt3",
+      "inheritance",
+    ]);
+    const tracks = ["course", "course", "group", "course", "course", "group", "course", "group", "course"];
+    expect(course.map((q) => q.track)).toEqual(tracks);
+    expect(course.map((q) => q.unlockAfter)).toEqual([
+      null,
+      "basics",
+      null,
+      "loops_prep",
+      "calc",
+      null,
+      "arrays_prep",
+      null,
+      "oop_prep",
+    ]);
   });
 
   it("путь группы: подготовка из общего курса, потом КТ; «Калькулятор» на пути не стоит", () => {
-    expect(course.map((q) => q.groupAfter)).toEqual([null, "basics", "loops_prep", undefined, "kt1", "arrays_prep"]);
+    expect(course.map((q) => q.groupAfter)).toEqual([
+      null,
+      "basics",
+      "loops_prep",
+      undefined,
+      "kt1",
+      "arrays_prep",
+      "kt2",
+      "oop_prep",
+      undefined,
+    ]);
     const group = loadGroupPath();
     expect(group.steps).toEqual([
       { prep: ["basics", "loops_prep"], kt: "kt1" },
       { prep: ["arrays_prep"], kt: "kt2" },
+      { prep: ["oop_prep"], kt: "kt3" },
     ]);
     expect(group.invite).toMatch(/^[a-z0-9]{4,32}$/);
   });
 
-  it("41 этап; у каждого есть теория, стартовый код, решение и тесты", () => {
+  it("68 этапов; у каждого есть теория, стартовый код, решение и тесты", () => {
     const stages = course.flatMap((q) => q.stages);
-    expect(stages).toHaveLength(41);
+    expect(stages).toHaveLength(68);
     for (const s of stages) {
       expect(s.theory.length, s.id).toBeGreaterThan(20);
       expect(s.starter, s.id).toContain("class");

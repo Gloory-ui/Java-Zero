@@ -4,7 +4,7 @@ title: Наследование и полиморфизм
 subtitle: extends, super, переопределение, абстрактные классы
 fileName: Inheritance.java
 order: 9
-unlockAfter: calc
+unlockAfter: oop_prep
 rank:
   title: ГЛАВА ДИНАСТИИ
   icon: layers
