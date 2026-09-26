@@ -235,7 +235,7 @@ export function SettingsSheet({
             rows={3}
             onChange={(e) => profile.set({ bio: e.target.value })}
             className={cn(inputClass, "resize-none")}
-            placeholder="Например: готовлюсь к КТ 2, люблю рекурсию"
+            placeholder="Например: учу Java с нуля, люблю рекурсию"
           />
           <p className="text-right font-mono text-[11px] text-muted tabular-nums">
             {profile.bio.length}/{BIO_MAX}

@@ -50,7 +50,7 @@ test("подсказки открываются по одной и не выда
 });
 
 test("закрытый этап показывает, куда идти", async ({ page }) => {
-  await page.goto("/learn/kt1/primes-to-n");
+  await page.goto("/learn/calc/factorial");
   await expect(page.getByRole("heading", { name: "Этап пока закрыт" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Продолжить с доступного этапа" })).toHaveAttribute(
     "href",

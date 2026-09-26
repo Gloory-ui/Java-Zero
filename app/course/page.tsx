@@ -8,7 +8,7 @@ import { toOutline } from "@/lib/content/outline";
 
 export const metadata: Metadata = {
   title: "Карта курса",
-  description: "Все квесты Java-Zero по порядку: от переменных до контрольной точки и калькулятора.",
+  description: "Все квесты курса «Java с нуля» по порядку: от первой программы до циклов, методов и массивов.",
 };
 
 export default function CoursePage() {
@@ -16,7 +16,10 @@ export default function CoursePage() {
     <>
       <SiteHeader />
       <main id="main" className="mx-auto flex min-h-[70dvh] max-w-3xl flex-col gap-6 px-4 py-10">
-        <h1 className="font-display text-3xl font-semibold">Карта курса</h1>
+        <div>
+          <h1 className="font-display text-3xl font-semibold">Java с нуля</h1>
+          <p className="mt-1 text-muted">Карта курса: квесты открываются по порядку, от первой программы и дальше.</p>
+        </div>
         <LevelCard />
         <DailyQuests />
         <CourseMap course={toOutline(getCourse())} />
