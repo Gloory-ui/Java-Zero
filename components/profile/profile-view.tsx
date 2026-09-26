@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AchievementsPanel } from "@/components/game/achievements-panel";
 import { DailyQuests } from "@/components/game/daily-quests";
 import { LevelCard } from "@/components/game/level-card";
+import { RankBadge } from "@/components/game/rank-badge";
 import { useGame } from "@/components/game/use-game";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -174,9 +175,7 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
                   current ? "neon-glow border-transparent bg-card" : "border-border",
                 )}
               >
-                <span className={cn(reached ? "text-neon-ink" : "text-muted opacity-60")}>
-                  <Icon name={r.icon} className="size-5" />
-                </span>
+                <RankBadge rank={r} unlocked={reached} size={48} chip={false} className="m-1.5" />
                 <span className="min-w-0 flex-1">
                   <span className={cn("block font-mono text-sm", !reached && "text-muted")}>{r.title}</span>
                   <span className="block text-xs text-muted">с {r.level} уровня</span>

@@ -3,13 +3,13 @@
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { ButtonLink } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
 import { sound } from "@/lib/audio";
 import { useCelebration } from "@/lib/game/events";
 import { rankForLevel } from "@/lib/game/ranks";
 import { plural } from "@/lib/plural";
 import { Confetti } from "./confetti";
 import { CountUp } from "./count-up";
+import { RankBadge, rankTierOf } from "./rank-badge";
 
 const ACHIEVEMENTS = ["достижение", "достижения", "достижений"] as const;
 
@@ -28,7 +28,10 @@ export function Celebration() {
     if (!d) return;
     if (current && !d.open) {
       d.showModal();
-      sound.achievement();
+      // Новый ранг — фанфара по ступени ранга, круглый уровень — взлёт, перенос прогресса — эпическая награда
+      if (current.kind === "level" && current.rank) sound.rankUp(rankTierOf(current.rank));
+      else if (current.kind === "level") sound.levelUp();
+      else sound.achievement("epic");
     }
     if (!current && d.open) d.close();
   }, [current]);
@@ -48,14 +51,11 @@ export function Celebration() {
         <div className="relative flex flex-col items-center gap-4 px-6 pt-10 pb-6 text-center">
           <Confetti />
           <motion.div
-            className="neon-ring rounded-3xl p-[3px]"
             initial={reduceMotion ? { opacity: 0 } : { scale: 0.6, rotate: -12, opacity: 0 }}
             animate={{ scale: 1, rotate: 0, opacity: 1 }}
             transition={reduceMotion ? { duration: 0.2 } : { type: "spring", damping: 14, stiffness: 180 }}
           >
-            <div className="grid size-24 place-items-center rounded-[21px] bg-card text-neon-ink">
-              <Icon name={rank.icon} className="size-12" strokeWidth={1.5} />
-            </div>
+            <RankBadge rank={rank} size={112} />
           </motion.div>
 
           {current.kind === "upgrade" ? (

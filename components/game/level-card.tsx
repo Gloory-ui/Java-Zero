@@ -1,12 +1,12 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import { nextRank, rankForLevel } from "@/lib/game/ranks";
 import { levelInfo } from "@/lib/game/xp";
 import { plural } from "@/lib/plural";
 import { CountUp } from "./count-up";
+import { RankBadge } from "./rank-badge";
 import { useGame } from "./use-game";
 
 const LEVELS = ["уровень", "уровня", "уровней"] as const;
@@ -33,11 +33,7 @@ export function LevelCardView({ xp, className }: { xp: number; className?: strin
       }}
     >
       <div className="flex items-center gap-4 sm:gap-5">
-        <div className="neon-ring shrink-0 rounded-2xl p-[2px]">
-          <div className="grid size-16 place-items-center rounded-[14px] bg-card text-neon-ink sm:size-[72px]">
-            <Icon name={rank.icon} className="size-8 sm:size-9" strokeWidth={1.5} />
-          </div>
-        </div>
+        <RankBadge rank={rank} size={68} chip={false} className="m-1 shrink-0" />
 
         <div className="min-w-0 flex-1">
           <p className="truncate font-mono text-[11px] font-semibold tracking-widest uppercase">

@@ -1,6 +1,10 @@
 import type { Achievement, AchievementGroup, Rarity } from "@/lib/game/achievements";
+import type { Rank } from "@/lib/game/ranks";
 
-/** Рисунок значка выводится из id: у каждого достижения свой узор, оттенок и темп анимаций, при каждой отрисовке одинаковые */
+/**
+ * Рисунок значка выводится из id: у каждого достижения и ранга свой узор, оттенок, декор и темп анимаций,
+ * при каждой отрисовке одинаковые. Общий движок buildArt, описания рисунка: badgeArt (достижения) и rankArt (ранги).
+ */
 
 function hash(s: string): number {
   let h = 2166136261;
@@ -53,17 +57,17 @@ export const SHAPE: Record<AchievementGroup, string> = {
 };
 
 export type Palette = {
-  /** Основной тон: полоса прогресса, обводка карточки */
+  /** Основной тон: свечение, полоса прогресса, обводка карточки */
   color: string;
   icon: string;
   stroke: [string, string];
-  hue: number;
-  sat: number;
-  /** Перелив по рамке: только эпические и легендарные */
+  /** Перелив по рамке: цвета через ", " без вложенных функций, чтобы их можно было разложить на стопы */
   conic?: string;
 };
 
-export const PALETTE: Record<Rarity, Palette> = {
+type Tone = Palette & { hue: number; sat: number };
+
+export const PALETTE: Record<Rarity, Tone> = {
   common: { color: "#94a3b8", icon: "#e2e8f0", stroke: ["#e2e8f0", "#64748b"], hue: 215, sat: 18 },
   rare: { color: "#38bdf8", icon: "#bae6fd", stroke: ["#bae6fd", "#0284c7"], hue: 199, sat: 60 },
   epic: {
@@ -89,18 +93,30 @@ const KINDS: readonly OrnamentKind[] = ["rays", "rings", "orbit", "stars", "wave
 
 export type Sparkle = { x: number; y: number; s: number; delay: number };
 
+/** Ступень пышности: 1 — скромно, 5 — всё сразу */
+export type Tier = 1 | 2 | 3 | 4 | 5;
+
+/** Какие слои и анимации включены */
+export type Effects = {
+  glow: boolean;
+  sheen: boolean;
+  orbit: boolean;
+  iridescent: boolean;
+  halo: boolean;
+  glitch: boolean;
+};
+
 export type BadgeArt = {
   shape: string;
   palette: Palette;
-  /** Оттенок лицевой стороны: свой у каждого id внутри тона редкости */
-  faceHue: number;
+  /** Три стопа лицевой стороны: центр, середина, край */
+  face: [string, string, string];
   ornament: { kind: OrnamentKind; count: number; rotate: number; paths: string[]; dots: [number, number, number][] };
   spinSec: number;
   sheenSec: number;
   delaySec: number;
   glitchSec: number;
-  iridescent: boolean;
-  glitch: boolean;
+  fx: Effects;
   sparkles: Sparkle[];
   decor: Decor;
 };
@@ -240,15 +256,18 @@ function laurel(side: 1 | -1): string[] {
   return out;
 }
 
-const VERTICES: Partial<Record<AchievementGroup, [number, number]>> = {
-  course: [6, 0],
-  mastery: [8, 22.5],
-  secret: [4, 0],
-  streak: [4, 45],
+type DecorSpec = {
+  tier: Tier;
+  laurels: boolean;
+  crown: boolean;
+  /** Вершины рамки для граней: [сколько, поворот, радиус] */
+  vertices?: [number, number, number];
+  /** Камни уровня серии над рамкой: I — один, V — пять */
+  pips?: number;
 };
 
-function decor(a: Pick<Achievement, "group" | "rarity" | "series">, rand: () => number): Decor {
-  const level = { common: 1, rare: 2, epic: 3, legendary: 4 }[a.rarity];
+function decor(spec: DecorSpec, rand: () => number): Decor {
+  const level = Math.min(spec.tier, 4);
   const spin: string[] = [];
   const still: string[] = [];
   const shards: Decor["shards"] = [];
@@ -256,12 +275,12 @@ function decor(a: Pick<Achievement, "group" | "rarity" | "series">, rand: () => 
   const leaves: string[] = [];
 
   const pool = ["ticks", "arcs", "corners", "swirl", "dots"];
-  // Перемешиваем набор от id и берём столько, сколько позволяет редкость
+  // Перемешиваем набор от id и берём столько, сколько позволяет ступень
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [pool[i], pool[j]] = [pool[j] as string, pool[i] as string];
   }
-  const picked = new Set(pool.slice(0, level));
+  const picked = new Set(pool.slice(0, spec.tier));
   if (level >= 3) picked.add("swirl");
 
   if (picked.has("ticks")) {
@@ -301,17 +320,22 @@ function decor(a: Pick<Achievement, "group" | "rarity" | "series">, rand: () => 
     }
   }
   if (level >= 3) {
-    const n = level === 4 ? 7 : 4;
+    const n = spec.tier === 5 ? 9 : level === 4 ? 7 : 4;
     for (let i = 0; i < n; i++) {
       const [x, y] = polar(64 + rand() * 6, rand() * 360);
       shards.push({ d: shard(Math.floor(rand() * 4), x, y, 2 + rand() * 2.5, rand() * 360), fill: rand() > 0.5 });
     }
   }
-  if (level === 4) {
-    // Корона над рамкой
-    still.push("M38 -3 41 -12 46 -5 50 -15 54 -5 59 -12 62 -3Z");
+  // Корона над рамкой
+  if (spec.crown) still.push("M38 -3 41 -12 46 -5 50 -15 54 -5 59 -12 62 -3Z");
+  if (spec.pips && !spec.crown) {
+    const step = 11;
+    for (let i = 0; i < spec.pips; i++) {
+      const [x, y] = polar(56, -90 + (i - (spec.pips - 1) / 2) * step);
+      leaves.push(shard(1, x, y, 2.8, 0));
+    }
   }
-  if (level === 4 || (a.series && a.series.tier >= 4)) {
+  if (spec.laurels) {
     for (const side of [1, -1] as const) {
       const [stem, ...rest] = laurel(side);
       if (stem) still.push(stem);
@@ -319,11 +343,10 @@ function decor(a: Pick<Achievement, "group" | "rarity" | "series">, rand: () => 
     }
   }
 
-  const vertices = VERTICES[a.group];
-  if (vertices && level >= 2) {
-    const [n, rot] = vertices;
+  if (spec.vertices && level >= 2) {
+    const [n, rot, r] = spec.vertices;
     for (let i = 0; i < n; i++) {
-      const [x, y] = polar(a.group === "secret" ? 47 : 45, -90 + rot + (i * 360) / n);
+      const [x, y] = polar(r, -90 + rot + (i * 360) / n);
       inner.push(`M50 50L${x} ${y}`);
     }
   }
@@ -337,34 +360,32 @@ function decor(a: Pick<Achievement, "group" | "rarity" | "series">, rand: () => 
   return { spin, still, shards, leaves, inner };
 }
 
-const cache = new Map<string, BadgeArt>();
+type ArtSpec = DecorSpec & {
+  /** Строка, от которой считается весь рисунок */
+  seed: string;
+  shape: string;
+  palette: Palette;
+  face: (rand: () => number) => [string, string, string];
+  fx: Effects;
+  sparkles: number;
+};
 
-export function badgeArt(a: Pick<Achievement, "id" | "group" | "rarity" | "secret" | "series">): BadgeArt {
-  const key = `${a.id}:${a.rarity}:${a.group}`;
-  const hit = cache.get(key);
-  if (hit) return hit;
-  const seed = hash(a.id);
+function buildArt(spec: ArtSpec): BadgeArt {
+  const seed = hash(spec.seed);
   const rand = rng(seed);
-  const palette = PALETTE[a.rarity];
-  const spread = a.rarity === "common" ? 12 : 24;
   const kind = KINDS[seed % KINDS.length] as OrnamentKind;
-  const high = a.rarity === "epic" || a.rarity === "legendary";
-  const sparkleCount = a.rarity === "legendary" ? 4 : a.rarity === "epic" ? 2 : 0;
-  const art: BadgeArt = {
-    shape: SHAPE[a.group],
-    palette,
-    faceHue: Math.round(palette.hue + (rand() - 0.5) * spread),
+  return {
+    shape: spec.shape,
+    palette: spec.palette,
+    face: spec.face(rand),
     ornament: ornament(kind, rand),
     spinSec: Math.round(18 + rand() * 22),
     sheenSec: r1(4 + rand() * 3),
     delaySec: r1(-rand() * 6),
     glitchSec: r1(3.5 + rand() * 4),
-    iridescent: high,
-    // Глитч: все легендарные и тайные и примерно треть эпических
-    glitch:
-      a.rarity === "legendary" || Boolean(a.secret) || a.group === "secret" || (a.rarity === "epic" && seed % 3 === 0),
-    sparkles: Array.from({ length: sparkleCount }, (_, i) => {
-      const ang = ((i / sparkleCount) * 360 + rand() * 60 - 30) * (Math.PI / 180);
+    fx: spec.fx,
+    sparkles: Array.from({ length: spec.sparkles }, (_, i) => {
+      const ang = ((i / spec.sparkles) * 360 + rand() * 60 - 30) * (Math.PI / 180);
       const r = 47 + rand() * 6;
       return {
         x: r1(50 + r * Math.cos(ang)),
@@ -373,10 +394,124 @@ export function badgeArt(a: Pick<Achievement, "id" | "group" | "rarity" | "secre
         delay: r1(-rand() * 3),
       };
     }),
-    decor: decor(a, rng(seed ^ 0x9e3779b9)),
+    decor: decor(spec, rng(seed ^ 0x9e3779b9)),
   };
+}
+
+const cache = new Map<string, BadgeArt>();
+
+function cached(key: string, make: () => BadgeArt): BadgeArt {
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const art = make();
   cache.set(key, art);
   return art;
+}
+
+const VERTICES: Partial<Record<AchievementGroup, [number, number, number]>> = {
+  course: [6, 0, 45],
+  mastery: [8, 22.5, 45],
+  secret: [4, 0, 47],
+  streak: [4, 45, 45],
+};
+
+const RARITY_TIER: Record<Rarity, Tier> = { common: 1, rare: 2, epic: 3, legendary: 4 };
+
+export type BadgeSubject = Pick<Achievement, "id" | "group" | "rarity" | "secret" | "series">;
+
+/** Достижение: форма по группе, цвет и эффекты по редкости, оттенок лица свой у каждого id */
+export function badgeArt(a: BadgeSubject): BadgeArt {
+  return cached(`a:${a.id}:${a.rarity}:${a.group}`, () => {
+    const tone = PALETTE[a.rarity];
+    const tier = RARITY_TIER[a.rarity];
+    const high = tier >= 3;
+    const spread = a.rarity === "common" ? 12 : 24;
+    return buildArt({
+      seed: a.id,
+      tier,
+      shape: SHAPE[a.group],
+      palette: tone,
+      face: (rand) => {
+        const hue = Math.round(tone.hue + (rand() - 0.5) * spread);
+        return [
+          `hsl(${hue} ${tone.sat}% 34%)`,
+          `hsl(${hue} ${r1(tone.sat * 0.8)}% 16%)`,
+          `hsl(${hue} ${r1(tone.sat * 0.6)}% 8%)`,
+        ];
+      },
+      fx: {
+        glow: tier >= 2,
+        sheen: tier >= 2,
+        orbit: tier === 2,
+        iridescent: high,
+        halo: tier === 4,
+        // Глитч: все легендарные и тайные и примерно треть эпических
+        glitch: tier === 4 || Boolean(a.secret) || a.group === "secret" || (tier === 3 && hash(a.id) % 3 === 0),
+      },
+      sparkles: tier === 4 ? 4 : tier === 3 ? 2 : 0,
+      crown: tier === 4,
+      laurels: tier === 4 || Boolean(a.series && a.series.tier >= 4),
+      pips: a.series?.tier,
+      vertices: VERTICES[a.group],
+    });
+  });
+}
+
+/** Ранги идут по пять на ступень: у ступени своя звезда, у каждого ранга внутри ступени — свой узор и декор */
+const RANK_SHAPES: Record<Tier, { d: string; vertices: [number, number, number] }> = {
+  1: { d: polygon(5, 47), vertices: [5, 0, 46] },
+  2: { d: notched(10, 47, 39), vertices: [10, 0, 46] },
+  3: { d: notched(8, 48, 35), vertices: [8, 0, 47] },
+  4: { d: notched(6, 49, 31), vertices: [6, 0, 48] },
+  5: { d: notched(12, 49, 33), vertices: [12, 0, 48] },
+};
+
+const NEON = "var(--neon-user)";
+const neon = (p: number, other: string) => `color-mix(in oklab, ${NEON} ${p}%, ${other})`;
+
+/** Перелив ранга держит неон студента и добавляет к нему цвета по ступени */
+const RANK_CONIC: Partial<Record<Tier, string>> = {
+  3: `${NEON}, #c084fc, ${NEON}, #60a5fa, ${NEON}`,
+  4: `${NEON}, #fde68a, #c084fc, ${NEON}, #38bdf8, ${NEON}`,
+  5: `#fde68a, ${NEON}, #c084fc, #38bdf8, #34d399, ${NEON}, #fde68a`,
+};
+
+export function rankTier(index: number): Tier {
+  return Math.min(5, Math.floor(index / 5) + 1) as Tier;
+}
+
+export function rankArt(rank: Pick<Rank, "title">, index: number): BadgeArt {
+  return cached(`r:${rank.title}:${index}`, () => {
+    const tier = rankTier(index);
+    const shape = RANK_SHAPES[tier];
+    return buildArt({
+      seed: `rank:${rank.title}`,
+      tier,
+      shape: shape.d,
+      palette: {
+        color: NEON,
+        icon: neon(28, "white"),
+        stroke: [neon(45, "white"), NEON],
+        conic: RANK_CONIC[tier],
+      },
+      face: (rand) => {
+        const core = Math.round(34 + rand() * 16);
+        return [neon(core, "#0b0d12"), neon(Math.round(core / 2.6), "#0b0d12"), neon(6, "#06070a")];
+      },
+      fx: {
+        glow: true,
+        sheen: true,
+        orbit: tier === 2,
+        iridescent: tier >= 3,
+        halo: tier >= 4,
+        glitch: tier === 5,
+      },
+      sparkles: [0, 0, 0, 2, 3, 5][tier] ?? 0,
+      crown: tier === 5,
+      laurels: tier >= 4,
+      vertices: shape.vertices,
+    });
+  });
 }
 
 /** CSS-маска из SVG-пути: заливка лица или только обводка рамки */
