@@ -1,0 +1,12 @@
+id: algorithms
+num: "13"
+title: "Алгоритмы: сортировка и поиск"
+subtitle: пузырёк, выбор, вставки, бинарный поиск, слияние, быстрая сортировка
+fileName: Algorithms.java
+order: 17
+unlockAfter: files
+rank:
+  title: ВЕЛИКИЙ СОРТИРОВЩИК
+  icon: arrow-down-wide-narrow
+  color: "#38bdf8"
+stageBadge: "ЭТАП {n} / {total}"
