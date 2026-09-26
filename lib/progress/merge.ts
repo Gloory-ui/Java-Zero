@@ -157,8 +157,8 @@ export function stageToRow(userId: string, key: string, stage: StageProgress): O
   };
 }
 
-/** Верхние границы из проверок БД: больше за одну строку опыт не бывает */
-const MAX_STAGE_XP = 200;
+/** Верхняя граница из проверки БД: 80 за задание КТ + 20 с первой проверки + 10 без подсказок */
+const MAX_STAGE_XP = 110;
 
 export function achievementToRow(userId: string, id: string, at: number): AchievementRow {
   return { user_id: userId, achievement_id: id, unlocked_at: new Date(at).toISOString(), xp: achievementXp(id) };

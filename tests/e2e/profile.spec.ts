@@ -86,7 +86,6 @@ const PUBLIC = {
   title: "ГРОЗА СЕССИИ",
   showcase: ["quest_kt1", "first_var"],
   xp_total: 1335,
-  level: 8,
   stages_passed: 14,
   streak_days: 5,
   best_streak: 9,
@@ -135,7 +134,7 @@ test("таблица лидеров: неделя и всё время, трой
       accent: "violet",
       frame: "neon",
       title: null,
-      level: 5,
+      xp_total: xp * 3,
       xp,
     });
     await route.fulfill({
@@ -150,4 +149,10 @@ test("таблица лидеров: неделя и всё время, трой
   await page.getByRole("tab", { name: "Всё время" }).click();
   await expect(page.getByRole("link", { name: /@old_guard/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /@fast_one/ })).toHaveCount(0);
+});
+
+test("превью ссылки на профиль: картинка есть даже у скрытого профиля и без Supabase", async ({ request }) => {
+  const res = await request.get("/u/nobody_here/opengraph-image");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("image/png");
 });

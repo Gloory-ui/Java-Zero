@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { RARITY_LABEL } from "@/lib/game/achievements";
 import { type Toast, useToasts } from "@/lib/game/events";
 import { AchievementBadge, RARITY_COLOR } from "./achievement-badge";
-import { RankBadge } from "./rank-badge";
+import { GroupRankBadge, RankBadge } from "./rank-badge";
 
 const SHOW_MS = 4500;
 
@@ -30,7 +30,8 @@ export function Toaster() {
 
 function kicker(toast: Toast): string {
   if (toast.tone === "daily") return "Квест дня";
-  if (toast.tone === "level") return "Новый уровень";
+  if (toast.groupRank) return "Раздел «Группа»";
+  if (toast.tone === "level") return toast.title.startsWith("Новый ранг") ? "Новый ранг" : "Новый уровень";
   if (toast.tone === "egg") return toast.rarity ? "Тайный знак найден" : "Пасхалка";
   return toast.rarity ? `Достижение · ${RARITY_LABEL[toast.rarity]}` : "Достижение";
 }
@@ -40,9 +41,11 @@ function ToastCard({ toast }: { toast: Toast }) {
   const reduceMotion = useReducedMotion();
   const color = toast.rarity
     ? RARITY_COLOR[toast.rarity]
-    : toast.tone === "daily"
-      ? "var(--success)"
-      : "var(--neon-user)";
+    : toast.groupRank
+      ? "var(--gold)"
+      : toast.tone === "daily"
+        ? "var(--success)"
+        : "var(--neon-user)";
 
   useEffect(() => {
     const id = setTimeout(() => dismiss(toast.id), SHOW_MS);
@@ -65,6 +68,8 @@ function ToastCard({ toast }: { toast: Toast }) {
         <AchievementBadge achievement={toast.badge} unlocked size={44} className="m-0.5" />
       ) : toast.rank ? (
         <RankBadge rank={toast.rank} size={44} chip={false} className="m-0.5" />
+      ) : toast.groupRank ? (
+        <GroupRankBadge rank={toast.groupRank} size={44} chip={false} className="m-0.5" />
       ) : (
         <span className="grid size-10 shrink-0 place-items-center rounded-md bg-card" style={{ color }}>
           <Icon name={toast.icon} className="size-5" />

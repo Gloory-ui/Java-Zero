@@ -81,13 +81,20 @@ describe("опыт и уровни", () => {
     expect(RANKS[0].level).toBe(1);
     expect(RANKS.map((r) => r.level)).toEqual([...RANKS.map((r) => r.level)].sort((a, b) => a - b));
     expect(rankForLevel(1).title).toBe("БАЙТ-ПАДАВАН");
-    expect(RANKS).toHaveLength(25);
+    expect(RANKS).toHaveLength(100);
+    expect(new Set(RANKS.map((r) => r.level)).size).toBe(RANKS.length);
     expect(RANKS.at(-1)?.level).toBe(MAX_LEVEL);
-    expect(rankForLevel(4).title).toBe("БАЙТ-ПАДАВАН");
+    expect(rankForLevel(2).title).toBe("БАЙТ-ПАДАВАН");
+    expect(rankForLevel(4).title).toBe("ИСКАТЕЛЬ КОНСОЛИ");
+    expect(rankForLevel(8).title).toBe("СТАЖЁР КОМПИЛЯТОРА");
     expect(rankForLevel(5).title).toBe("СТАЖЁР КОМПИЛЯТОРА");
     expect(new Set(RANKS.map((r) => r.title)).size).toBe(RANKS.length);
     expect(rankForLevel(999).title).toBe(RANKS.at(-1)?.title);
-    expect(rankForLevel(998).title).toBe("БЕССМЕРТНЫЙ КОМПИЛЯТОР");
+    expect(rankForLevel(998).title).toBe("ПОСЛЕДНИЙ БОСС");
+    // Между рангами не больше 25 уровней: новый ранг всегда недалеко
+    for (let i = 1; i < RANKS.length; i++) {
+      expect((RANKS[i]?.level ?? 0) - (RANKS[i - 1]?.level ?? 0)).toBeLessThanOrEqual(25);
+    }
   });
 });
 

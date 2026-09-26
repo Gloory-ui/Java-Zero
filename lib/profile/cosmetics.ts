@@ -16,7 +16,8 @@ export const ACCENTS: readonly Accent[] = [
   { id: "lime", name: "Лайм", color: "#a3e635", unlock: { level: 10 } },
   { id: "ice", name: "Лёд", color: "#7dd3fc", unlock: { achievement: "days_7" } },
   { id: "amber", name: "Янтарь", color: "#f59e0b", unlock: { level: 40 } },
-  { id: "emerald", name: "Изумруд", color: "#10b981", unlock: { achievement: "quest_kt1" } },
+  // За «Калькулятор», а не за КТ: контрольные точки видит только группа, остальным цвет был бы закрыт навсегда
+  { id: "emerald", name: "Изумруд", color: "#10b981", unlock: { achievement: "quest_calc" } },
   { id: "magenta", name: "Маджента", color: "#e879f9", unlock: { level: 100 } },
   { id: "gold", name: "Золото", color: "#fbbf24", unlock: { level: 250 } },
 ];

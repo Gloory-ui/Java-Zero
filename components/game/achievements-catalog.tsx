@@ -13,7 +13,7 @@ import { rarityText, whenText } from "./achievements-panel";
 
 type Filter = "all" | AchievementGroup;
 
-const FILTERS: readonly Filter[] = ["all", "course", "mastery", "exam", "streak", "daily", "secret"];
+const FILTERS: readonly Filter[] = ["all", "course", "mastery", "exam", "streak", "daily", "group", "secret"];
 
 /** Все достижения курса по группам: условие, редкость, прогресс серии и дата получения */
 export function AchievementsCatalog({ course: fullCourse }: { course: QuestOutline[] }) {
@@ -36,7 +36,8 @@ export function AchievementsCatalog({ course: fullCourse }: { course: QuestOutli
     <div className={cn("flex flex-col gap-6", !hydrated && "opacity-0")}>
       <fieldset className="flex flex-wrap gap-2">
         <legend className="sr-only">Фильтр по группам</legend>
-        {FILTERS.map((id) => (
+        {/* Пустые группы не показываем: «Группа» видна только участникам раздела с КТ */}
+        {FILTERS.filter((id) => total(id) > 0).map((id) => (
           <button
             key={id}
             type="button"

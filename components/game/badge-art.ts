@@ -54,6 +54,7 @@ export const SHAPE: Record<AchievementGroup, string> = {
   streak: "M28 7h44a21 21 0 0 1 21 21v44a21 21 0 0 1-21 21H28A21 21 0 0 1 7 72V28A21 21 0 0 1 28 7Z",
   daily: notched(16, 46, 42.5),
   secret: "M50 3 97 50 50 97 3 50Z",
+  group: polygon(6, 46, 30),
 };
 
 export type Palette = {
@@ -448,7 +449,7 @@ export function badgeArt(a: BadgeSubject): BadgeArt {
         // Глитч: все легендарные и тайные и примерно треть эпических
         glitch: tier === 4 || Boolean(a.secret) || a.group === "secret" || (tier === 3 && hash(a.id) % 3 === 0),
       },
-      sparkles: tier === 4 ? 4 : tier === 3 ? 2 : 0,
+      sparkles: tier === 4 ? 3 : tier === 3 ? 1 : 0,
       crown: tier === 4,
       laurels: tier === 4 || Boolean(a.series && a.series.tier >= 4),
       pips: a.series?.tier,
@@ -457,14 +458,22 @@ export function badgeArt(a: BadgeSubject): BadgeArt {
   });
 }
 
-/** Ранги идут по пять на ступень: у ступени своя звезда, у каждого ранга внутри ступени — свой узор и декор */
-const RANK_SHAPES: Record<Tier, { d: string; vertices: [number, number, number] }> = {
-  1: { d: polygon(5, 47), vertices: [5, 0, 46] },
-  2: { d: notched(10, 47, 39), vertices: [10, 0, 46] },
-  3: { d: notched(8, 48, 35), vertices: [8, 0, 47] },
-  4: { d: notched(6, 49, 31), vertices: [6, 0, 48] },
-  5: { d: notched(12, 49, 33), vertices: [12, 0, 48] },
-};
+/**
+ * 100 рангов: 10 эпох по 10 рангов, у каждой эпохи своя форма рамки. Эффекты растут пятью ступенями
+ * (по две эпохи на ступень), у каждого ранга внутри эпохи — свой узор, декор и иконка.
+ */
+const RANK_ERAS: readonly { d: string; vertices: [number, number, number] }[] = [
+  { d: polygon(5, 47), vertices: [5, 0, 46] },
+  { d: polygon(7, 47), vertices: [7, 0, 46] },
+  { d: notched(10, 47, 39), vertices: [10, 0, 46] },
+  { d: notched(7, 47, 36), vertices: [7, 0, 46] },
+  { d: notched(8, 48, 35), vertices: [8, 0, 47] },
+  { d: notched(9, 48, 34), vertices: [9, 0, 47] },
+  { d: notched(6, 49, 31), vertices: [6, 0, 48] },
+  { d: notched(5, 49, 27), vertices: [5, 0, 48] },
+  { d: notched(12, 49, 33), vertices: [12, 0, 48] },
+  { d: notched(16, 49, 36), vertices: [16, 0, 48] },
+];
 
 const NEON = "var(--neon-user)";
 const neon = (p: number, other: string) => `color-mix(in oklab, ${NEON} ${p}%, ${other})`;
@@ -476,18 +485,20 @@ const RANK_CONIC: Partial<Record<Tier, string>> = {
   5: `#fde68a, ${NEON}, #c084fc, #38bdf8, #34d399, ${NEON}, #fde68a`,
 };
 
+/** Ступень ранга 1…5 по его номеру: по 20 рангов на ступень */
 export function rankTier(index: number): Tier {
-  return Math.min(5, Math.floor(index / 5) + 1) as Tier;
+  return Math.min(5, Math.floor(index / 20) + 1) as Tier;
 }
 
 export function rankArt(rank: Pick<Rank, "title">, index: number): BadgeArt {
   return cached(`r:${rank.title}:${index}`, () => {
     const tier = rankTier(index);
-    const shape = RANK_SHAPES[tier];
+    const era = RANK_ERAS[Math.min(RANK_ERAS.length - 1, Math.floor(index / 10))] ?? RANK_ERAS[0];
+    if (!era) throw new Error("нет формы ранга");
     return buildArt({
       seed: `rank:${rank.title}`,
       tier,
-      shape: shape.d,
+      shape: era.d,
       palette: {
         color: NEON,
         icon: neon(28, "white"),
@@ -506,10 +517,62 @@ export function rankArt(rank: Pick<Rank, "title">, index: number): BadgeArt {
         halo: tier >= 4,
         glitch: tier === 5,
       },
-      sparkles: [0, 0, 0, 2, 3, 5][tier] ?? 0,
+      sparkles: [0, 0, 0, 1, 2, 3][tier] ?? 0,
       crown: tier === 5,
       laurels: tier >= 4,
-      vertices: shape.vertices,
+      vertices: era.vertices,
+    });
+  });
+}
+
+/**
+ * Звания раздела «Группа»: гербы и печати в академическом золоте и тёмно-синем, отдельно от неона студента.
+ * Пять ступеней по форме: лента-вымпел, щит, геральдический «воздушный змей», печать-розетка, коронованный герб.
+ */
+const GROUP_ERAS: Record<Tier, { d: string; vertices?: [number, number, number] }> = {
+  1: { d: "M16 6H84V90L50 73 16 90Z" },
+  2: { d: "M13 8H87V44C87 70 71 86 50 95 29 86 13 70 13 44Z" },
+  3: { d: "M50 3 90 20 84 62 50 97 16 62 10 20Z", vertices: [6, 0, 44] },
+  4: { d: notched(24, 48, 43.5), vertices: [12, 0, 44] },
+  5: { d: "M19 22 34 8 50 19 66 8 81 22 89 50C89 75 71 90 50 97 29 90 11 75 11 50Z", vertices: [8, 0, 44] },
+};
+
+const GROUP_CONIC: Partial<Record<Tier, string>> = {
+  3: "#fde68a, #f5a524, #fef3c7, #d97706, #fde68a",
+  4: "#fde68a, #60a5fa, #f5a524, #a78bfa, #fde68a",
+  5: "#fde68a, #f472b6, #60a5fa, #34d399, #f5a524, #fde68a",
+};
+
+/** Ступень звания группы: 20 званий, по 4 на ступень */
+export function groupRankTier(index: number): Tier {
+  return Math.min(5, Math.floor(index / 4) + 1) as Tier;
+}
+
+export function groupRankArt(rank: { title: string }, index: number): BadgeArt {
+  return cached(`g:${rank.title}:${index}`, () => {
+    const tier = groupRankTier(index);
+    const era = GROUP_ERAS[tier];
+    return buildArt({
+      seed: `group:${rank.title}`,
+      tier,
+      shape: era.d,
+      palette: { color: "#f5a524", icon: "#fef3c7", stroke: ["#fde68a", "#b45309"], conic: GROUP_CONIC[tier] },
+      face: (rand) => {
+        const hue = Math.round(218 + (rand() - 0.5) * 20);
+        return [`hsl(${hue} 55% 32%)`, `hsl(${hue} 50% 15%)`, `hsl(${hue} 45% 7%)`];
+      },
+      fx: {
+        glow: true,
+        sheen: true,
+        orbit: tier === 2,
+        iridescent: tier >= 3,
+        halo: tier >= 4,
+        glitch: tier === 5,
+      },
+      sparkles: [0, 0, 0, 1, 2, 3][tier] ?? 0,
+      crown: tier === 5,
+      laurels: tier >= 3,
+      vertices: era.vertices,
     });
   });
 }

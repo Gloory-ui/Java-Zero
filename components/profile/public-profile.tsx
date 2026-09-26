@@ -9,7 +9,7 @@ import { achievementCatalog, RARITY_ORDER } from "@/lib/game/achievements";
 import { rankForLevel } from "@/lib/game/ranks";
 import { levelInfo } from "@/lib/game/xp";
 import { accentById } from "@/lib/profile/cosmetics";
-import { safeMediaUrl } from "@/lib/profile/media";
+import { safeMediaUrl } from "@/lib/profile/safe-url";
 import { fetchPublicProfile, PublicDataError } from "@/lib/profile/public";
 import type { PublicProfile } from "@/lib/supabase/database";
 import { type HeroData, ProfileHero } from "./profile-hero";

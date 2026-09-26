@@ -41,9 +41,14 @@
 }
 
 .ornament {
+  /* Узор на лице неподвижен: вращение под маской перерисовывало слой каждый кадр */
   position: absolute;
   inset: 0;
-  animation: spin calc(var(--spin, 24s) * 2.5) linear infinite reverse;
+}
+
+/* Отдельные слои видеокарты — только у видимых значков, иначе сотня значков съедает видеопамять */
+.badge:not([data-paused]) :is(.spin, .decorSpin, .haloRays, .orbitDot, .sparkle) {
+  will-change: transform;
 }
 
 /* Декор вокруг рамки: слой шире значка, вращается только его часть */
@@ -78,7 +83,8 @@
   inset: -14%;
   border-radius: 50%;
   background: radial-gradient(closest-side, var(--glow), transparent);
-  animation: breathe 3.2s ease-in-out infinite var(--delay, 0s);
+  /* Ровное свечение: «дыхание» не уходило на видеокарту и нагружало основной поток */
+  opacity: 0.6;
 }
 
 .sheen {
@@ -88,7 +94,16 @@
   left: -60%;
   width: 40%;
   background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.4), transparent);
-  animation: sheen var(--sheen, 5s) ease-in-out infinite var(--delay, 0s);
+  transform: translateX(400%);
+}
+
+/* Блик пробегает один раз, когда значок появляется на экране, и снова при наведении */
+.badge:not([data-paused]) .sheen {
+  animation: sheen-once 1.3s var(--ease-out, ease-out) both;
+}
+
+.badge:hover .sheen {
+  animation: sheen-hover 1.1s var(--ease-out, ease-out) both;
 }
 
 .orbitDot {
@@ -157,22 +172,20 @@
   }
 }
 
-@keyframes breathe {
-  0%,
-  100% {
-    opacity: 0.35;
+@keyframes sheen-once {
+  from {
+    transform: translateX(0);
   }
-  50% {
-    opacity: 0.85;
+  to {
+    transform: translateX(400%);
   }
 }
 
-@keyframes sheen {
-  0% {
+@keyframes sheen-hover {
+  from {
     transform: translateX(0);
   }
-  40%,
-  100% {
+  to {
     transform: translateX(400%);
   }
 }

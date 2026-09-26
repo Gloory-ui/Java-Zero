@@ -17,7 +17,8 @@ alter table public.profiles
   add column if not exists showcase text[] not null default '{}' check (cardinality(showcase) <= 4),
   -- Публичность выбирает сам студент; по умолчанию профиль закрыт
   add column if not exists is_public boolean not null default false,
-  -- Сводка для публичной страницы: сайт пересчитывает её при каждой синхронизации
+  -- Сводка от браузера. Опыт, уровень и число этапов на публичной странице и в таблице лидеров
+  -- считает база (user_xp ниже): браузеру в этом не доверяем
   add column if not exists xp_total integer not null default 0 check (xp_total >= 0),
   add column if not exists level integer not null default 1 check (level >= 1),
   add column if not exists stages_passed integer not null default 0 check (stages_passed >= 0),
@@ -25,6 +26,57 @@ alter table public.profiles
   add column if not exists best_streak integer not null default 0 check (best_streak >= 0);
 
 create unique index if not exists profiles_handle_key on public.profiles (handle);
+
+-- Аватар подставляется в <img> на публичной странице: только https без кавычек и скобок.
+-- not valid — старые строки не проверяются, новые и изменённые проверяются
+alter table public.profiles drop constraint if exists profiles_avatar_url_https;
+alter table public.profiles
+  add constraint profiles_avatar_url_https
+  check (avatar_url is null or avatar_url ~ '^https://[^"''()\s<>]+$') not valid;
+
+-- ——— Потолки опыта по реальным максимумам игры ———
+-- Этап: 80 за задание КТ + 20 с первой проверки + 10 без подсказок = 110. Квест дня: до 60, сундук — 30
+alter table public.stage_progress drop constraint if exists stage_progress_xp_check;
+alter table public.stage_progress add constraint stage_progress_xp_check check (xp between 0 and 110) not valid;
+alter table public.daily_quests drop constraint if exists daily_quests_xp_check;
+alter table public.daily_quests add constraint daily_quests_xp_check check (xp between 0 and 60) not valid;
+
+-- Опыт студента по строкам базы — для публичной страницы и таблицы лидеров.
+-- Строки пишет сам студент, поэтому засчитывается не больше, чем бывает в игре: 400 этапов (весь курс с запасом),
+-- 100 достижений, 4 записи квестов дня за день (3 квеста и сундук). Только для функций ниже, наружу не выдаётся
+create or replace function public.user_xp(p_user uuid, p_since timestamptz default '-infinity')
+returns bigint
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select
+    coalesce((
+      select sum(xp) from (
+        select xp from public.stage_progress
+        where user_id = p_user and passed_at is not null and passed_at >= p_since
+        order by passed_at limit 400
+      ) s
+    ), 0)
+    + coalesce((
+      select sum(xp) from (
+        select xp from public.achievements
+        where user_id = p_user and unlocked_at >= p_since
+        order by unlocked_at limit 100
+      ) a
+    ), 0)
+    + coalesce((
+      select sum(xp) from (
+        select xp, row_number() over (partition by day order by completed_at) as n
+        from public.daily_quests
+        where user_id = p_user and completed_at >= p_since
+      ) d
+      where d.n <= 4
+    ), 0);
+$$;
+
+revoke all on function public.user_xp(uuid, timestamptz) from public;
 
 -- ——— Публичные данные: только через функции, таблицы остаются закрыты RLS ———
 
@@ -62,9 +114,10 @@ as $$
     'banner_url', p.banner_url,
     'title', p.title,
     'showcase', p.showcase,
-    'xp_total', p.xp_total,
-    'level', p.level,
-    'stages_passed', p.stages_passed,
+    'xp_total', public.user_xp(p.id),
+    'stages_passed', (
+      select count(*) from public.stage_progress sp where sp.user_id = p.id and sp.passed_at is not null
+    ),
     'streak_days', p.streak_days,
     'best_streak', p.best_streak,
     'created_at', p.created_at,
@@ -78,9 +131,11 @@ as $$
   where p.handle = p_handle and p.is_public;
 $$;
 
--- Таблица лидеров: опыт считается по строкам этапов, достижений и квестов дня (у каждой строки есть потолок),
--- а не по xp_total, который присылает браузер. В таблицу попадают только публичные профили с ником
-create or replace function public.leaderboard(p_period text default 'all')
+-- Таблица лидеров: опыт по строкам базы (user_xp), а не то, что присылает браузер.
+-- xp — за период (неделя или всё время), xp_total — весь опыт: по нему сайт считает уровень.
+-- В таблицу попадают только публичные профили с ником
+drop function if exists public.leaderboard(text);
+create function public.leaderboard(p_period text default 'all')
 returns table (
   handle text,
   display_name text,
@@ -88,7 +143,7 @@ returns table (
   accent text,
   frame text,
   title text,
-  level integer,
+  xp_total bigint,
   xp bigint
 )
 language sql
@@ -96,22 +151,16 @@ stable
 security definer
 set search_path = ''
 as $$
-  with gains as (
-    select user_id, xp, passed_at as at from public.stage_progress where passed_at is not null
-    union all
-    select user_id, xp, unlocked_at from public.achievements
-    union all
-    select user_id, xp, completed_at from public.daily_quests
-  )
-  select p.handle, p.display_name, p.avatar_url, p.accent, p.frame, p.title, p.level, sum(g.xp)::bigint as xp
-  from gains g
-  join public.profiles p on p.id = g.user_id
-  where p.is_public
-    and p.handle is not null
-    and (p_period <> 'week' or g.at >= now() - interval '7 days')
-  group by p.id
-  having sum(g.xp) > 0
-  order by xp desc, max(g.at) asc
+  select * from (
+    select
+      p.handle, p.display_name, p.avatar_url, p.accent, p.frame, p.title,
+      public.user_xp(p.id) as xp_total,
+      public.user_xp(p.id, case when p_period = 'week' then now() - interval '7 days' else '-infinity'::timestamptz end) as xp
+    from public.profiles p
+    where p.is_public and p.handle is not null
+  ) t
+  where t.xp > 0
+  order by t.xp desc, t.handle
   limit 50;
 $$;
 
