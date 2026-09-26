@@ -48,6 +48,12 @@ describe("каталог украшений", () => {
     }
   });
 
+  it("украшения не открываются за КТ: контрольные точки видит только группа", () => {
+    for (const item of [...ACCENTS, ...FRAMES, ...BANNERS]) {
+      expect(item.unlock.achievement ?? "", item.id).not.toMatch(/^quest_kt\d+$/);
+    }
+  });
+
   it("id украшений проходят проверку БД, у каждой группы есть бесплатный вариант", () => {
     for (const list of [ACCENTS, FRAMES, BANNERS]) {
       for (const item of list) expect(item.id).toMatch(/^[a-z0-9_-]{1,24}$/);
