@@ -7,17 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": [
-      "**",
-      "!node_modules",
-      "!.next",
-      "!dist",
-      "!build",
-      "!client",
-      "!server",
-      "!playwright-report",
-      "!test-results"
-    ]
+    "includes": ["**", "!node_modules", "!.next", "!dist", "!build", "!playwright-report", "!test-results"]
   },
   "formatter": {
     "enabled": true,
