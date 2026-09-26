@@ -1,0 +1,63 @@
+id: extends
+title: "Наследование: extends"
+hints:
+  - Кошка — это животное. Чтобы `Cat` получила имя, возраст и метод `introduce()`, её класс должен расширять `Animal`.
+  - "Заголовок класса: `class Cat extends Animal { ... }`. Внутри напиши метод `meow()`: он печатает имя и «Мяу!»."
+  - 'В `main`: `cat.name = "Барсик"; cat.age = 3; cat.introduce(); cat.meow();` — поля и `introduce()` пришли от `Animal`.'
+quiz:
+  question: Класс Cat объявлен как class Cat extends Animal. Что есть у объекта Cat?
+  options:
+    - Только то, что написано внутри Cat
+    - Поля и методы Animal плюс то, что написано в Cat
+    - Только поля Animal, без методов
+    - Копия объекта Animal, которую нужно создать отдельно
+  correct: 1
+  hint: Наследник получает всё, что есть у родителя, и добавляет своё.
+exam:
+  - q: Как в Java объявить, что Dog — наследник Animal?
+    options:
+      - class Dog extends Animal
+      - class Dog implements Animal
+      - "class Dog : Animal"
+      - class Dog inherits Animal
+    correct: 0
+    explain: Наследование класса записывают словом extends. implements — для интерфейсов, двоеточие — синтаксис других языков.
+    advice: "Запомни пару: extends — класс, implements — интерфейс."
+  - q: Сколько родительских классов может быть у класса в Java?
+    options:
+      - Один
+      - Два
+      - Сколько угодно
+      - Ни одного
+    correct: 0
+    explain: В Java у класса ровно один прямой родитель. Если extends не написан, родитель — Object.
+    advice: Множественное наследование в Java заменяют интерфейсы.
+  - q: Зачем выносить общие поля в базовый класс?
+    options:
+      - Чтобы не копировать один и тот же код в каждый класс
+      - Чтобы программа работала быстрее
+      - Так требует компилятор
+      - Чтобы поля стали статическими
+    correct: 0
+    explain: Имя и возраст есть у каждого животного. Если записать их один раз в Animal, исправлять придётся одно место, а не пять.
+    advice: Ищи в задаче одинаковые поля у разных классов — это кандидаты в родителя.
+memory:
+  note: "Момент после cat.meow(). В куче один объект Cat: поля name и age он получил от Animal."
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Cat cat → объект в куче
+  heap:
+    - obj: Cat
+      data: name = "Барсик", age = 3 — поля из Animal. Своих полей у Cat нет, только метод meow().
+    - obj: '"Барсик"'
+      data: Строка, на которую ссылается поле name.
+tests:
+  - name: Кошка представляется и мяукает
+    stdout: |
+      Я Барсик, мне 3
+      Барсик: Мяу!
+  - kind: source
+    name: Cat расширяет Animal
+    pattern: class\s+Cat\s+extends\s+Animal
+    message: "Объяви кошку как наследника: class Cat extends Animal"
