@@ -20,14 +20,15 @@ test("профиль показывает статистику и ранг го�
   await page.goto("/profile");
   await expect(page.getByText("Этапов сдано")).toBeVisible();
   // У гостя раздела «Группа» КТ не считаются: 20 этапов общего курса
-  await expect(page.getByText("0 из 20")).toBeVisible();
+  await expect(page.getByText("0 из 28")).toBeVisible();
   await expect(page.getByText("БАЙТ-ПАДАВАН").first()).toBeVisible();
 
   // Характер ментора — в панели «Настройки»
   await page.getByRole("button", { name: "Настройки" }).click();
-  // Кликаем по карточке целиком: панель выезжает, и точка внутри текста может прийтись на край карточки
-  const dushny = page.getByRole("dialog", { name: "Настройки" }).locator("label").filter({ hasText: "Душный препод" });
-  await dushny.click();
+  const settings = page.getByRole("dialog", { name: "Настройки" });
+  const dushny = settings.locator("label").filter({ hasText: "Душный препод" });
+  // Тест про сохранение выбора, а не про геометрию: панель на телефоне ещё движется, поэтому кликаем по самой радиокнопке
+  await dushny.getByRole("radio").dispatchEvent("click");
   await expect(dushny.getByRole("radio")).toBeChecked();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("java-zero-progress") ?? "{}"));
   expect(saved.state.persona).toBe("dushny");
