@@ -1,0 +1,67 @@
+id: reduce
+title: "Числа в потоке: sum, average, reduce"
+hints:
+  - "Числа от 1 до 10 — `IntStream.rangeClosed(1, 10)`, дальше `.map(x -> x * x).sum()`."
+  - "Средний и лучший балл: `scores.stream().mapToInt(Integer::intValue).average().orElse(0)` и то же с `.max()`."
+  - "Факториал: `IntStream.rangeClosed(1, 6).reduce(1, (acc, x) -> acc * x)`. Чётные: `.filter(x -> x % 2 == 0).count()`."
+quiz:
+  question: Какие числа даст IntStream.range(1, 4)?
+  options:
+    - 1, 2, 3
+    - 1, 2, 3, 4
+    - 0, 1, 2, 3
+    - "4"
+  correct: 0
+  hint: Правая граница range не включается, как у substring.
+exam:
+  - q: Почему для произведения reduce начинают с 1, а не с 0?
+    options:
+      - Умножение на начальный 0 обнулит весь результат
+      - reduce не принимает 0
+      - Так быстрее
+      - Разницы нет
+    correct: 0
+    explain: Начальное значение — это результат для пустого потока и первый множитель. Для суммы нейтральный элемент 0, для произведения — 1.
+    advice: Начальное значение reduce не должно менять результат.
+  - q: Что вернёт average() у пустого IntStream?
+    options:
+      - Пустой OptionalDouble — среднего нет
+      - "0.0"
+      - NaN
+      - Бросит исключение
+    correct: 0
+    explain: Делить на ноль элементов нельзя, поэтому average возвращает «пустую коробку». orElse(0) подставит запасное значение.
+    advice: Всегда решай, что показывать, если данных нет.
+  - q: Зачем mapToInt перед sum?
+    options:
+      - У потока объектов нет sum, а у IntStream есть
+      - Чтобы отсортировать числа
+      - Чтобы удалить повторы
+      - Иначе числа станут строками
+    correct: 0
+    explain: Stream<Integer> ничего не знает о сложении. IntStream — специальный поток чисел со своими sum, average, max.
+    advice: Для double есть mapToDouble и DoubleStream.
+memory:
+  note: Момент после подсчёта факториала.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<Integer> scores → неизменяемый список
+        - int squares = 385
+        - double avg = 80.75
+        - int factorial = 720
+  heap:
+    - obj: List<Integer>
+      data: "78, 92, 65, 88"
+tests:
+  - name: Числовые свёртки
+    stdout: |
+      Сумма квадратов: 385
+      Средний балл: 80.75
+      6! = 720
+      Лучший балл: 92
+      Чётных до 20: 10
+  - kind: source
+    name: Свёртка через reduce
+    pattern: '\.reduce\s*\('
+    message: "Посчитай 6! через reduce(1, (acc, x) -> acc * x)"

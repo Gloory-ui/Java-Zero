@@ -1,0 +1,69 @@
+id: collectors
+title: "Collectors: joining, groupingBy, partitioningBy"
+hints:
+  - "Все отчёты — `students.stream()...collect(Collectors.что-то)`. Имена: `map(Student::name).collect(Collectors.joining(\", \"))`."
+  - "Группы: `Collectors.groupingBy(Student::group, TreeMap::new, Collectors.counting())`, для среднего вместо `counting()` — `Collectors.averagingInt(Student::score)`."
+  - "Сдали: `Collectors.partitioningBy(s -> s.score() >= 60, Collectors.mapping(Student::name, Collectors.toList()))`."
+quiz:
+  question: Что соберёт Collectors.joining(", ") из потока «а», «б», «в»?
+  options:
+    - Строку «а, б, в»
+    - Список [а, б, в]
+    - Строку «абв»
+    - Число 3
+  correct: 0
+  hint: joining — склейка через разделитель.
+exam:
+  - q: Зачем в groupingBy передают TreeMap::new?
+    options:
+      - Чтобы результат был TreeMap и ключи шли по алфавиту
+      - Чтобы создать новый поток
+      - Без него groupingBy не работает
+      - Чтобы посчитать количество
+    correct: 0
+    explain: По умолчанию groupingBy собирает HashMap с непредсказуемым порядком ключей. Ссылка на конструктор задаёт другой вид словаря.
+    advice: Для отчётов, которые читают люди, порядок ключей важен.
+  - q: Чем partitioningBy отличается от groupingBy?
+    options:
+      - partitioningBy делит ровно на две группы по условию — false и true
+      - partitioningBy сортирует элементы
+      - groupingBy работает только с числами
+      - Ничем
+    correct: 0
+    explain: groupingBy создаёт столько групп, сколько разных ключей. partitioningBy всегда даёт две группы, даже если одна пустая.
+    advice: Вопрос «да или нет» — partitioningBy, вопрос «какой» — groupingBy.
+  - q: Что делает второй коллектор в groupingBy(Student::group, TreeMap::new, Collectors.counting())?
+    options:
+      - Решает, что сделать с каждой группой — здесь посчитать её элементы
+      - Сортирует группы
+      - Удаляет пустые группы
+      - Создаёт второй словарь
+    correct: 0
+    explain: Без второго коллектора в каждой группе лежал бы список студентов. counting превращает список в число.
+    advice: Второй коллектор может быть любым — averagingInt, mapping, joining.
+memory:
+  note: Момент после подсчёта по группам.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<Student> students → неизменяемый список
+        - String all → «Аня, Борис, Вика, Гоша, Даша»
+        - Map<String, Long> counts → TreeMap в куче
+  heap:
+    - obj: TreeMap (counts)
+      data: "{ИТ-1=3, ИТ-2=2}"
+tests:
+  - name: Отчёт по студентам
+    stdout: |
+      Все: Аня, Борис, Вика, Гоша, Даша
+      По группам: {ИТ-1=3, ИТ-2=2}
+      Средний балл: {ИТ-1=70.0, ИТ-2=68.0}
+      Сдали: {false=[Борис, Гоша], true=[Аня, Вика, Даша]}
+  - kind: source
+    name: Группировка
+    pattern: 'Collectors\s*\.\s*groupingBy\s*\('
+    message: "Сгруппируй через Collectors.groupingBy"
+  - kind: source
+    name: Деление на две группы
+    pattern: 'Collectors\s*\.\s*partitioningBy\s*\('
+    message: "Раздели на сдавших и нет через Collectors.partitioningBy"
