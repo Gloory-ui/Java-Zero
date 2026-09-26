@@ -1,0 +1,84 @@
+id: encapsulation
+title: private, геттеры и сеттеры с проверкой
+hints:
+  - "Поля: `private String name;` и `private int age;`. Геттеры: `public String getName() { return name; }` и `public int getAge() { return age; }`."
+  - 'Сеттер с проверкой: `if (age >= 0) this.age = age; else System.out.println("Ошибка: возраст не может быть отрицательным");`.'
+  - 'В `main` в цикле: `barsik.setAge(sc.nextInt());` и вывод `barsik.getName() + ": " + barsik.getAge()`. В конце — `barsik.setName("Василий");`.'
+sampleInput: |
+  3
+  5 -2 0
+quiz:
+  question: Что даёт модификатор private у поля?
+  options:
+    - Поле видно только внутри своего класса
+    - Поле нельзя изменить даже внутри класса
+    - Поле становится общим для всех объектов
+    - Поле видно только в main
+  correct: 0
+  hint: private — самый строгий модификатор доступа.
+exam:
+  - q: Зачем закрывать поля и давать доступ через сеттеры?
+    options:
+      - Сеттер проверяет значение и не пускает некорректные данные
+      - Так программа работает быстрее
+      - Без этого класс не скомпилируется
+      - Чтобы поле стало static
+    correct: 0
+    explain: Объект сам следит за своим состоянием, и кот с возрастом −1000 не появится.
+    advice: Это называется инкапсуляцией — скрытием внутреннего состояния объекта.
+  - q: Что вернёт getAge() после setAge(-5), если возраст был 3?
+    options:
+      - "3"
+      - "-5"
+      - "0"
+      - Ошибку компиляции
+    correct: 0
+    explain: Сеттер отклонил отрицательное значение и не изменил поле.
+    advice: Проверь это на защите вызовом с неверным значением.
+  - q: Как по договорённости называется геттер поля name?
+    options:
+      - getName()
+      - name()
+      - readName()
+      - setName()
+    correct: 0
+    explain: Геттер — get плюс имя поля с заглавной буквы, сеттер — set плюс имя поля.
+    advice: Для поля boolean встречается и вариант isActive().
+memory:
+  note: "Момент после попытки записать −2: сеттер отказал, поле age сохранило 5."
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - Cat barsik → кот в куче
+        - int n = 3
+  heap:
+    - obj: Cat
+      data: 'private name = "Барсик", private age = 5'
+tests:
+  - name: Отрицательный возраст отклонён
+    stdin: |
+      3
+      5 -2 0
+    stdout: |
+      Барсик: 5
+      Ошибка: возраст не может быть отрицательным
+      Барсик: 5
+      Барсик: 0
+      Новое имя: Василий
+  - name: Все значения верные
+    stdin: |
+      2
+      7 8
+    stdout: |
+      Барсик: 7
+      Барсик: 8
+      Новое имя: Василий
+  - kind: source
+    name: Поле age закрыто
+    pattern: \bprivate\s+int\s+age\b
+    message: "Закрой поле: private int age;"
+  - kind: source
+    name: Геттер и сеттер возраста
+    pattern: \bint\s+getAge\s*\(\s*\)[\s\S]*\bvoid\s+setAge\s*\(\s*int\b|\bvoid\s+setAge\s*\(\s*int\b[\s\S]*\bint\s+getAge\s*\(\s*\)
+    message: "Добавь int getAge() и void setAge(int age)"

@@ -1,0 +1,88 @@
+id: getters-setters
+title: Геттеры и сеттеры с проверками
+hints:
+  - "Поля: `private String name;` и `private int age;`. Геттеры: `public String getName() { return name; }` и `public int getAge() { return age; }`."
+  - 'setAge: `if (age > 0) this.age = age; else System.out.println("Ошибка: возраст должен быть больше 0");`.'
+  - 'setName: `if (name == null || name.isEmpty()) System.out.println("Ошибка: имя не может быть пустым"); else this.name = name;`.'
+sampleInput: |
+  4
+  4 -1 0 7
+quiz:
+  question: Какое значение вернёт getAge() после setAge(0), если возраст был 4?
+  options:
+    - "4"
+    - "0"
+    - "-1"
+    - Ошибку компиляции
+  correct: 0
+  hint: По билету возраст должен быть больше 0, ноль сеттер отклонит.
+exam:
+  - q: Что даёт private у полей name и age?
+    options:
+      - Доступ к ним только внутри класса Animal, снаружи — через геттеры и сеттеры
+      - Поля становятся общими для всех объектов
+      - Поля нельзя менять даже внутри класса
+      - Поля видны только в main
+    correct: 0
+    explain: Код снаружи не может записать возраст −1 напрямую. Все записи идут через сеттер с проверкой.
+    advice: Это инкапсуляция — объект сам отвечает за корректность своих данных.
+  - q: Почему name.isEmpty(), а не name == ""?
+    options:
+      - == для строк сравнивает ссылки, а isEmpty() проверяет текст
+      - isEmpty() короче
+      - == не компилируется для строк
+      - Разницы нет
+    correct: 0
+    explain: Две одинаковые по тексту строки могут быть разными объектами. Для текста используют методы строки.
+    advice: Для сравнения двух строк по тексту есть a.equals(b).
+  - q: Зачем в setName проверка name == null перед isEmpty()?
+    options:
+      - У null нельзя вызвать метод, проверка || отсекает его раньше
+      - Так быстрее
+      - Без неё не компилируется
+      - Она не нужна
+    correct: 0
+    explain: Оператор || не вычисляет правую часть, если левая истинна. Поэтому null.isEmpty() не вызывается.
+    advice: Порядок частей условия важен.
+memory:
+  note: Момент после попытки записать −1 при вводе из примера. Сеттер отказал, возраст остался 4.
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - Animal barsik → объект в куче
+        - int n = 4
+        - int i = 1
+  heap:
+    - obj: Animal
+      data: 'private name = "Барсик", species = "кот", private age = 4'
+tests:
+  - name: Отрицательный возраст и ноль отклонены
+    stdin: |
+      4
+      4 -1 0 7
+    stdout: |
+      Барсик: 4
+      Ошибка: возраст должен быть больше 0
+      Барсик: 4
+      Ошибка: возраст должен быть больше 0
+      Барсик: 4
+      Барсик: 7
+      Ошибка: имя не может быть пустым
+      Новое имя: Василий
+  - name: Верный возраст
+    stdin: |
+      1
+      10
+    stdout: |
+      Барсик: 10
+      Ошибка: имя не может быть пустым
+      Новое имя: Василий
+  - kind: source
+    name: Поля name и age закрыты
+    pattern: \bprivate\s+String\s+name\b[\s\S]*\bprivate\s+int\s+age\b|\bprivate\s+int\s+age\b[\s\S]*\bprivate\s+String\s+name\b
+    message: "Закрой поля: private String name; и private int age;"
+  - kind: source
+    name: Сеттеры возраста и имени
+    pattern: \bsetAge\s*\(\s*int\s+\w+\s*\)[\s\S]*\bsetName\s*\(\s*String\s+\w+\s*\)|\bsetName\s*\(\s*String\s+\w+\s*\)[\s\S]*\bsetAge\s*\(\s*int\s+\w+\s*\)
+    message: "Добавь setName(String name) и setAge(int age) с проверками"

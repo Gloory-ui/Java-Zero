@@ -1,0 +1,12 @@
+id: inheritance
+num: "05"
+title: Наследование и полиморфизм
+subtitle: extends, super, переопределение, абстрактные классы
+fileName: Inheritance.java
+order: 9
+unlockAfter: oop_prep
+rank:
+  title: ГЛАВА ДИНАСТИИ
+  icon: layers
+  color: "#a855f7"
+stageBadge: ЭТАП {n} / {total}
