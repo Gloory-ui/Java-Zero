@@ -1,0 +1,73 @@
+id: deque
+title: "Очередь и стек: ArrayDeque"
+hints:
+  - "Три ветки по первому символу: `if (op == '+') ... else if (op == '!') ... else if (op == '-') ...`."
+  - "Имя без знака — `word.substring(1)`. В конец — `queue.offerLast(...)`, в начало — `queue.offerFirst(...)`."
+  - "Обслуживание: `if (queue.isEmpty()) { ... \"Очередь пуста\" } else { System.out.println(\"Обслужен: \" + queue.pollFirst()); }`."
+sampleInput: |
+  +Аня +Борис !Вика - - +Гоша - - -
+quiz:
+  question: Какой элемент первым вернёт pop() после push(1), push(2), push(3)?
+  options:
+    - "3"
+    - "1"
+    - "2"
+    - Все три сразу
+  correct: 0
+  hint: Стек — стопка тарелок.
+exam:
+  - q: Чем очередь отличается от стека?
+    options:
+      - Очередь отдаёт первым пришедшего, стек — последнего положенного
+      - Очередь хранит только строки
+      - В стек нельзя добавлять
+      - Ничем
+    correct: 0
+    explain: Очередь — «первым пришёл, первым ушёл», стек — «последним пришёл, первым ушёл». ArrayDeque умеет и то, и другое.
+    advice: Отмена действий — стек, обработка заявок по порядку — очередь.
+  - q: Что вернёт pollFirst() у пустой ArrayDeque?
+    options:
+      - "null"
+      - Бросит исключение
+      - Пустую строку
+      - "0"
+    correct: 0
+    explain: poll-методы при пустой очереди возвращают null. pop и removeFirst в той же ситуации бросают NoSuchElementException.
+    advice: Проверка isEmpty() делает код понятнее, чем проверка на null.
+  - q: Как пропустить человека в начало очереди?
+    options:
+      - queue.offerFirst(имя)
+      - queue.offerLast(имя)
+      - queue.pollFirst(имя)
+      - queue.add(0, имя)
+    correct: 0
+    explain: У двусторонней очереди есть методы для обоих концов. offerFirst кладёт в начало.
+    advice: add(0, x) есть у списков, у ArrayDeque индексов нет.
+memory:
+  note: Момент после команды !Вика.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Scanner sc → объект в куче
+        - ArrayDeque<String> queue → объект в куче
+        - String word → «!Вика»
+        - char op = '!'
+  heap:
+    - obj: ArrayDeque<String>
+      data: "Вика, Аня, Борис"
+tests:
+  - name: Касса из примера
+    stdin: |
+      +Аня +Борис !Вика - - +Гоша - - -
+    stdout: |
+      Обслужен: Вика
+      Обслужен: Аня
+      Обслужен: Борис
+      Обслужен: Гоша
+      Очередь пуста
+      Осталось: []
+  - name: Никого не обслужили
+    stdin: |
+      +А !Б +В
+    stdout: |
+      Осталось: [Б, А, В]
