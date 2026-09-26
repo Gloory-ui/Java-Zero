@@ -7,6 +7,7 @@ import { CountUp } from "@/components/game/count-up";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import { rankForLevel } from "@/lib/game/ranks";
+import { levelInfo } from "@/lib/game/xp";
 import { accentById } from "@/lib/profile/cosmetics";
 import { safeMediaUrl } from "@/lib/profile/media";
 import { fetchLeaderboard, PublicDataError } from "@/lib/profile/public";
@@ -125,7 +126,8 @@ export function Leaderboard() {
               {state.rows.map((row, i) => {
                 const mine = row.handle === myHandle;
                 const accent = accentById(row.accent).color;
-                const rank = rankForLevel(row.level);
+                const level = levelInfo(Number(row.xp_total)).level;
+                const rank = rankForLevel(level);
                 const podium = PODIUM[i];
                 return (
                   <motion.li
@@ -175,7 +177,7 @@ export function Leaderboard() {
                       </span>
                       <span className="hidden shrink-0 items-center gap-1 font-mono text-xs text-muted sm:inline-flex">
                         <Icon name={rank.icon} className="size-3.5 text-neon-ink" />
-                        ур. {row.level}
+                        ур. {level}
                       </span>
                       <span className="shrink-0 text-right font-display text-sm font-bold tabular-nums">
                         <CountUp value={Number(row.xp)} /> <span className="text-xs font-normal text-muted">XP</span>

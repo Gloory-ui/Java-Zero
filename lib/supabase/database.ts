@@ -52,17 +52,15 @@ export type PublicProfile = Pick<
   | "title"
   | "showcase"
   | "xp_total"
-  | "level"
   | "stages_passed"
   | "streak_days"
   | "best_streak"
   | "created_at"
 > & { achievements: { id: string; at: string }[] };
 
-export type LeaderRow = Pick<
-  ProfileRow,
-  "handle" | "display_name" | "avatar_url" | "accent" | "frame" | "title" | "level"
-> & {
+/** Строка таблицы лидеров: xp — за период, xp_total — весь опыт (по нему считается уровень). Оба считает база */
+export type LeaderRow = Pick<ProfileRow, "handle" | "display_name" | "avatar_url" | "accent" | "frame" | "title"> & {
+  xp_total: number;
   xp: number;
 };
 
