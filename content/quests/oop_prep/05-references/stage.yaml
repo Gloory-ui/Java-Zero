@@ -1,0 +1,84 @@
+id: references
+title: "Примитивы и ссылки в методах: машина времени"
+hints:
+  - "В `TimeMachine` две версии: `void goToFuture(int year) { year = year + 10; }` и `void goToFuture(Cat cat) { cat.age = cat.age + 10; }`."
+  - "В `main`: `int year = sc.nextInt();`, `Cat barsik = new Cat(\"Барсик\", sc.nextInt());`, `TimeMachine machine = new TimeMachine();`."
+  - "Печатай значение, вызывай `machine.goToFuture(...)`, печатай снова — отдельно для года и для `barsik.age`."
+sampleInput: |
+  2026 3
+quiz:
+  question: Что копируется, когда объект передают в метод?
+  options:
+    - Ссылка на объект
+    - Весь объект со всеми полями
+    - Ничего, метод работает с переменной из main
+    - Только имя класса
+  correct: 0
+  hint: Копия ссылки указывает на тот же объект в куче.
+exam:
+  - q: Почему goToFuture(int year) не меняет год в main?
+    options:
+      - Примитив передаётся копией значения, метод меняет только копию
+      - Метод не может менять числа
+      - Год — это константа
+      - Изменение отменяется после return
+    correct: 0
+    explain: В параметр year попадает копия числа 2026. Её изменение не касается переменной в main.
+    advice: Если новое значение нужно снаружи, верни его через return.
+  - q: Почему goToFuture(Cat cat) меняет возраст Барсика?
+    options:
+      - Копия ссылки указывает на того же кота, и метод меняет его поле
+      - Кот передаётся без копирования
+      - Поля объектов нельзя менять
+      - Это работает только для static-полей
+    correct: 0
+    explain: Две ссылки — barsik в main и cat в методе — смотрят на один объект. Поле у него одно.
+    advice: Нарисуй стек и кучу — станет видно, что объект один.
+  - q: Что будет с barsik после вызова метода, где написано cat = new Cat("Том", 1)?
+    options:
+      - Ничего, barsik по-прежнему указывает на Барсика
+      - barsik станет Томом
+      - Барсик удалится
+      - Ошибка компиляции
+    correct: 0
+    explain: Метод перенаправил свою копию ссылки. Переменная barsik в main не изменилась.
+    advice: Метод может менять поля объекта, но не саму переменную вызывающего кода.
+memory:
+  note: Момент внутри goToFuture(Cat cat) после изменения поля. Две ссылки — barsik и cat — указывают на один объект.
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - int year = 2026
+        - Cat barsik → кот в куче
+        - TimeMachine machine → объект в куче
+    - method: goToFuture(Cat cat)
+      vars:
+        - TimeMachine this → машина времени
+        - Cat cat → тот же кот
+  heap:
+    - obj: Cat
+      data: 'name = "Барсик", age = 13'
+    - obj: TimeMachine
+      data: Полей нет, только методы.
+tests:
+  - name: 2026 год и Барсик трёх лет
+    stdin: |
+      2026 3
+    stdout: |
+      Год до поездки: 2026
+      Год после поездки: 2026
+      Возраст Барсика до поездки: 3
+      Возраст Барсика после поездки: 13
+  - name: 1999 год и Барсик семи лет
+    stdin: |
+      1999 7
+    stdout: |
+      Год до поездки: 1999
+      Год после поездки: 1999
+      Возраст Барсика до поездки: 7
+      Возраст Барсика после поездки: 17
+  - kind: source
+    name: Класс TimeMachine с версией для кота
+    pattern: \bclass\s+TimeMachine\b[\s\S]*\bgoToFuture\s*\(\s*Cat\s+\w+\s*\)
+    message: "Опиши class TimeMachine с методом goToFuture(Cat cat)"

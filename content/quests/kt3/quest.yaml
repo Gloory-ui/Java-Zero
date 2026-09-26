@@ -1,0 +1,14 @@
+id: kt3
+num: КТ
+title: Контрольная точка 3
+subtitle: 9 заданий на классы и объекты
+fileName: KT3.java
+order: 8
+# Раздел «Группа»: КТ открывается по пути из content/group.yaml, а не по unlockAfter
+track: group
+unlockAfter: null
+rank:
+  title: ХРАНИТЕЛЬ ПРИЮТА
+  icon: cat
+  color: "#ec4899"
+stageBadge: "КТ 3 // ЗАДАНИЕ {n}"

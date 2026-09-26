@@ -1,0 +1,89 @@
+id: static-counter
+title: "static: общий счётчик объектов"
+hints:
+  - "В классе `Coupon`: `static int issued = 0;` — общий счётчик, `int number;` — номер конкретного талона."
+  - "В конструкторе `Coupon()`: `issued++;` и `number = issued;`. Метод `static void printIssued()` печатает `\"Выдано талонов: \" + issued`."
+  - "В `main` в цикле: `Coupon c = new Coupon();` и вывод `\"Талон №\" + c.number`, после цикла — `Coupon.printIssued();`."
+sampleInput: |
+  3
+quiz:
+  question: Сколько экземпляров static-поля issued будет после создания пяти талонов?
+  options:
+    - Один
+    - Пять
+    - Шесть
+    - Ни одного
+  correct: 0
+  hint: static-поле принадлежит классу, а не объектам.
+exam:
+  - q: Чем static-поле отличается от обычного?
+    options:
+      - Оно одно на весь класс, а обычное поле своё у каждого объекта
+      - Его нельзя изменить
+      - Оно доступно только в main
+      - Оно хранится в стеке
+    correct: 0
+    explain: Все объекты класса видят одно и то же static-поле. Изменение через один объект видно всем.
+    advice: Приведи пример со счётчиком созданных объектов.
+  - q: Почему static-метод не может обратиться к полю number без объекта?
+    options:
+      - У static-метода нет this, а number есть только у конкретного объекта
+      - number — приватное поле
+      - static-методы не видят никаких полей
+      - Это разрешено, ошибки не будет
+    correct: 0
+    explain: static-метод вызывают через класс. Непонятно, номер какого талона ему взять.
+    advice: Если нужен объект, передай его параметром, как в лекции print(Proba3 obj).
+  - q: Как правильно вызвать static-метод printIssued()?
+    options:
+      - Coupon.printIssued()
+      - new Coupon().printIssued()
+      - printIssued(Coupon)
+      - Coupon().printIssued
+    correct: 0
+    explain: static-метод принадлежит классу, поэтому его вызывают через имя класса.
+    advice: Так же вызываются Math.random() и Math.max(a, b).
+memory:
+  note: Момент после выдачи трёх талонов. Поле issued хранится у класса, по одному разу, а не в каждом объекте.
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - int n = 3
+  heap:
+    - obj: Coupon (класс)
+      data: static issued = 3
+    - obj: Coupon №1, №2, №3
+      data: number = 1, 2, 3
+tests:
+  - name: Три талона
+    stdin: |
+      3
+    stdout: |
+      Талон №1
+      Талон №2
+      Талон №3
+      Выдано талонов: 3
+  - name: Один талон
+    stdin: |
+      1
+    stdout: |
+      Талон №1
+      Выдано талонов: 1
+  - name: Ни одного талона
+    stdin: |
+      0
+    stdout: |
+      Выдано талонов: 0
+  - kind: source
+    name: static-счётчик
+    pattern: \bstatic\s+int\s+\w+
+    message: "Счётчик должен быть общим: static int issued = 0;"
+  - kind: source
+    name: static-метод в классе Coupon
+    pattern: \bstatic\s+void\s+(?!main\b)\w+\s*\(
+    message: "Добавь static void printIssued()"
+  - kind: source
+    name: static-метод вызывается через класс
+    pattern: \bCoupon\s*\.\s*\w+\s*\(
+    message: "Вызови его через имя класса: Coupon.printIssued()"

@@ -15,3 +15,5 @@ steps:
     kt: kt1
   - prep: [arrays_prep]
     kt: kt2
+  - prep: [oop_prep]
+    kt: kt3

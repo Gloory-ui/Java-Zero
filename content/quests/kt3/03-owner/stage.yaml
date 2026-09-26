@@ -1,0 +1,81 @@
+id: owner
+title: "Хозяин: класс Owner и attachOwner"
+hints:
+  - "Класс `Owner { String name; Owner(String name) { this.name = name; } }`, в `Animal` — поле `Owner owner;`."
+  - 'Метод `String ownerName()`: `if (owner == null) return "нет";`, иначе `return owner.name;`. В `printInfo()` добавь `", хозяин: " + ownerName()`.'
+  - 'attachOwner: `this.owner = owner;` и вывод `"У питомца " + name + " теперь хозяин: " + owner.name`.'
+sampleInput: |
+  Анна
+quiz:
+  question: Что хранит поле Owner owner у животного без хозяина?
+  options:
+    - "null"
+    - Пустого хозяина
+    - Строку «нет»
+    - "0"
+  correct: 0
+  hint: Поле-ссылка по умолчанию никуда не указывает.
+exam:
+  - q: Что значит «связать классы Owner и Animal»?
+    options:
+      - В объекте Animal хранится ссылка на объект Owner
+      - Owner наследует Animal
+      - В одном файле два класса
+      - Owner копирует поля Animal
+    correct: 0
+    explain: Поле owner — ссылка на хозяина. Через неё животное знает своего хозяина.
+    advice: Это называется ассоциацией — один объект ссылается на другой.
+  - q: Зачем нужен метод ownerName()?
+    options:
+      - Он прячет проверку на null в одном месте
+      - Без него нельзя прочитать поле
+      - Он создаёт хозяина
+      - Так требует компилятор
+    correct: 0
+    explain: Проверка на null нужна и в printInfo, и в карточке задания 5. Метод пишется один раз.
+    advice: Повторяющийся код выноси в метод.
+  - q: Один хозяин привязан к двум животным. Сколько объектов Owner в куче?
+    options:
+      - Один
+      - Два
+      - Три
+      - Ни одного
+    correct: 0
+    explain: У обоих животных ссылка на один и тот же объект хозяина.
+    advice: Поменяй имя хозяина — изменится у обоих животных.
+memory:
+  note: "Момент после attachOwner при вводе «Анна»: у Барсика поле owner указывает на хозяйку."
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - Animal barsik → объект в куче
+        - Owner owner → объект в куче
+  heap:
+    - obj: Animal
+      data: 'name = "Барсик", species = "кот", age = 3, owner → Анна'
+    - obj: Owner
+      data: 'name = "Анна"'
+tests:
+  - name: Хозяйка Анна
+    stdin: |
+      Анна
+    stdout: |
+      Животное: Барсик, вид: кот, возраст: 3, хозяин: нет
+      У питомца Барсик теперь хозяин: Анна
+      Животное: Барсик, вид: кот, возраст: 3, хозяин: Анна
+  - name: Хозяин Пётр
+    stdin: |
+      Пётр
+    stdout: |
+      Животное: Барсик, вид: кот, возраст: 3, хозяин: нет
+      У питомца Барсик теперь хозяин: Пётр
+      Животное: Барсик, вид: кот, возраст: 3, хозяин: Пётр
+  - kind: source
+    name: Класс Owner
+    pattern: \bclass\s+Owner\b
+    message: "Опиши класс Owner с полем name"
+  - kind: source
+    name: Метод attachOwner(Owner ...)
+    pattern: \battachOwner\s*\(\s*Owner\s+\w+\s*\)
+    message: "Добавь в Animal метод void attachOwner(Owner owner)"

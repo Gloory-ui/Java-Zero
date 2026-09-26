@@ -1,0 +1,71 @@
+id: object-methods
+title: "Object: toString, equals и final"
+hints:
+  - "Все классы — наследники `Object`. Его `toString()` и `equals()` можно переопределить: вывод станет понятным, а сравнение — по содержимому."
+  - '`@Override public String toString() { return "(" + x + ", " + y + ")"; }` — println сам вызовет этот метод.'
+  - "`@Override public boolean equals(Object o) { if (!(o instanceof Point)) return false; Point p = (Point) o; return x == p.x && y == p.y; }`"
+quiz:
+  question: Point a = new Point(1, 2); Point b = new Point(1, 2); Что вернёт a == b?
+  options:
+    - "false: == сравнивает ссылки, а это два разных объекта"
+    - "true: координаты одинаковые"
+    - Ошибку компиляции
+    - Зависит от toString()
+  correct: 0
+  hint: == для объектов проверяет, один ли это объект в куче.
+exam:
+  - q: Что напечатает System.out.println(p), если в классе Point не переопределён toString()?
+    options:
+      - Имя класса и хэш вроде Point@1b6d3586
+      - Координаты точки
+      - Пустую строку
+      - Ошибку компиляции
+    correct: 0
+    explain: "Работает toString() из Object: имя класса, @ и шестнадцатеричный хэш. Чтобы вывод был понятным, toString переопределяют."
+    advice: println(объект) = println(объект.toString()).
+  - q: Почему параметр equals — Object, а не Point?
+    options:
+      - Так объявлен equals в Object; с параметром Point это была бы перегрузка, а не переопределение
+      - Point нельзя передавать в методы
+      - Так быстрее
+      - Это ошибка, правильно — Point
+    correct: 0
+    explain: "Сигнатура должна совпасть с родительской: equals(Object o). Метод equals(Point p) — новый метод, и коллекции Java его не вызовут."
+    advice: "@Override над equals сразу покажет, если параметр не тот."
+  - q: Что означает final class?
+    options:
+      - От этого класса нельзя наследоваться
+      - Объекты класса нельзя создавать
+      - Все поля класса статические
+      - Класс нельзя использовать в массивах
+    correct: 0
+    explain: "final запрещает наследование: так сделан, например, String. final-метод нельзя переопределить, final-поле — изменить после присваивания."
+    advice: final — «дальше менять нельзя».
+memory:
+  note: Момент после сравнений. a и c указывают на один объект, b — на другой с теми же координатами.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Point a → объект №1
+        - Point b → объект №2
+        - Point c → объект №1 (та же ссылка, что у a)
+  heap:
+    - obj: Point №1
+      data: x = 1, y = 2 — на него указывают a и c
+    - obj: Point №2
+      data: x = 1, y = 2 — такие же координаты, но другой объект
+tests:
+  - name: Вывод и сравнение точек
+    stdout: |
+      (1, 2)
+      false
+      true
+      true
+  - kind: source
+    name: toString переопределён
+    pattern: public\s+String\s+toString\s*\(\s*\)
+    message: Переопредели public String toString()
+  - kind: source
+    name: equals принимает Object
+    pattern: public\s+boolean\s+equals\s*\(\s*Object\s+\w+\s*\)
+    message: Переопредели public boolean equals(Object o) — параметр именно Object

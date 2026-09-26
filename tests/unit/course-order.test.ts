@@ -45,8 +45,8 @@ describe("номер этапа", () => {
 });
 
 describe("порядок курса", () => {
-  it("41 этап, «Фундамент» начинается с первой программы", () => {
-    expect(course.flatMap((q) => q.stages)).toHaveLength(41);
+  it("68 этапов, «Фундамент» начинается с первой программы", () => {
+    expect(course.flatMap((q) => q.stages)).toHaveLength(68);
     expect(quest("basics").stages[0].id).toBe("program-structure");
   });
 
@@ -103,6 +103,9 @@ describe("пометка «новый»", () => {
   });
 });
 
+/** Общий курс «Java с нуля» по порядку */
+const MAIN = ["basics", "loops_prep", "calc", "arrays_prep", "oop_prep", "inheritance"];
+
 describe("два раздела: «Java с нуля» и «Группа»", () => {
   const stagesOf = (...ids: string[]) =>
     course.filter((q) => ids.includes(q.id)).flatMap((q) => q.stages.map((s) => `${q.id}/${s.id}`));
@@ -111,13 +114,21 @@ describe("два раздела: «Java с нуля» и «Группа»", () =
   const member = (p: ReturnType<typeof passed>) => ({ ...p, stats: { group: 1 } });
 
   it("общий курс — без КТ; путь группы — подготовка, потом КТ", () => {
-    expect(coursePath(course).map((q) => q.id)).toEqual(["basics", "loops_prep", "calc", "arrays_prep"]);
-    expect(groupPath(course).map((q) => q.id)).toEqual(["basics", "loops_prep", "kt1", "arrays_prep", "kt2"]);
+    expect(coursePath(course).map((q) => q.id)).toEqual(MAIN);
+    expect(groupPath(course).map((q) => q.id)).toEqual([
+      "basics",
+      "loops_prep",
+      "kt1",
+      "arrays_prep",
+      "kt2",
+      "oop_prep",
+      "kt3",
+    ]);
   });
 
   it("гость раздела не видит КТ, и она у него не открывается; «Калькулятор» открыт после «Циклов»", () => {
     expect(isGroupMember(loopsDone, course)).toBe(false);
-    expect(visibleCourse(loopsDone, course).map((q) => q.id)).toEqual(["basics", "loops_prep", "calc", "arrays_prep"]);
+    expect(visibleCourse(loopsDone, course).map((q) => q.id)).toEqual(MAIN);
     expect(isQuestUnlocked(loopsDone, course, quest("kt1"))).toBe(false);
     expect(isQuestUnlocked(loopsDone, course, quest("calc"))).toBe(true);
     expect(nextStage(loopsDone, course)).toEqual({ questId: "calc", stageId: "splash" });
@@ -175,5 +186,17 @@ describe("два раздела: «Java с нуля» и «Группа»", () =
     const calcDone = passed(...stagesOf("basics", "loops_prep", "calc"));
     expect(isQuestUnlocked(calcDone, course, quest("arrays_prep"))).toBe(true);
     expect(isQuestUnlocked(calcDone, course, quest("kt2"))).toBe(false);
+  });
+
+  it("«Классы»: у группы — после КТ 2, КТ 3 — после «Классов»; «Наследование» — только в общем курсе", () => {
+    const kt2Done = passed(...stagesOf("basics", "loops_prep", "kt1", "arrays_prep", "kt2"));
+    expect(isQuestUnlocked(kt2Done, course, quest("oop_prep"))).toBe(true);
+    expect(isQuestUnlocked(kt2Done, course, quest("kt3"))).toBe(false);
+    expect(nextStage(kt2Done, course, groupPath(course))).toEqual({ questId: "oop_prep", stageId: "class-object" });
+
+    const oopDone = passed(...stagesOf("basics", "loops_prep", "kt1", "arrays_prep", "kt2", "oop_prep"));
+    expect(isQuestUnlocked(oopDone, course, quest("kt3"))).toBe(true);
+    expect(isQuestUnlocked(oopDone, course, quest("inheritance"))).toBe(true);
+    expect(quest("inheritance").groupAfter).toBeUndefined();
   });
 });
