@@ -55,14 +55,14 @@ export function LevelChip({ className, compact = false }: { className?: string; 
     <Link
       href="/profile"
       className={cn(
-        "relative inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface/60 pr-3 pl-1 font-mono text-xs transition-colors duration-150 ease-snappy hover:border-border-strong",
-        compact && "max-sm:pr-1",
+        "relative inline-flex h-11 items-center gap-2 sm:h-9 rounded-full border border-border bg-surface/60 pr-3 pl-1 font-mono text-xs transition-colors duration-150 ease-snappy hover:border-border-strong",
+        compact && "max-sm:min-w-11 max-sm:pr-1",
         !hydrated && "invisible",
         className,
       )}
       title={`${rank.title} · уровень ${level.level}: ${level.into} из ${level.need} XP. Серия: ${plural(streak.current, DAYS)}`}
     >
-      <span className="relative grid size-7 place-items-center" style={{ color: rank.color }}>
+      <span className="relative grid size-7 place-items-center text-neon-ink">
         <svg viewBox="0 0 28 28" className="absolute inset-0 -rotate-90" aria-hidden="true">
           <circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="2.5" />
           <circle

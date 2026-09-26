@@ -5,6 +5,7 @@ import { GameBootstrap } from "@/components/game/game-bootstrap";
 import { Toaster } from "@/components/game/toaster";
 import { getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
+import { ACCENTS, DEFAULT_LOOK } from "@/lib/profile/cosmetics";
 import { SITE_INDEXED, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -29,8 +30,12 @@ export const viewport: Viewport = {
   ],
 };
 
-// Тема ставится до первой отрисовки, иначе светлая тема мигает тёмной. Ключ тот же, что у сайта до v1.0
-const themeScript = `try{document.documentElement.dataset.theme=localStorage.getItem("java_zero_theme")==="light"?"light":"dark"}catch(e){}`;
+// Тема ставится до первой отрисовки, иначе светлая тема мигает тёмной. Ключ тот же, что у сайта до v1.0.
+// Там же — цвет неона из профиля: иначе уровень и ранг на мгновение мелькают фирменным красным
+const accentColors = JSON.stringify(
+  Object.fromEntries(ACCENTS.filter((a) => a.id !== DEFAULT_LOOK.accent).map((a) => [a.id, a.color])),
+);
+const themeScript = `try{var d=document.documentElement;d.dataset.theme=localStorage.getItem("java_zero_theme")==="light"?"light":"dark";var p=JSON.parse(localStorage.getItem("java-zero-profile")||"{}"),c=${accentColors}[p.state&&p.state.accent];if(c)d.style.setProperty("--neon-user",c)}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -45,6 +50,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
+        {/* Первая остановка Tab: перепрыгнуть шапку сразу к содержанию страницы. Видна только с клавиатуры */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-lg focus:bg-accent-solid focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-white focus:shadow-glow"
+        >
+          Перейти к содержанию
+        </a>
         {children}
         <Toaster />
         <GameBootstrap course={toOutline(getCourse())} />

@@ -5,7 +5,7 @@ import { achievementCatalog, achievementXp, evaluateAchievements } from "@/lib/g
 import { CHEST_ID, DAILY_TEMPLATES, dailyContext, findDaily, newlyCompleted, pickDaily } from "@/lib/game/daily";
 import { RANKS, rankForLevel } from "@/lib/game/ranks";
 import { activeDays, streakInfo } from "@/lib/game/streak";
-import { levelInfo, stageXp, totalXp, xpToNext } from "@/lib/game/xp";
+import { levelInfo, MAX_LEVEL, stageXp, totalXp, xpForLevel, xpToNext } from "@/lib/game/xp";
 import type { RunResult } from "@/lib/java/judge";
 import { mergeProgress } from "@/lib/progress/merge";
 import { migrateProgress } from "@/lib/progress/store";
@@ -27,14 +27,33 @@ describe("опыт и уровни", () => {
     expect(stageXp({ attempts: [], solutionViewed: true }, false)).toBe(35);
   });
 
-  it("кривая: 100 XP на первый уровень, дальше на 25 больше", () => {
-    expect(xpToNext(1)).toBe(100);
-    expect(xpToNext(3)).toBe(150);
-    expect(levelInfo(0)).toEqual({ level: 1, into: 0, need: 100, percent: 0 });
-    expect(levelInfo(99).level).toBe(1);
-    expect(levelInfo(100)).toEqual({ level: 2, into: 0, need: 125, percent: 0 });
-    expect(levelInfo(224)).toMatchObject({ level: 2, into: 124 });
-    expect(levelInfo(225).level).toBe(3);
+  it("кривая: 50 XP за уровень, каждые 8 уровней шаг растёт на 1", () => {
+    expect(xpToNext(1)).toBe(50);
+    expect(xpToNext(8)).toBe(51);
+    expect(xpToNext(500)).toBe(112);
+    expect(levelInfo(0)).toEqual({ level: 1, into: 0, need: 50, percent: 0, max: false });
+    expect(levelInfo(49).level).toBe(1);
+    expect(levelInfo(50)).toEqual({ level: 2, into: 0, need: 50, percent: 0, max: false });
+    expect(levelInfo(xpForLevel(100) - 1).level).toBe(99);
+    expect(levelInfo(xpForLevel(100)).level).toBe(100);
+  });
+
+  it("потолок — 999-й уровень, лишний опыт уровень не поднимает", () => {
+    expect(levelInfo(xpForLevel(MAX_LEVEL))).toMatchObject({ level: 999, percent: 100, max: true });
+    expect(levelInfo(10_000_000)).toMatchObject({ level: 999, max: true });
+  });
+
+  it("баланс: не слишком быстро и не слишком медленно", () => {
+    const at = (xp: number) => levelInfo(xp).level;
+    // Этап ≈ 70 XP, квесты дня ≈ 125 XP за активный день
+    expect(at(70)).toBe(2);
+    expect(at(860)).toBeGreaterThanOrEqual(12);
+    expect(at(860)).toBeLessThanOrEqual(25);
+    expect(at(3620)).toBeGreaterThanOrEqual(50);
+    expect(at(3620)).toBeLessThanOrEqual(90);
+    // До 999 — годы регулярной учёбы, а не недели
+    expect(xpForLevel(MAX_LEVEL)).toBeGreaterThan(90_000);
+    expect(xpForLevel(MAX_LEVEL)).toBeLessThan(150_000);
   });
 
   it("весь опыт — из фактов: этапы (сохранённый или по флагам), достижения, квесты дня", () => {
@@ -62,8 +81,13 @@ describe("опыт и уровни", () => {
     expect(RANKS[0].level).toBe(1);
     expect(RANKS.map((r) => r.level)).toEqual([...RANKS.map((r) => r.level)].sort((a, b) => a - b));
     expect(rankForLevel(1).title).toBe("БАЙТ-ПАДАВАН");
-    expect(rankForLevel(5).title).toBe(rankForLevel(3).title);
-    expect(rankForLevel(99).title).toBe(RANKS.at(-1)?.title);
+    expect(RANKS).toHaveLength(25);
+    expect(RANKS.at(-1)?.level).toBe(MAX_LEVEL);
+    expect(rankForLevel(4).title).toBe("БАЙТ-ПАДАВАН");
+    expect(rankForLevel(5).title).toBe("СТАЖЁР КОМПИЛЯТОРА");
+    expect(new Set(RANKS.map((r) => r.title)).size).toBe(RANKS.length);
+    expect(rankForLevel(999).title).toBe(RANKS.at(-1)?.title);
+    expect(rankForLevel(998).title).toBe("БЕССМЕРТНЫЙ КОМПИЛЯТОР");
   });
 });
 

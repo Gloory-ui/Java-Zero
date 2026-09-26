@@ -6,6 +6,7 @@ import { useState } from "react";
 import { buttonClasses } from "@/components/ui/button";
 import { useAccount } from "@/lib/account/store";
 import { cn } from "@/lib/cn";
+import { useProfile, useProfileHydrated } from "@/lib/profile/store";
 
 /** Аватар из GitHub/Google; если картинка не загрузилась (блокировщик, удалённое фото), показываем первую букву имени. */
 export function Avatar({ name, src, size = "sm" }: { name: string | null; src: string | null; size?: "sm" | "lg" }) {
@@ -35,11 +36,19 @@ export function AccountMenu() {
   const status = useAccount((s) => s.status);
   const user = useAccount((s) => s.user);
   const pathname = usePathname();
+  const profileReady = useProfileHydrated();
+  // Своя картинка из профиля главнее аватара GitHub/Google, но только если профиль этого же аккаунта
+  const custom = useProfile((s) => (profileReady && user && s.owner === user.id ? s.avatarUrl : null));
+  const name = useProfile((s) => (profileReady && user && s.owner === user.id ? s.displayName : null));
 
   if (status === "signed-in" && user) {
     return (
-      <Link href="/profile" className="rounded-full" aria-label={`Профиль: ${user.name ?? user.email ?? "аккаунт"}`}>
-        <Avatar name={user.name} src={user.avatar} />
+      <Link
+        href="/profile"
+        className="grid size-11 place-items-center rounded-full sm:size-9"
+        aria-label={`Профиль: ${name ?? user.name ?? user.email ?? "аккаунт"}`}
+      >
+        <Avatar name={name ?? user.name} src={custom ?? user.avatar} />
       </Link>
     );
   }
@@ -47,7 +56,7 @@ export function AccountMenu() {
     return (
       <Link
         href={`/login?next=${encodeURIComponent(pathname)}`}
-        className={buttonClasses({ variant: "secondary" }, "h-9")}
+        className={buttonClasses({ variant: "secondary" }, "h-11 sm:h-9")}
       >
         Войти
       </Link>
@@ -55,7 +64,7 @@ export function AccountMenu() {
   }
   if (status === "loading") return <span className="size-8 animate-pulse rounded-full bg-card" aria-hidden="true" />;
   return (
-    <Link href="/profile" className={buttonClasses({ variant: "ghost" }, "h-9")}>
+    <Link href="/profile" className={buttonClasses({ variant: "ghost" }, "h-11 sm:h-9")}>
       Профиль
     </Link>
   );

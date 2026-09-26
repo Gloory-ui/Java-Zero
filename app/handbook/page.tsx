@@ -73,7 +73,7 @@ export default function HandbookPage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto flex max-w-3xl flex-col gap-12 px-4 py-12">
+      <main id="main" className="mx-auto flex max-w-3xl flex-col gap-12 px-4 py-12">
         <div className="flex flex-col gap-4">
           <h1 className="font-display text-3xl font-semibold">Справочник Java</h1>
           <p className="text-muted">Шпаргалка по темам курса. Открой рядом с лабораторией, когда забыл синтаксис.</p>

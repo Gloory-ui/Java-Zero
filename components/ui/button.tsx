@@ -21,7 +21,8 @@ const variants: Record<Variant, string> = {
 };
 
 const sizes: Record<Size, string> = {
-  md: "h-10 px-4 text-sm",
+  // На телефоне 44 px — минимум для пальца (UI/UX Pro Max), на широком экране 40 px
+  md: "h-11 px-4 text-sm sm:h-10",
   lg: "h-12 px-6 text-base",
 };
 

@@ -22,7 +22,12 @@ test("профиль показывает статистику и ранг го�
   await expect(page.getByText("0 из 26")).toBeVisible();
   await expect(page.getByText("БАЙТ-ПАДАВАН").first()).toBeVisible();
 
-  await page.getByText("Душный препод").click();
+  // Характер ментора — в панели «Настройки»
+  await page.getByRole("button", { name: "Настройки" }).click();
+  // Кликаем по карточке целиком: панель выезжает, и точка внутри текста может прийтись на край карточки
+  const dushny = page.getByRole("dialog", { name: "Настройки" }).locator("label").filter({ hasText: "Душный препод" });
+  await dushny.click();
+  await expect(dushny.getByRole("radio")).toBeChecked();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("java-zero-progress") ?? "{}"));
   expect(saved.state.persona).toBe("dushny");
 });

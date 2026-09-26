@@ -7,12 +7,12 @@ import type { IconName } from "@/lib/icons";
 import type { RunResult } from "@/lib/java/judge";
 import { useProgress } from "@/lib/progress/store";
 import type { DailyMetric } from "@/lib/progress/types";
-import { type Achievement, evaluateAchievements, type GameEvent, type Rarity } from "./achievements";
+import { type Achievement, evaluateAchievements, type GameEvent, RARITY_ORDER, type Rarity } from "./achievements";
 import { CHEST_ID, dailyContext, findDaily, newlyCompleted, pickDaily } from "./daily";
 import { localDay } from "./day";
 import type { Verdict } from "./duel";
 import { type Rank, rankForLevel } from "./ranks";
-import { isKtKey, levelInfo, stageXpParts, totalXp, type XpPart } from "./xp";
+import { isKtKey, levelInfo, MAX_LEVEL, stageXpParts, totalXp, type XpPart } from "./xp";
 
 // ——— Отклик: карточки, «+XP», праздничные экраны ———
 
@@ -21,9 +21,13 @@ export type Toast = {
   icon: IconName;
   title: string;
   desc: string;
-  tone: "achievement" | "daily" | "egg";
+  tone: "achievement" | "daily" | "egg" | "level";
   rarity?: Rarity;
   xp?: number;
+  /** Значок достижения в карточке вместо простой иконки */
+  badge?: Pick<Achievement, "id" | "group" | "rarity" | "secret" | "series" | "icon">;
+  /** Значок ранга в карточке нового уровня */
+  rank?: Rank;
 };
 
 type ToastStore = { items: Toast[]; push: (toast: Omit<Toast, "id">) => void; dismiss: (id: number) => void };
@@ -73,6 +77,7 @@ function toastAchievement(a: Achievement) {
     tone: a.secret ? "egg" : "achievement",
     rarity: a.rarity,
     xp: a.xp,
+    badge: { id: a.id, group: a.group, rarity: a.rarity, secret: a.secret, series: a.series, icon: a.icon },
   });
 }
 
@@ -108,8 +113,11 @@ function settle(xpBefore: number, event?: GameEvent, silent = false) {
   const earned = evaluateAchievements(useProgress.getState(), course, event);
   const fresh = new Set(store.unlockAchievements(earned.map((a) => a.id)));
   if (!silent && fresh.size > 0) {
-    for (const a of earned) if (fresh.has(a.id)) toastAchievement(a);
-    sound.achievement();
+    const got = earned.filter((a) => fresh.has(a.id));
+    for (const a of got) toastAchievement(a);
+    // Звук по самой редкой награде из открытых, тайный знак добавляет глитч
+    const top = RARITY_ORDER.find((r) => got.some((a) => a.rarity === r)) ?? "common";
+    sound.achievement(top, { glitch: got.some((a) => a.secret) });
   }
 
   const xpAfter = totalXp(useProgress.getState());
@@ -117,11 +125,22 @@ function settle(xpBefore: number, event?: GameEvent, silent = false) {
   useXpGain.setState({ gain: { id: nextId++, xp: xpAfter - xpBefore } });
   const before = levelInfo(xpBefore).level;
   const after = levelInfo(xpAfter).level;
-  if (after > before) {
-    const rank = rankForLevel(after);
-    useCelebration.setState({
-      current: { kind: "level", level: after, ...(rank.title !== rankForLevel(before).title ? { rank } : {}) },
+  if (after <= before) return;
+  // Уровни растут часто: обычный — короткая карточка, новый ранг и каждая сотня — праздничный экран
+  const rank = rankForLevel(after);
+  const newRank = rank.title !== rankForLevel(before).title;
+  const milestone = Math.floor(after / 100) > Math.floor(before / 100) || after === MAX_LEVEL;
+  if (newRank || milestone) {
+    useCelebration.setState({ current: { kind: "level", level: after, ...(newRank ? { rank } : {}) } });
+  } else {
+    useToasts.getState().push({
+      icon: rank.icon,
+      title: `Уровень ${after}`,
+      desc: `${rank.title}. До следующего ранга — меньше, чем кажется.`,
+      tone: "level",
+      rank,
     });
+    sound.levelUp(fresh.size > 0 ? 0.5 : 0);
   }
 }
 

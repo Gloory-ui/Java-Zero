@@ -13,7 +13,7 @@ export default function ProfilePage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-4 py-10">
+      <main id="main" className="mx-auto max-w-3xl px-4 py-10">
         <ProfileView course={toOutline(getCourse())} />
       </main>
       <SiteFooter />

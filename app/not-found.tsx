@@ -8,7 +8,7 @@ export default function NotFound() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto flex min-h-[70dvh] max-w-xl flex-col justify-center gap-5 px-4 py-16">
+      <main id="main" className="mx-auto flex min-h-[70dvh] max-w-xl flex-col justify-center gap-5 px-4 py-16">
         <p className="font-mono text-sm text-danger">Exception in thread "main" java.lang.PageNotFoundException: 404</p>
         <h1 className="font-display text-3xl font-semibold">Такой страницы нет</h1>
         <p className="text-muted">

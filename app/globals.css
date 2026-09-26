@@ -32,6 +32,10 @@
   --code-comment: #7d8799;
   --code-func: #d7b4ff;
   --code-lineno: #7d8799;
+  /* Неон игровой системы: цвет выбирает студент во «Внешнем виде», по умолчанию фирменный.
+     --neon-user — свечения, рамки, полосы; --neon-ink — текст и иконки с контрастом не ниже 4.5:1 */
+  --neon-user: var(--accent);
+  --neon-ink: var(--neon-user);
 }
 
 [data-theme="light"] {
@@ -61,6 +65,9 @@
   --code-comment: #687385;
   --code-func: #7a3fb8;
   --code-lineno: #687385;
+  /* На белом фоне светлые неоны (лайм, золото, циан) нечитаемы: текст темнее самого неона */
+  --neon-user: var(--accent);
+  --neon-ink: color-mix(in oklab, var(--neon-user) 50%, var(--text));
 }
 
 @theme inline {
@@ -77,6 +84,8 @@
   --color-accent-solid-hover: var(--accent-solid-hover);
   --color-accent-soft: var(--accent-soft);
   --color-gold: var(--gold);
+  --color-neon: var(--neon-user);
+  --color-neon-ink: var(--neon-ink);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-code-bg: var(--code-bg);
@@ -126,6 +135,19 @@
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+  }
+
+  /* Tailwind 4 оставляет кнопкам обычную стрелку. Всё, что нажимается, показывает «руку» (правило UI/UX Pro Max) */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="switch"]:not(:disabled),
+  summary,
+  select:not(:disabled),
+  label:has(> input:not(:disabled)),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    cursor: pointer;
   }
 
   /* Лигатуры в коде путают новичков: «<=» не должно превращаться в «≤» */
@@ -192,7 +214,7 @@
 
 /* Кольцо вокруг аватара и эмблемы ранга: блик бегает по кругу. Вращение равномерное, поэтому linear */
 .neon-ring {
-  --neon: var(--accent);
+  --neon: var(--neon-user);
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -215,7 +237,7 @@
 }
 
 .neon-glow {
-  --neon: var(--accent);
+  --neon: var(--neon-user);
   box-shadow:
     0 0 0 1px color-mix(in oklab, var(--neon) 55%, transparent),
     0 0 18px color-mix(in oklab, var(--neon) 40%, transparent),
@@ -223,7 +245,7 @@
 }
 
 .neon-text {
-  --neon: var(--accent);
+  --neon: var(--neon-user);
   text-shadow: 0 0 14px color-mix(in oklab, var(--neon) 65%, transparent);
 }
 
@@ -272,6 +294,134 @@
 @media (prefers-reduced-motion: reduce) {
   .neon-ring::before,
   .xp-stripes::before {
+    animation: none;
+  }
+}
+
+/* ——— Баннеры профиля (lib/profile/cosmetics.ts): только CSS, цвет акцента берут из --neon ——— */
+
+.banner {
+  --neon: var(--accent);
+  background-color: #07080c;
+}
+
+.banner-grid {
+  background-image:
+    radial-gradient(80% 120% at 85% 0%, color-mix(in oklab, var(--neon) 45%, transparent), transparent 60%),
+    linear-gradient(color-mix(in oklab, var(--neon) 22%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--neon) 22%, transparent) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    28px 28px,
+    28px 28px;
+}
+
+.banner-aurora {
+  background-image:
+    radial-gradient(60% 90% at 15% 20%, rgb(16 185 129 / 0.55), transparent 65%),
+    radial-gradient(50% 80% at 55% 0%, rgb(34 211 238 / 0.45), transparent 65%),
+    radial-gradient(55% 90% at 90% 30%, color-mix(in oklab, var(--neon) 55%, transparent), transparent 65%),
+    linear-gradient(180deg, #06121a, #07080c);
+}
+
+.banner-circuit {
+  background-image:
+    radial-gradient(circle at 12px 12px, color-mix(in oklab, var(--neon) 70%, transparent) 2px, transparent 3px),
+    linear-gradient(
+      90deg,
+      transparent 11px,
+      color-mix(in oklab, var(--neon) 28%, transparent) 11px 13px,
+      transparent 13px
+    ),
+    linear-gradient(transparent 23px, color-mix(in oklab, var(--neon) 18%, transparent) 23px 25px, transparent 25px),
+    radial-gradient(90% 120% at 0% 100%, color-mix(in oklab, var(--neon) 35%, transparent), transparent 60%);
+  background-size:
+    48px 48px,
+    48px 48px,
+    96px 48px,
+    100% 100%;
+}
+
+.banner-sunset {
+  background-image:
+    radial-gradient(circle at 50% 105%, #fbbf24 0 14%, #f43f5e 22%, transparent 36%),
+    repeating-linear-gradient(0deg, #07080c 0 3px, transparent 3px 9px),
+    linear-gradient(180deg, #1e0b3a 0%, #6d1a5c 55%, #f43f5e 100%);
+  background-blend-mode: normal, multiply, normal;
+}
+
+.banner-nebula {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 60%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, #fff, transparent), radial-gradient(1px 1px at 85% 20%, #fff, transparent),
+    radial-gradient(60% 90% at 30% 40%, rgb(168 85 247 / 0.55), transparent 65%),
+    radial-gradient(50% 80% at 75% 60%, color-mix(in oklab, var(--neon) 50%, transparent), transparent 65%),
+    linear-gradient(135deg, #0b0620, #07080c);
+}
+
+.banner-matrix {
+  background-image:
+    repeating-linear-gradient(90deg, color-mix(in oklab, var(--neon) 40%, transparent) 0 2px, transparent 2px 22px),
+    repeating-linear-gradient(0deg, #07080c 0 6px, transparent 6px 14px),
+    linear-gradient(180deg, color-mix(in oklab, var(--neon) 25%, #07080c), #07080c);
+}
+
+/* ——— Рамки аватара (components/profile/profile-avatar.tsx) ——— */
+
+/* Пульс: мягкое свечение дышит; анимируется только opacity слоя со свечением */
+.frame-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  box-shadow: 0 0 22px 4px color-mix(in oklab, var(--neon) 70%, transparent);
+  animation: frame-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes frame-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Двойной контур: внешнее пунктирное кольцо медленно вращается */
+.frame-dual::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: inherit;
+  border: 2px dashed color-mix(in oklab, var(--neon) 80%, transparent);
+  animation: neon-spin 18s linear infinite;
+  pointer-events: none;
+}
+
+/* Орбита: светящаяся точка обходит аватар */
+.frame-orbit::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 0, var(--neon) 0 4px, transparent 5px);
+  filter: drop-shadow(0 0 6px var(--neon));
+  animation: neon-spin 4s linear infinite;
+  pointer-events: none;
+}
+
+/* Легенда: переливающееся золото, маджента и циан */
+.neon-ring-legend::before {
+  background: conic-gradient(#fbbf24, #e879f9, #22d3ee, #fbbf24);
+  animation-duration: 4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-pulse::after,
+  .frame-dual::before,
+  .frame-orbit::after {
     animation: none;
   }
 }

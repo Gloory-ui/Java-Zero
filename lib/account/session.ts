@@ -1,6 +1,8 @@
 "use client";
 
 import type { Session, User } from "@supabase/supabase-js";
+import { profileFromRow, profileOnSignIn, profileToPatch } from "@/lib/profile/row";
+import { type ProfileData, profileData, useProfile } from "@/lib/profile/store";
 import {
   achievementToRow,
   dailyToRow,
@@ -43,6 +45,7 @@ function toUser(user: User): AccountUser {
     avatar:
       [meta.avatar_url, meta.picture].find((v): v is string => typeof v === "string" && v.startsWith("https://")) ??
       null,
+    createdAt: user.created_at ?? null,
   };
 }
 
@@ -64,13 +67,24 @@ function snapshot(): ProgressData {
 async function ensureHydrated() {
   const api = useProgress.persist;
   if (api && !api.hasHydrated()) await api.rehydrate();
+  const profileApi = useProfile.persist;
+  if (profileApi && !profileApi.hasHydrated()) await profileApi.rehydrate();
+}
+
+const sameProfile = (a: ProfileData, b: ProfileData) => JSON.stringify(a) === JSON.stringify(b);
+
+async function pushProfile(supabase: Supabase, uid: string, p: ProfileData) {
+  const { error } = await supabase.from("profiles").update(profileToPatch(uid, p)).eq("id", uid);
+  if (error) throw error;
 }
 
 // ——— Синхронизация ———
 
 let userId: string | null = null;
 let lastSynced: ProgressData | null = null;
+let lastProfile: ProfileData | null = null;
 let unsubscribe: (() => void) | null = null;
+let unsubscribeProfile: (() => void) | null = null;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
 let retryAttempt = 0;
@@ -124,19 +138,24 @@ async function flush() {
   if (!uid) return;
   const next = snapshot();
   const diff = diffProgress(lastSynced, next);
-  const nothing =
+  const progressSame =
     !diff.profileChanged &&
     diff.stageKeys.length === 0 &&
     diff.achievementIds.length === 0 &&
     diff.dailyKeys.length === 0 &&
     diff.removedStageKeys.length === 0;
-  if (nothing) return;
+  const profileNow = profileData(useProfile.getState());
+  const profileSame = lastProfile === null || sameProfile(lastProfile, profileNow);
+  if (progressSame && profileSame) return;
 
   useAccount.setState({ sync: "syncing" });
   try {
-    await upload(await loadSupabase(), uid, lastSynced, next);
+    const supabase = await loadSupabase();
+    if (!progressSame) await upload(supabase, uid, lastSynced, next);
+    if (!profileSame) await pushProfile(supabase, uid, profileNow);
     if (userId !== uid) return;
     lastSynced = next;
+    lastProfile = profileNow;
     useAccount.setState({ sync: "synced", syncedAt: Date.now(), error: undefined });
   } catch (error) {
     // lastSynced не двигаем: следующая попытка отправит всё, что не дошло
@@ -160,6 +179,9 @@ function stopSync() {
   clearTimeout(retryTimer);
   unsubscribe?.();
   unsubscribe = null;
+  unsubscribeProfile?.();
+  unsubscribeProfile = null;
+  lastProfile = null;
   userId = null;
   lastSynced = null;
   if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onHide);
@@ -196,11 +218,24 @@ async function startSync(uid: string) {
     await upload(supabase, uid, remote, merged, true);
     if (userId !== uid) return;
 
+    // Профиль: настроенный в аккаунте главнее, оформление гостя переезжает в новый аккаунт
+    const profileStore = useProfile.getState();
+    const mergedProfile = profileOnSignIn(profileData(profileStore), profileStore.owner, profile.data, uid);
+    profileStore.replace(mergedProfile, uid);
+    const cloudProfile = profile.data ? profileFromRow(profile.data) : null;
+    if (profile.data && (!cloudProfile || !sameProfile(cloudProfile, mergedProfile))) {
+      await pushProfile(supabase, uid, mergedProfile);
+    }
+    if (userId !== uid) return;
+
     lastSynced = merged;
-    unsubscribe = useProgress.subscribe(() => {
+    lastProfile = mergedProfile;
+    const schedule = () => {
       clearTimeout(timer);
       timer = setTimeout(() => void flush(), PUSH_DELAY_MS);
-    });
+    };
+    unsubscribe = useProgress.subscribe(schedule);
+    unsubscribeProfile = useProfile.subscribe(schedule);
     document.addEventListener("visibilitychange", onHide);
     retryAttempt = 0;
     useAccount.setState({ sync: "synced", syncedAt: Date.now(), error: undefined });
@@ -220,6 +255,7 @@ async function startSync(uid: string) {
 async function dropAccountProgress() {
   await ensureHydrated();
   if (useProgress.getState().owner) useProgress.getState().clearAfterSignOut();
+  if (useProfile.getState().owner) useProfile.getState().clearAfterSignOut();
 }
 
 function applySession(session: Session | null) {

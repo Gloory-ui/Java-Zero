@@ -161,7 +161,7 @@ export function Mentor({ stageKey, getContext }: { stageKey: string; getContext:
               <select
                 value={persona}
                 onChange={(e) => useProgress.getState().setPersona(e.target.value as Persona)}
-                className="h-8 rounded-md border border-border bg-card px-2 text-sm"
+                className="h-11 rounded-md border border-border bg-card px-2 text-sm sm:h-8"
               >
                 {PERSONA_INFO.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -174,7 +174,7 @@ export function Mentor({ stageKey, getContext }: { stageKey: string; getContext:
               type="button"
               onClick={() => useMentor.getState().hide()}
               aria-label="Закрыть ментора"
-              className="grid size-8 place-items-center rounded-md text-muted hover:bg-card hover:text-text"
+              className="grid size-11 place-items-center sm:size-8 rounded-md text-muted hover:bg-card hover:text-text"
             >
               <Icon name="x" className="size-4" />
             </button>

@@ -1,22 +1,38 @@
 import type { IconName } from "@/lib/icons";
 
-export type Rank = { level: number; title: string; icon: IconName; color: string };
+export type Rank = { level: number; title: string; icon: IconName };
 
 /**
- * Ранги по уровню. Звания за квесты из quest.yaml теперь титулы: их дают достижения «Квест закрыт».
- * Цвета — неон на тёмном фоне; в светлой теме они идут только в свечение и рамки, не в мелкий текст.
+ * 25 рангов по уровню, до 999. В начале ранги идут чаще (5, 10, 17…), чтобы новичок быстро получал первые,
+ * дальше реже. Звания за квесты из quest.yaml — титулы: их дают достижения «Квест закрыт».
+ * Цвета у рангов нет: уровень и ранг везде рисуются фирменным неоном (--accent), ранги различают иконки.
  */
 export const RANKS: readonly Rank[] = [
-  { level: 1, title: "БАЙТ-ПАДАВАН", icon: "sprout", color: "#94a3b8" },
-  { level: 3, title: "СТАЖЁР КОМПИЛЯТОРА", icon: "wrench", color: "#38bdf8" },
-  { level: 6, title: "КОДЕР-КАДЕТ", icon: "satellite", color: "#22d3ee" },
-  { level: 9, title: "ИНЖЕНЕР ЦИКЛОВ", icon: "repeat", color: "#34d399" },
-  { level: 12, title: "МАСТЕР АЛГОРИТМОВ", icon: "brain-circuit", color: "#a3e635" },
-  { level: 15, title: "СТРАЖ ПАМЯТИ", icon: "shield-check", color: "#facc15" },
-  { level: 18, title: "АРХИТЕКТОР ОБЪЕКТОВ", icon: "landmark", color: "#fb923c" },
-  { level: 22, title: "МАГИСТР JVM", icon: "coffee", color: "#f43f5e" },
-  { level: 26, title: "СЕНЬОР-КИБЕРДЕД", icon: "crown", color: "#e879f9" },
-  { level: 30, title: "ЛЕГЕНДА JAVA-ZERO", icon: "gem", color: "#a78bfa" },
+  { level: 1, title: "БАЙТ-ПАДАВАН", icon: "sprout" },
+  { level: 5, title: "СТАЖЁР КОМПИЛЯТОРА", icon: "wrench" },
+  { level: 10, title: "КОДЕР-КАДЕТ", icon: "satellite" },
+  { level: 17, title: "ИНЖЕНЕР ЦИКЛОВ", icon: "repeat" },
+  { level: 25, title: "ХРАНИТЕЛЬ ПЕРЕМЕННЫХ", icon: "box" },
+  { level: 35, title: "МАСТЕР ВЕТВЛЕНИЙ", icon: "git-branch" },
+  { level: 50, title: "МАСТЕР АЛГОРИТМОВ", icon: "brain-circuit" },
+  { level: 65, title: "СТРАЖ ПАМЯТИ", icon: "shield-check" },
+  { level: 80, title: "ТКАЧ МАТРИЦ", icon: "grid" },
+  { level: 100, title: "АРХИТЕКТОР ОБЪЕКТОВ", icon: "landmark" },
+  { level: 125, title: "НАСЛЕДНИК КЛАССОВ", icon: "layers" },
+  { level: 150, title: "ЛОВЕЦ ИСКЛЮЧЕНИЙ", icon: "bug" },
+  { level: 180, title: "ЗАКЛИНАТЕЛЬ КОЛЛЕКЦИЙ", icon: "library" },
+  { level: 220, title: "МАГИСТР JVM", icon: "coffee" },
+  { level: 260, title: "ПОВЕЛИТЕЛЬ ПОТОКОВ", icon: "cpu" },
+  { level: 300, title: "АРХИМАГ ЛЯМБД", icon: "wand-sparkles" },
+  { level: 350, title: "ХАКЕР БАЙТ-КОДА", icon: "binary" },
+  { level: 400, title: "СЕНЬОР-КИБЕРДЕД", icon: "crown" },
+  { level: 460, title: "ГУРУ РЕФАКТОРИНГА", icon: "hammer" },
+  { level: 530, title: "АРХИТЕКТОР СИСТЕМ", icon: "network" },
+  { level: 600, title: "ХРАНИТЕЛЬ JDK", icon: "server" },
+  { level: 700, title: "ВЛАСТЕЛИН GC", icon: "recycle" },
+  { level: 800, title: "КИБЕР-ЛЕГЕНДА", icon: "zap" },
+  { level: 900, title: "БЕССМЕРТНЫЙ КОМПИЛЯТОР", icon: "infinity" },
+  { level: 999, title: "ЛЕГЕНДА JAVA-ZERO", icon: "gem" },
 ];
 
 export function rankForLevel(level: number): Rank {

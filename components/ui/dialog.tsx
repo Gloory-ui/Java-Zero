@@ -40,7 +40,7 @@ export function Dialog({
           type="button"
           onClick={onClose}
           aria-label="Закрыть"
-          className="grid size-8 place-items-center rounded-md text-muted hover:bg-card hover:text-text"
+          className="grid size-11 place-items-center sm:size-8 rounded-md text-muted hover:bg-card hover:text-text"
         >
           <Icon name="x" className="size-4" />
         </button>

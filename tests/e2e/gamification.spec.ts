@@ -17,7 +17,7 @@ const seed = (state: Record<string, unknown>) =>
 
 test("карта курса: уровень, опыт и три квеста дня", async ({ page }) => {
   // 4 этапа по 70 XP, «Архитектор памяти» и заслуженные при загрузке «Знаток типов» и «Точность I» (по 25 XP):
-  // 355 XP — это 3-й уровень, 130 из 150
+  // 355 XP — это 8-й уровень (7 уровней по 50 XP), 5 из 51
   const stages = Object.fromEntries(
     ["program-structure", "memory-boxes", "arithmetic", "remainder"].map((id) => [
       `basics/${id}`,
@@ -33,7 +33,7 @@ test("карта курса: уровень, опыт и три квеста д�
   const level = page.getByRole("region", { name: "Уровень и опыт" });
   await expect(level.getByRole("progressbar", { name: "Опыт до следующего уровня" })).toHaveAttribute(
     "aria-valuenow",
-    "130",
+    "5",
   );
   await expect(level.getByText("СТАЖЁР КОМПИЛЯТОРА")).toBeVisible();
 
@@ -42,7 +42,7 @@ test("карта курса: уровень, опыт и три квеста д�
   await expect(daily.getByText("Сундук дня")).toBeVisible();
 
   // Сегодня сданы этапы — серия дней уже идёт
-  await expect(page.getByRole("link", { name: /Уровень 3/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Уровень 8/ })).toBeVisible();
 });
 
 test("тайный знак: три клика по логотипу, знак появляется в достижениях", async ({ page }) => {

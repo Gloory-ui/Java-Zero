@@ -41,8 +41,16 @@ export function totalXp(p: XpSource): number {
   return xp;
 }
 
-/** Сколько опыта нужно, чтобы перейти с уровня level на следующий */
-export const xpToNext = (level: number) => 100 + 25 * (level - 1);
+/** Потолок уровня */
+export const MAX_LEVEL = 999;
+
+/**
+ * Сколько опыта нужно, чтобы перейти с уровня level на следующий: 50 XP, и каждые 8 уровней шаг растёт на 1.
+ * Баланс (этап ≈ 70 XP, квесты дня ≈ 125 XP в день): первый этап — 2-й уровень, «Фундамент» — около 17-го,
+ * 26 этапов — около 68-го, курс из ~170 этапов — около 280-го, 999-й — примерно 112 тыс. XP, 2,5–3 года учёбы.
+ * Проверка баланса — tests/unit/gamification.test.ts.
+ */
+export const xpToNext = (level: number) => 50 + Math.floor(level / 8);
 
 export type LevelInfo = {
   level: number;
@@ -51,15 +59,25 @@ export type LevelInfo = {
   /** Опыт, нужный для следующего уровня */
   need: number;
   percent: number;
+  /** Достигнут потолок уровня */
+  max: boolean;
 };
 
 export function levelInfo(xp: number): LevelInfo {
   let level = 1;
   let rest = Math.max(0, Math.floor(xp));
-  while (rest >= xpToNext(level)) {
+  while (level < MAX_LEVEL && rest >= xpToNext(level)) {
     rest -= xpToNext(level);
     level++;
   }
   const need = xpToNext(level);
-  return { level, into: rest, need, percent: Math.floor((rest / need) * 100) };
+  if (level === MAX_LEVEL) return { level, into: need, need, percent: 100, max: true };
+  return { level, into: rest, need, percent: Math.floor((rest / need) * 100), max: false };
+}
+
+/** Опыт, с которого начинается уровень level */
+export function xpForLevel(level: number): number {
+  let xp = 0;
+  for (let n = 1; n < Math.min(level, MAX_LEVEL); n++) xp += xpToNext(n);
+  return xp;
 }

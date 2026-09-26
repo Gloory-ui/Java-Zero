@@ -20,7 +20,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={toggle}
       aria-label="Сменить тему оформления"
       className={cn(
-        "grid size-9 place-items-center rounded-md text-muted transition-colors duration-150 ease-snappy hover:bg-card hover:text-text",
+        "grid size-11 place-items-center sm:size-9 rounded-md text-muted transition-colors duration-150 ease-snappy hover:bg-card hover:text-text",
         className,
       )}
     >

@@ -10,7 +10,7 @@ export default function ErrorPage({ error, retry }: { error: Error & { digest?: 
   }, [error]);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-5 px-4 py-16">
+    <main id="main" className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-5 px-4 py-16">
       <p className="font-mono text-sm text-danger">Exception in thread "main": страница упала</p>
       <h1 className="font-display text-3xl font-semibold">Что-то сломалось</h1>
       <p className="text-muted">

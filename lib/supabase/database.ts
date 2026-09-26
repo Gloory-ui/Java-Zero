@@ -1,4 +1,5 @@
-// Типы таблиц из supabase/migrations: 20260924120000_progress.sql, 20260926120000_gamification.sql.
+// Типы таблиц из supabase/migrations: 20260924120000_progress.sql, 20260926120000_gamification.sql,
+// 20260927120000_profile.sql.
 // После изменения схемы обновить вручную или командой `supabase gen types typescript`.
 
 type Table<Row, Required extends keyof Row> = {
@@ -19,8 +20,50 @@ export type ProfileRow = {
   stats: Record<string, number>;
   sound: boolean;
   last_stage: string | null;
+  handle: string | null;
+  bio: string;
+  accent: string | null;
+  frame: string | null;
+  banner: string | null;
+  banner_url: string | null;
+  title: string | null;
+  showcase: string[];
+  is_public: boolean;
+  xp_total: number;
+  level: number;
+  stages_passed: number;
+  streak_days: number;
+  best_streak: number;
   created_at: string;
   updated_at: string;
+};
+
+/** Публичный профиль из get_public_profile(): только поля для показа */
+export type PublicProfile = Pick<
+  ProfileRow,
+  | "handle"
+  | "display_name"
+  | "avatar_url"
+  | "bio"
+  | "accent"
+  | "frame"
+  | "banner"
+  | "banner_url"
+  | "title"
+  | "showcase"
+  | "xp_total"
+  | "level"
+  | "stages_passed"
+  | "streak_days"
+  | "best_streak"
+  | "created_at"
+> & { achievements: { id: string; at: string }[] };
+
+export type LeaderRow = Pick<
+  ProfileRow,
+  "handle" | "display_name" | "avatar_url" | "accent" | "frame" | "title" | "level"
+> & {
+  xp: number;
 };
 
 export type StageProgressRow = {
@@ -56,6 +99,9 @@ export type Database = {
     Views: { [_ in never]: never };
     Functions: {
       achievement_rarity: { Args: Record<string, never>; Returns: RarityRow[] };
+      handle_available: { Args: { p_handle: string }; Returns: boolean };
+      get_public_profile: { Args: { p_handle: string }; Returns: PublicProfile | null };
+      leaderboard: { Args: { p_period: "week" | "all" }; Returns: LeaderRow[] };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

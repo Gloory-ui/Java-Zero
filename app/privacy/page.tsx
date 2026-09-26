@@ -34,7 +34,7 @@ export default function PrivacyPage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-12 leading-relaxed">
+      <main id="main" className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-12 leading-relaxed">
         <div className="flex flex-col gap-3">
           <h1 className="font-display text-3xl font-semibold">Политика конфиденциальности</h1>
           <p className="text-muted">Обновлено {UPDATED}.</p>
