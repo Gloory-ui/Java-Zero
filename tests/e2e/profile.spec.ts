@@ -150,3 +150,9 @@ test("таблица лидеров: неделя и всё время, трой
   await expect(page.getByRole("link", { name: /@old_guard/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /@fast_one/ })).toHaveCount(0);
 });
+
+test("превью ссылки на профиль: картинка есть даже у скрытого профиля и без Supabase", async ({ request }) => {
+  const res = await request.get("/u/nobody_here/opengraph-image");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("image/png");
+});

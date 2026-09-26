@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
 import { rankForLevel } from "@/lib/game/ranks";
 import { levelInfo } from "@/lib/game/xp";
 import { accentById } from "@/lib/profile/cosmetics";
-import { safeMediaUrl } from "@/lib/profile/media";
+import { safeMediaUrl } from "@/lib/profile/safe-url";
 import { fetchLeaderboard, PublicDataError } from "@/lib/profile/public";
 import { useProfile } from "@/lib/profile/store";
 import type { LeaderRow } from "@/lib/supabase/database";
