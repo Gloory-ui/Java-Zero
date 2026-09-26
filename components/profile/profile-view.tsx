@@ -14,7 +14,7 @@ import { cn } from "@/lib/cn";
 import type { QuestOutline } from "@/lib/content/outline";
 import { achievementCatalog } from "@/lib/game/achievements";
 import { dailyQuestsDone } from "@/lib/game/daily";
-import { RANKS } from "@/lib/game/ranks";
+import { RANKS, rankIndex } from "@/lib/game/ranks";
 import type { Owned } from "@/lib/profile/cosmetics";
 import { profileUrl } from "@/lib/profile/public";
 import { useProfile, useProfileHydrated } from "@/lib/profile/store";
@@ -41,6 +41,10 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
   const signedIn = useAccount((s) => s.status === "signed-in");
   const { xp, level, rank, streak } = useGame();
   const [sheet, setSheet] = useState<SheetId>(null);
+  const [allRanks, setAllRanks] = useState(false);
+  // Ранги рядом с текущим: два пройденных и три впереди, остальные — по кнопке
+  const at = rankIndex(rank);
+  const shownRanks = allRanks ? RANKS : RANKS.slice(Math.max(0, at - 2), at + 4);
   const [copied, setCopied] = useState(false);
 
   const owned: Owned = { level: level.level, achievements: progress.achievements };
@@ -158,13 +162,16 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
 
       <section aria-labelledby="ranks-title" className="flex flex-col gap-4">
         <h2 id="ranks-title" className="font-display text-lg font-semibold">
-          Ранги
+          Ранги{" "}
+          <span className="font-mono text-sm font-normal text-muted">
+            {rankIndex(rank) + 1} из {RANKS.length}
+          </span>
         </h2>
         <p className="-mt-2 text-sm text-muted">
-          Ранг растёт вместе с уровнем. Опыт дают этапы, достижения и квесты дня.
+          Ранг растёт вместе с уровнем: новый примерно каждые 10 уровней. Опыт дают этапы, достижения и квесты дня.
         </p>
-        <ol className="grid gap-2 sm:grid-cols-2">
-          {RANKS.map((r) => {
+        <ol id="ranks-list" className="grid gap-2 sm:grid-cols-2">
+          {shownRanks.map((r) => {
             const current = r.title === rank.title;
             const reached = level.level >= r.level;
             return (
@@ -189,6 +196,15 @@ export function ProfileView({ course }: { course: QuestOutline[] }) {
             );
           })}
         </ol>
+        <Button
+          variant="secondary"
+          className="self-start"
+          aria-expanded={allRanks}
+          aria-controls="ranks-list"
+          onClick={() => setAllRanks((v) => !v)}
+        >
+          {allRanks ? "Только ближайшие ранги" : `Все ранги (${RANKS.length})`}
+        </Button>
       </section>
 
       <AppearanceSheet

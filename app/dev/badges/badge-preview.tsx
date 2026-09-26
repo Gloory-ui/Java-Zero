@@ -3,7 +3,8 @@
 import { type CSSProperties, useState } from "react";
 import { AchievementBadge } from "@/components/game/achievement-badge";
 import { badgeArt } from "@/components/game/badge-art";
-import { RankBadge } from "@/components/game/rank-badge";
+import { GroupLevelCardView } from "@/components/game/group-level-card";
+import { GroupRankBadge, RankBadge } from "@/components/game/rank-badge";
 import { sound } from "@/lib/audio";
 import type { QuestOutline } from "@/lib/content/outline";
 import {
@@ -15,9 +16,10 @@ import {
   RARITY_ORDER,
 } from "@/lib/game/achievements";
 import { useToasts } from "@/lib/game/events";
+import { GROUP_RANKS } from "@/lib/game/group";
 import { RANKS } from "@/lib/game/ranks";
 
-const GROUPS: readonly AchievementGroup[] = ["course", "mastery", "exam", "streak", "daily", "secret"];
+const GROUPS: readonly AchievementGroup[] = ["course", "mastery", "exam", "streak", "daily", "group", "secret"];
 const NEONS = [
   { id: "default", label: "Фирменный", color: "" },
   { id: "cyan", label: "Циан", color: "#22d3ee" },
@@ -59,7 +61,8 @@ export function BadgePreview({ course }: { course: QuestOutline[] }) {
       <header>
         <h1 className="font-display text-3xl font-semibold">Витрина значков</h1>
         <p className="mt-2 text-muted">
-          {catalog.length} достижений и {RANKS.length} рангов. Страница только для разработки, на сайте её нет.
+          {catalog.length} достижений, {RANKS.length} рангов и {GROUP_RANKS.length} званий раздела «Группа». Страница
+          только для разработки, на сайте её нет.
         </p>
       </header>
 
@@ -159,8 +162,23 @@ export function BadgePreview({ course }: { course: QuestOutline[] }) {
         </div>
         <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {RANKS.map((r, i) => (
-            <Cell key={r.title} title={r.title} sub={`с ${r.level} уровня · ступень ${Math.floor(i / 5) + 1}`}>
+            <Cell key={r.title} title={r.title} sub={`с ${r.level} уровня · эпоха ${Math.floor(i / 10) + 1}`}>
               <RankBadge rank={r} size={96} />
+            </Cell>
+          ))}
+        </ol>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="font-display text-xl font-semibold">Звания раздела «Группа»</h2>
+        <p className="-mt-2 text-sm text-muted">
+          Отдельная шкала: 100 уровней за задания КТ и знаки группы, гербы в академическом золоте.
+        </p>
+        <GroupLevelCardView xp={2400} />
+        <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {GROUP_RANKS.map((r, i) => (
+            <Cell key={r.title} title={r.title} sub={`с ${r.level} уровня группы · ступень ${Math.floor(i / 4) + 1}`}>
+              <GroupRankBadge rank={r} size={96} />
             </Cell>
           ))}
         </ol>
@@ -206,9 +224,10 @@ export function BadgePreview({ course }: { course: QuestOutline[] }) {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-display text-xl font-semibold">Размеры на сайте</h2>
+        <h2 className="font-display text-xl font-semibold">Проверка размеров (служебное)</h2>
         <p className="-mt-2 text-sm text-muted">
-          Тост 44, список рангов 48, панель 40–56, каталог 60, карточка уровня 68.
+          Студенты этот блок не видят: он для нас, чтобы проверить, что значки не превращаются в кашу в мелких местах
+          сайта. Тост 44, список рангов 48, панель 40–56, каталог 60, карточка уровня 68.
         </p>
         <div className="flex flex-wrap items-center gap-6 rounded-xl border border-border bg-surface p-6">
           {[40, 44, 48, 56, 60, 68].map((size) => (

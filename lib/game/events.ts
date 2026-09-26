@@ -11,7 +11,8 @@ import { type Achievement, evaluateAchievements, type GameEvent, RARITY_ORDER, t
 import { CHEST_ID, dailyContext, findDaily, newlyCompleted, pickDaily } from "./daily";
 import { localDay } from "./day";
 import type { Verdict } from "./duel";
-import { type Rank, rankForLevel } from "./ranks";
+import { type GroupRank, groupLevelInfo, groupRankForLevel, groupXp } from "./group";
+import { isMajorRank, type Rank, rankForLevel } from "./ranks";
 import { isKtKey, levelInfo, MAX_LEVEL, stageXpParts, totalXp, type XpPart } from "./xp";
 
 // ——— Отклик: карточки, «+XP», праздничные экраны ———
@@ -28,6 +29,8 @@ export type Toast = {
   badge?: Pick<Achievement, "id" | "group" | "rarity" | "secret" | "series" | "icon">;
   /** Значок ранга в карточке нового уровня */
   rank?: Rank;
+  /** Значок звания группы в карточке нового уровня группы */
+  groupRank?: GroupRank;
 };
 
 type ToastStore = { items: Toast[]; push: (toast: Omit<Toast, "id">) => void; dismiss: (id: number) => void };
@@ -85,7 +88,7 @@ function toastAchievement(a: Achievement) {
  * После события: засчитать квесты дня, открыть достижения, показать прирост опыта и новый уровень.
  * silent — пересчёт при загрузке: награды выдаются без карточек и звуков.
  */
-function settle(xpBefore: number, event?: GameEvent, silent = false) {
+function settle(before: XpSnapshot, event?: GameEvent, silent = false) {
   const store = useProgress.getState();
 
   const done = newlyCompleted(store);
@@ -120,23 +123,28 @@ function settle(xpBefore: number, event?: GameEvent, silent = false) {
     sound.achievement(top, { glitch: got.some((a) => a.secret) });
   }
 
-  const xpAfter = totalXp(useProgress.getState());
-  if (silent || xpAfter <= xpBefore) return;
-  useXpGain.setState({ gain: { id: nextId++, xp: xpAfter - xpBefore } });
-  const before = levelInfo(xpBefore).level;
-  const after = levelInfo(xpAfter).level;
-  if (after <= before) return;
-  // Уровни растут часто: обычный — короткая карточка, новый ранг и каждая сотня — праздничный экран
-  const rank = rankForLevel(after);
-  const newRank = rank.title !== rankForLevel(before).title;
-  const milestone = Math.floor(after / 100) > Math.floor(before / 100) || after === MAX_LEVEL;
-  if (newRank || milestone) {
-    useCelebration.setState({ current: { kind: "level", level: after, ...(newRank ? { rank } : {}) } });
+  const after = currentXp();
+  if (silent) return;
+  groupLevelUp(before.group, after.group, fresh.size > 0);
+  if (after.main <= before.main) return;
+  useXpGain.setState({ gain: { id: nextId++, xp: after.main - before.main } });
+  const was = levelInfo(before.main).level;
+  const now = levelInfo(after.main).level;
+  if (now <= was) return;
+  // Уровни растут часто: обычный — короткая карточка. Праздничный экран — крупный ранг и каждая сотня уровней,
+  // остальные ранги — карточка со значком: при 100 рангах экран иначе всплывал бы каждые несколько этапов
+  const rank = rankForLevel(now);
+  const newRank = rank.title !== rankForLevel(was).title;
+  const milestone = Math.floor(now / 100) > Math.floor(was / 100) || now === MAX_LEVEL;
+  if ((newRank && isMajorRank(rank)) || milestone) {
+    useCelebration.setState({ current: { kind: "level", level: now, ...(newRank ? { rank } : {}) } });
   } else {
     useToasts.getState().push({
       icon: rank.icon,
-      title: `Уровень ${after}`,
-      desc: `${rank.title}. До следующего ранга — меньше, чем кажется.`,
+      title: newRank ? `Новый ранг: ${rank.title}` : `Уровень ${now}`,
+      desc: newRank
+        ? `Уровень ${now}. Следующий ранг уже виден.`
+        : `${rank.title}. До следующего ранга — меньше, чем кажется.`,
       tone: "level",
       rank,
     });
@@ -144,7 +152,32 @@ function settle(xpBefore: number, event?: GameEvent, silent = false) {
   }
 }
 
-const currentXp = () => totalXp(useProgress.getState());
+/** Уровень группы вырос: карточка со званием группы, новое звание — с отдельной подписью */
+function groupLevelUp(xpBefore: number, xpAfter: number, afterSound: boolean) {
+  if (xpAfter <= xpBefore) return;
+  const was = groupLevelInfo(xpBefore).level;
+  const now = groupLevelInfo(xpAfter).level;
+  if (now <= was) return;
+  const rank = groupRankForLevel(now);
+  const newRank = rank.title !== groupRankForLevel(was).title;
+  useToasts.getState().push({
+    icon: rank.icon,
+    title: newRank ? `Звание группы: ${rank.title}` : `Уровень группы ${now}`,
+    desc: newRank ? `Раздел «Группа», уровень ${now}.` : `${rank.title}. Опыт группы растёт за задания КТ.`,
+    tone: "level",
+    groupRank: rank,
+  });
+  if (newRank) sound.rankUp(2);
+  else sound.levelUp(afterSound ? 0.5 : 0);
+}
+
+type XpSnapshot = { main: number; group: number };
+
+/** Опыт до и после события: общий и раздела «Группа» */
+const currentXp = (): XpSnapshot => {
+  const state = useProgress.getState();
+  return { main: totalXp(state), group: groupXp(state, course) };
+};
 
 // ——— События ———
 

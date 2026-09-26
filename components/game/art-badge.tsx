@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, type ReactNode, useEffect, useId, useRef } from "react";
+import { type CSSProperties, type ReactNode, useId, useLayoutEffect, useRef } from "react";
 import { cn } from "@/lib/cn";
 import s from "./achievement-badge.module.css";
 import { type BadgeArt, svgMask } from "./badge-art";
@@ -8,12 +8,16 @@ import { type BadgeArt, svgMask } from "./badge-art";
 const INNER = "translate(50 50) scale(0.84) translate(-50 -50)";
 const SPARKLE = "M12 0c1 7 5 11 12 12-7 1-11 5-12 12-1-7-5-11-12-12 7-1 11-5 12-12Z";
 
-/** Анимации значка встают на паузу, пока его не видно на экране */
+/**
+ * Анимации значка стоят на паузе, пока его не видно на экране. Пауза ставится до первой отрисовки, иначе
+ * на странице с сотней значков все они успевают запуститься разом. Атрибут не в JSX: перерисовка React его не сбросит.
+ */
 function usePauseOffscreen() {
   const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
+    el.dataset.paused = "";
     const io = new IntersectionObserver(([e]) => {
       if (e?.isIntersecting) delete el.dataset.paused;
       else el.dataset.paused = "";
@@ -78,6 +82,24 @@ export function ArtBadge({
   const faceMask = { maskImage: svgMask(art.shape), WebkitMaskImage: svgMask(art.shape) };
   const strokeMask = { maskImage: svgMask(art.shape, 5), WebkitMaskImage: svgMask(art.shape, 5) };
   const iconSize = size * iconScale;
+  // Все пути слоя склеены в один <path>: DOM в десятки раз меньше, перерисовка слоя дешёвая
+  const { decor } = art;
+  const still = decor.still.join("");
+  const spinning = decor.spin.join("");
+  const filledShards = decor.shards
+    .filter((p) => p.fill)
+    .map((p) => p.d)
+    .join("");
+  const outlineShards = decor.shards
+    .filter((p) => !p.fill)
+    .map((p) => p.d)
+    .join("");
+  const leaves = decor.leaves.join("");
+  const inner = decor.inner.join("");
+  const ornamentLines = orn.paths.join("");
+  const ornamentDots = orn.dots
+    .map(([x, y, r]) => `M${x - r} ${y}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`)
+    .join("");
 
   return (
     <span ref={ref} className={cn(s.badge, className)} style={vars} aria-hidden="true" data-badge={kind}>
@@ -98,31 +120,39 @@ export function ArtBadge({
                 ))}
               </linearGradient>
             </defs>
-            <g fill="none" stroke={`url(#${id}-decor)`} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round">
-              {art.decor.still.map((d) => (
-                <path key={d} d={d} />
-              ))}
-            </g>
-            {art.decor.leaves.map((d) => (
-              <path key={d} d={d} fill={`url(#${id}-decor)`} opacity="0.9" />
-            ))}
+            {still && (
+              <path
+                d={still}
+                fill="none"
+                stroke={`url(#${id}-decor)`}
+                strokeWidth="1.1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+            {leaves && <path d={leaves} fill={`url(#${id}-decor)`} opacity="0.9" />}
           </svg>
           <span className={s.decorSpin}>
             <svg viewBox="-20 -20 140 140" aria-hidden="true" className="size-full overflow-visible">
-              <g fill="none" stroke={`url(#${id}-decor)`} strokeWidth="0.9" strokeLinecap="round">
-                {art.decor.spin.map((d) => (
-                  <path key={d} d={d} />
-                ))}
-              </g>
-              {art.decor.shards.map((p) => (
+              {spinning && (
+                <path d={spinning} fill="none" stroke={`url(#${id}-decor)`} strokeWidth="0.9" strokeLinecap="round" />
+              )}
+              {filledShards && (
                 <path
-                  key={p.d}
-                  d={p.d}
-                  style={{ fill: p.fill ? palette.icon : "none", stroke: palette.stroke[0] }}
+                  d={filledShards}
+                  style={{ fill: palette.icon, stroke: palette.stroke[0] }}
                   strokeWidth="0.8"
                   opacity="0.8"
                 />
-              ))}
+              )}
+              {outlineShards && (
+                <path
+                  d={outlineShards}
+                  style={{ fill: "none", stroke: palette.stroke[0] }}
+                  strokeWidth="0.8"
+                  opacity="0.8"
+                />
+              )}
             </svg>
           </span>
         </span>
@@ -161,17 +191,9 @@ export function ArtBadge({
           strokeWidth="1.5"
           strokeLinejoin="round"
         />
-        {unlocked &&
-          art.decor.inner.map((d) => (
-            <path
-              key={d}
-              d={d}
-              fill="none"
-              style={{ stroke: palette.stroke[0] }}
-              strokeOpacity="0.22"
-              strokeWidth="0.9"
-            />
-          ))}
+        {unlocked && inner && (
+          <path d={inner} fill="none" style={{ stroke: palette.stroke[0] }} strokeOpacity="0.22" strokeWidth="0.9" />
+        )}
       </svg>
 
       {unlocked && (
@@ -186,12 +208,8 @@ export function ArtBadge({
               strokeWidth="1.2"
               strokeLinecap="round"
             >
-              {orn.paths.map((d) => (
-                <path key={d} d={d} strokeDasharray={orn.kind === "rings" ? "2 3" : undefined} />
-              ))}
-              {orn.dots.map(([x, y, r]) => (
-                <circle key={`${x}-${y}`} cx={x} cy={y} r={r} style={{ fill: palette.icon }} stroke="none" />
-              ))}
+              {ornamentLines && <path d={ornamentLines} strokeDasharray={orn.kind === "rings" ? "2 3" : undefined} />}
+              {ornamentDots && <path d={ornamentDots} style={{ fill: palette.icon }} stroke="none" />}
             </svg>
           </span>
           {fx.sheen && <span className={s.sheen} />}
