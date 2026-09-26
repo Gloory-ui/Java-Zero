@@ -4,8 +4,8 @@ import { loadCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
 import { achievementCatalog } from "@/lib/game/achievements";
 import { ACCENTS, availableTitles, BANNERS, FRAMES, HANDLE_RE, isUnlocked, unlockText } from "@/lib/profile/cosmetics";
-import { safeMediaUrl } from "@/lib/profile/safe-url";
 import { profileFromRow, profileOnSignIn, profileToPatch } from "@/lib/profile/row";
+import { safeMediaUrl } from "@/lib/profile/safe-url";
 import { EMPTY_PROFILE, type ProfileData } from "@/lib/profile/store";
 import type { ProfileRow } from "@/lib/supabase/database";
 

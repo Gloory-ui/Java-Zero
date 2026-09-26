@@ -10,6 +10,7 @@
 
 .badge[data-paused] *,
 .badge[data-paused] {
+  /* biome-ignore lint/complexity/noImportantStyles: пауза вне экрана должна перебить play-state любой анимации значка */
   animation-play-state: paused !important;
 }
 
@@ -290,6 +291,7 @@
 @media (prefers-reduced-motion: reduce) {
   .badge,
   .badge * {
+    /* biome-ignore lint/complexity/noImportantStyles: «меньше движения» в системе выключает все анимации без исключений */
     animation: none !important;
   }
 }
