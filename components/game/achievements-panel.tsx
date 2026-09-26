@@ -9,6 +9,7 @@ import { type Achievement, achievementCatalog, RARITY_LABEL, RARITY_ORDER, troph
 import { dayNumber, localDay } from "@/lib/game/day";
 import { formatRarity, type RarityMap, useRarity } from "@/lib/game/rarity";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
+import { useVisibleCourse } from "@/lib/progress/visible";
 import { AchievementBadge, RARITY_COLOR } from "./achievement-badge";
 import { CountUp } from "./count-up";
 
@@ -48,7 +49,9 @@ function Label({ children }: { children: React.ReactNode }) {
 const SEGMENTS = 20;
 
 /** Сводка достижений в профиле: трофейный счёт, самые редкие, тайные знаки и последние полученные */
-export function AchievementsPanel({ course }: { course: QuestOutline[] }) {
+export function AchievementsPanel({ course: fullCourse }: { course: QuestOutline[] }) {
+  // КТ видят только участники группы
+  const course = useVisibleCourse(fullCourse);
   const hydrated = useProgressHydrated();
   const unlocked = useProgress((s) => s.achievements);
   const rarity = useRarity();

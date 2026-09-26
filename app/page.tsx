@@ -6,11 +6,12 @@ import { Icon } from "@/components/ui/icon";
 import { getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
 import { plural, QUESTS, STAGES } from "@/lib/plural";
+import { coursePath } from "@/lib/progress/selectors";
 
 export const metadata: Metadata = {
-  title: { absolute: "Java-Zero — Java с нуля до сданной контрольной" },
+  title: { absolute: "Java-Zero — Java с нуля, шаг за шагом" },
   description:
-    "Задачи из билетов КТ, настоящий компилятор Java прямо в браузере, защита у профессора на время и AI-ментор, который не решает за тебя. Бесплатно.",
+    "Квесты по Java от первой программы, настоящий компилятор прямо в браузере, защита у профессора на время и AI-ментор, который не решает за тебя. Бесплатно.",
 };
 
 // Появление через @starting-style: без JS, короче 300 мс, сдвиг только если пользователь не просил меньше движения
@@ -74,18 +75,18 @@ function F({ children }: { children: React.ReactNode }) {
   return <span style={{ color: "var(--code-func)" }}>{children}</span>;
 }
 
-/** Иллюстрация лаборатории: код из КТ 1 и тесты, которые загораются по очереди. */
+/** Иллюстрация лаборатории: таблица умножения из квеста «Циклы» и тесты, которые загораются по очереди. */
 function LabPreview() {
   return (
     <figure
-      aria-label="Пример: задание из КТ 1 и результат проверки"
+      aria-label="Пример: задание с вложенными циклами и результат проверки"
       className={`overflow-hidden rounded-xl border border-border-strong bg-code-bg shadow-2xl ${enter} delay-[160ms]`}
     >
       <div className="flex items-center gap-2 border-b border-border px-4 py-2.5 font-mono text-xs text-muted">
         <span className="size-2.5 rounded-full bg-danger/70" />
         <span className="size-2.5 rounded-full bg-gold/70" />
         <span className="size-2.5 rounded-full bg-success/70" />
-        <span className="ml-2">KT1.java</span>
+        <span className="ml-2">LoopsPrep.java</span>
       </div>
       <pre className="overflow-x-auto px-4 py-3 font-mono text-[13px] leading-relaxed text-code-text">
         {DEMO_CODE.map((line) => (
@@ -155,8 +156,10 @@ const FAQ = [
 ];
 
 export default function Home() {
+  // Кнопка «Начать» знает весь курс (участника группы она ведёт по пути группы), список — только общий курс
   const course = toOutline(getCourse());
-  const stagesTotal = course.reduce((sum, q) => sum + q.stages.length, 0);
+  const main = coursePath(course);
+  const stagesTotal = main.reduce((sum, q) => sum + q.stages.length, 0);
 
   return (
     <>
@@ -165,16 +168,14 @@ export default function Home() {
         <section className="mx-auto grid max-w-5xl items-center gap-10 px-4 pt-14 pb-20 md:grid-cols-[1.1fr_1fr] md:pt-20">
           <div className="flex flex-col gap-6">
             <p className={`font-mono text-xs tracking-[0.2em] text-gold uppercase ${enter}`}>
-              Java с нуля · подготовка к КТ
+              Java с нуля · прямо в браузере
             </p>
             {/* Заголовок — самый крупный элемент первого экрана (LCP): без анимации появления, иначе Chrome
                 не засчитывает его, пока длится переход от opacity 0 */}
-            <h1 className="font-display text-4xl leading-tight font-semibold sm:text-5xl">
-              Java с нуля до сданной контрольной
-            </h1>
+            <h1 className="font-display text-4xl leading-tight font-semibold sm:text-5xl">Java с нуля, шаг за шагом</h1>
             <p className={`text-lg text-muted ${enter} delay-[80ms]`}>
-              Задачи из билетов КТ, настоящий компилятор прямо в браузере и защита у профессора на время. Ставить JDK не
-              нужно.
+              Короткие квесты от первой программы, настоящий компилятор прямо в браузере и защита у профессора на время.
+              Ставить JDK не нужно.
             </p>
             <div className={`flex flex-wrap items-center gap-3 ${enter} delay-[120ms]`}>
               <StartButton course={course} />
@@ -214,16 +215,18 @@ export default function Home() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 id="course" className="font-display text-2xl font-semibold">
-                {plural(course.length, QUESTS)}, {plural(stagesTotal, STAGES)}
+                {plural(main.length, QUESTS)}, {plural(stagesTotal, STAGES)}
               </h2>
-              <p className="mt-2 text-muted">Квест «Контрольная точка 1» повторяет билет КТ: шесть заданий и защита.</p>
+              <p className="mt-2 text-muted">
+                Квесты открываются по порядку: каждый опирается на то, что ты уже умеешь.
+              </p>
             </div>
             <ButtonLink href="/course" variant="secondary">
               Вся карта курса
             </ButtonLink>
           </div>
           <ol className="mt-8 divide-y divide-border border-y border-border">
-            {course.map((quest) => (
+            {main.map((quest) => (
               <li key={quest.id} className="flex items-center gap-4 py-4">
                 <span className="w-8 shrink-0 font-mono text-xs text-muted">{quest.num}</span>
                 <span className="min-w-0 flex-1">

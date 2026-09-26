@@ -9,12 +9,13 @@ test("главная: заголовок, язык, кнопка первого 
   await page.goto("/");
 
   await expect(page.locator("html")).toHaveAttribute("lang", "ru");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Java с нуля до сданной контрольной");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Java с нуля, шаг за шагом");
   await expect(page.getByRole("link", { name: "Начать первый этап" }).first()).toHaveAttribute(
     "href",
     "/learn/basics/program-structure",
   );
-  await expect(page.getByText("4 квеста, 26 этапов")).toBeVisible();
+  // Общий курс «Java с нуля»: КТ в этот счёт не входят, они в разделе «Группа»
+  await expect(page.getByText("4 квеста, 28 этапов")).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -53,7 +54,9 @@ test("справочник, 404, sitemap и robots", async ({ page, request }) =
   await expect(page.getByRole("heading", { name: "Такой страницы нет" })).toBeVisible();
 
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  expect(sitemap).toContain("/learn/kt1/guess-number");
+  expect(sitemap).toContain("/learn/calc/factorial");
+  // Задания КТ — раздел для группы, в карту сайта не попадают
+  expect(sitemap).not.toContain("/learn/kt1/");
   // Превью закрыто от поиска целиком
   expect(await (await request.get("/robots.txt")).text()).toContain("Disallow: /");
   expect((await request.get("/opengraph-image")).headers()["content-type"]).toContain("image/png");

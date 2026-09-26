@@ -2,7 +2,7 @@ import type { QuestOutline } from "@/lib/content/outline";
 import type { IconName } from "@/lib/icons";
 import type { RunResult } from "@/lib/java/judge";
 import { stripJavaComments } from "@/lib/java/judge";
-import { isQuestCompleted, isStagePassed } from "@/lib/progress/selectors";
+import { coursePath, isQuestCompleted, isStagePassed } from "@/lib/progress/selectors";
 import type { ProgressData, StageProgress } from "@/lib/progress/types";
 import { CHEST_ID, dailyQuestsDone } from "./daily";
 import type { Verdict } from "./duel";
@@ -707,17 +707,19 @@ function questAchievements(course: QuestOutline[]): Achievement[] {
       test: (f) => isQuestCompleted(f.progress, q),
     }),
   );
+  // Выпускник — за общий курс «Java с нуля»: КТ проходят только одногруппники, остальным ачивка была бы недоступна
+  const main = coursePath(course);
   const graduate = make({
     id: "graduate",
     group: "course",
     icon: "medal",
     title: "Выпускник Java-Zero",
-    desc: "Сдай все этапы курса.",
+    desc: "Сдай все этапы курса «Java с нуля».",
     rarity: "legendary",
     titleReward: "ВЫПУСКНИК JAVA-ZERO",
-    goal: course.reduce((n, q) => n + q.stages.length, 0),
-    count: (f) => f.passed,
-    test: (f) => f.passed >= f.totalStages,
+    goal: main.reduce((n, q) => n + q.stages.length, 0),
+    count: (f) => main.reduce((n, q) => n + q.stages.filter((s) => isStagePassed(f.progress, q.id, s.id)).length, 0),
+    test: (f) => main.every((q) => isQuestCompleted(f.progress, q)),
   });
   return [...perQuest, graduate];
 }

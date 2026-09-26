@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { BrandMark } from "@/components/site/brand-mark";
 
-export const alt = "Java-Zero: Java с нуля до сданной контрольной";
+export const alt = "Java-Zero: Java с нуля, шаг за шагом";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -52,10 +52,10 @@ export default async function OpengraphImage() {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
         <div style={{ fontFamily: DISPLAY, fontSize: 68, lineHeight: 1.1, maxWidth: 1000 }}>
-          Java с нуля до сданной контрольной
+          Java с нуля, шаг за шагом
         </div>
         <div style={{ fontSize: 30, color: "#97a3b6", maxWidth: 1000 }}>
-          Задачи из билетов КТ, настоящий компилятор в браузере и защита у профессора
+          Квесты от первой программы, настоящий компилятор в браузере и защита у профессора
         </div>
       </div>
       <div style={{ display: "flex", gap: 36, fontSize: 26 }}>

@@ -4,7 +4,7 @@ import type { Quest } from "./schema";
 export type StageOutline = { id: string; title: string; badge: string; isNew?: boolean };
 export type QuestOutline = Pick<
   Quest,
-  "id" | "num" | "title" | "subtitle" | "fileName" | "order" | "unlockAfter" | "rank"
+  "id" | "num" | "title" | "subtitle" | "fileName" | "order" | "track" | "unlockAfter" | "groupAfter" | "rank"
 > & {
   stages: StageOutline[];
 };
@@ -17,7 +17,9 @@ export function toOutline(course: Quest[]): QuestOutline[] {
     subtitle: q.subtitle,
     fileName: q.fileName,
     order: q.order,
+    track: q.track,
     unlockAfter: q.unlockAfter,
+    ...(q.groupAfter !== undefined ? { groupAfter: q.groupAfter } : {}),
     rank: q.rank,
     stages: q.stages.map((s) => ({ id: s.id, title: s.title, badge: s.badge, ...(s.isNew ? { isNew: true } : {}) })),
   }));

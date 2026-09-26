@@ -2,9 +2,12 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
 import { type ZodType, z } from "zod";
-import { type Quest, questSchema, type Stage, stageSchema } from "./schema";
+import { type GroupPath, groupSchema, type Quest, questSchema, type Stage, stageSchema } from "./schema";
 
 export const CONTENT_ROOT = path.join(process.cwd(), "content", "quests");
+
+/** Путь группы лежит рядом с папкой квестов: content/group.yaml */
+const groupFile = (root: string) => path.join(path.dirname(root), "group.yaml");
 
 // Папка этапа: 01-memory-boxes → порядковый номер и id
 const STAGE_DIR = /^(\d{2})-([a-z0-9]+(?:[-_][a-z0-9]+)*)$/;
@@ -77,9 +80,13 @@ function validateCourse(quests: Quest[]): void {
   for (const q of quests) {
     if (orders.has(q.order)) throw new Error(`Два квеста с order ${q.order}`);
     orders.add(q.order);
+    if (q.track === "group" && q.unlockAfter !== null) {
+      throw new Error(`${q.id}: квест группы открывается по content/group.yaml, у него unlockAfter: null`);
+    }
     if (q.unlockAfter !== null) {
       const prev = byId.get(q.unlockAfter);
       if (!prev) throw new Error(`${q.id}: unlockAfter ссылается на несуществующий квест «${q.unlockAfter}»`);
+      if (prev.track !== "course") throw new Error(`${q.id}: unlockAfter должен указывать на квест общего курса`);
       if (prev.order >= q.order) throw new Error(`${q.id}: unlockAfter должен указывать на более ранний квест`);
     }
     const stageIds = new Set<string>();
@@ -88,7 +95,42 @@ function validateCourse(quests: Quest[]): void {
       stageIds.add(s.id);
     }
   }
-  if (quests[0]?.unlockAfter !== null) throw new Error("Первый квест должен быть открыт сразу (unlockAfter: null)");
+  const first = quests.find((q) => q.track === "course");
+  if (first?.unlockAfter !== null)
+    throw new Error("Первый квест общего курса должен быть открыт сразу (unlockAfter: null)");
+}
+
+/**
+ * Путь группы: подготовка из общего курса и КТ, строго по порядку. Каждый квест пути получает groupAfter —
+ * квест, после которого он открывается у участника группы. Каждая КТ стоит на пути ровно один раз.
+ */
+function applyGroupPath(quests: Quest[], group: GroupPath): void {
+  const byId = new Map(quests.map((q) => [q.id, q]));
+  const chain = group.steps.flatMap((step) => [...step.prep, step.kt]);
+  const seen = new Set<string>();
+  for (const step of group.steps) {
+    for (const id of [...step.prep, step.kt]) {
+      const quest = byId.get(id);
+      if (!quest) throw new Error(`content/group.yaml: нет квеста «${id}»`);
+      if (seen.has(id)) throw new Error(`content/group.yaml: квест «${id}» стоит на пути дважды`);
+      seen.add(id);
+    }
+    if (byId.get(step.kt)?.track !== "group") throw new Error(`content/group.yaml: «${step.kt}» — не квест группы`);
+    for (const id of step.prep) {
+      if (byId.get(id)?.track !== "course")
+        throw new Error(`content/group.yaml: подготовка «${id}» — не квест общего курса`);
+    }
+  }
+  for (const q of quests) {
+    if (q.track === "group" && !seen.has(q.id)) throw new Error(`${q.id}: квест группы не стоит в content/group.yaml`);
+  }
+  chain.forEach((id, i) => {
+    (byId.get(id) as Quest).groupAfter = chain[i - 1] ?? null;
+  });
+}
+
+export function loadGroupPath(root: string = CONTENT_ROOT): GroupPath {
+  return parseYaml(groupSchema, groupFile(root));
 }
 
 /** Весь курс, упорядоченный по quest.order. Бросает понятную ошибку, если контент нарушает схему. */
@@ -97,6 +139,7 @@ export function loadCourse(root: string = CONTENT_ROOT): Quest[] {
     .map((name) => loadQuest(path.join(root, name)))
     .sort((a, b) => a.order - b.order);
   validateCourse(quests);
+  applyGroupPath(quests, loadGroupPath(root));
   return quests;
 }
 
@@ -107,6 +150,15 @@ export function getCourse(): Quest[] {
   if (process.env.NODE_ENV !== "production") return loadCourse();
   cached ??= loadCourse();
   return cached;
+}
+
+let cachedGroup: GroupPath | undefined;
+
+/** Путь группы для страниц; кэш — как у курса */
+export function getGroupPath(): GroupPath {
+  if (process.env.NODE_ENV !== "production") return loadGroupPath();
+  cachedGroup ??= loadGroupPath();
+  return cachedGroup;
 }
 
 export function findStage(questId: string, stageId: string): { quest: Quest; stage: Stage } | undefined {

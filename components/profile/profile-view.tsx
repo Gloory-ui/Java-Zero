@@ -20,6 +20,7 @@ import { profileUrl } from "@/lib/profile/public";
 import { useProfile, useProfileHydrated } from "@/lib/profile/store";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
 import { EMPTY_PROGRESS } from "@/lib/progress/types";
+import { useVisibleCourse } from "@/lib/progress/visible";
 import { AppearanceSheet } from "./appearance-sheet";
 import type { HeroData } from "./profile-hero";
 import { ProfileHero } from "./profile-hero";
@@ -31,7 +32,9 @@ import { useLook } from "./use-look";
 
 type SheetId = "appearance" | "settings" | "preview" | null;
 
-export function ProfileView({ course }: { course: QuestOutline[] }) {
+export function ProfileView({ course: fullCourse }: { course: QuestOutline[] }) {
+  // КТ видят только участники группы
+  const course = useVisibleCourse(fullCourse);
   const hydrated = useProgressHydrated();
   const profileReady = useProfileHydrated();
   const stored = useProgress();

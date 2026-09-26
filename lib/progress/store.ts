@@ -46,6 +46,8 @@ type Actions = {
   /** События дня. seen — ключ разового события: второй раз за день не засчитывается */
   bumpDaily: (metrics: DailyMetric[], seen?: string) => void;
   addStats: (delta: GameStats) => void;
+  /** Вход по ссылке-приглашению: студент становится участником группы */
+  joinGroup: () => void;
   completeDaily: (done: Record<string, { at: number; xp: number }>) => void;
   dismissUpgradeNotice: () => void;
   setPersona: (persona: Persona) => void;
@@ -192,6 +194,8 @@ export const useProgress = create<ProgressData & Ownership & Actions>()(
           for (const [k, v] of Object.entries(delta) as [keyof GameStats, number][]) stats[k] = (stats[k] ?? 0) + v;
           return { stats };
         }),
+
+      joinGroup: () => set((s) => ({ stats: { ...s.stats, group: 1 } })),
 
       completeDaily: (done) => set((s) => ({ dailyDone: { ...s.dailyDone, ...done } })),
 

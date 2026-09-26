@@ -11,12 +11,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/leaderboard`, changeFrequency: "daily", priority: 0.5 },
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
   ];
-  const stages: MetadataRoute.Sitemap = getCourse().flatMap((quest) =>
-    quest.stages.map((stage) => ({
-      url: `${SITE_URL}/learn/${quest.id}/${stage.id}`,
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    })),
-  );
+  // Задания КТ — раздел для группы, в поиск он не попадает
+  const stages: MetadataRoute.Sitemap = getCourse()
+    .filter((quest) => quest.track === "course")
+    .flatMap((quest) =>
+      quest.stages.map((stage) => ({
+        url: `${SITE_URL}/learn/${quest.id}/${stage.id}`,
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
+      })),
+    );
   return [...pages, ...stages];
 }

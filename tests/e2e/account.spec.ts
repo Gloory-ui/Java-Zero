@@ -19,7 +19,8 @@ test("ссылка входа без кода объясняет, что дел�
 test("профиль показывает статистику и ранг гостя", async ({ page }) => {
   await page.goto("/profile");
   await expect(page.getByText("Этапов сдано")).toBeVisible();
-  await expect(page.getByText("0 из 26")).toBeVisible();
+  // У гостя раздела «Группа» КТ не считаются: 28 этапов общего курса
+  await expect(page.getByText("0 из 28")).toBeVisible();
   await expect(page.getByText("БАЙТ-ПАДАВАН").first()).toBeVisible();
 
   // Характер ментора — в панели «Настройки»
