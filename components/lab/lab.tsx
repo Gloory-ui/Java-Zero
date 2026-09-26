@@ -166,6 +166,13 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
     if (hydrated && unlocked) useProgress.getState().openStage(key);
   }, [hydrated, unlocked, key]);
 
+  // Редактор появляется после загрузки прогресса и показывает сохранённый код. Проверка берёт код из code.current,
+  // поэтому он должен совпасть с редактором сразу, до первой правки: иначе «Проверить» проверил бы стартовый код
+  // и записал его поверх сохранённого
+  useEffect(() => {
+    if (hydrated) code.current = useProgress.getState().stages[key]?.code ?? stage.starter;
+  }, [hydrated, key, stage.starter]);
+
   const onCodeChange = useCallback(
     (next: string) => {
       code.current = next;

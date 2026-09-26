@@ -6,21 +6,24 @@ describe("курс из content/quests", () => {
   const course = loadCourse();
 
   it("общий курс идёт по цепочке без КТ: «Калькулятор» открывается сразу после «Циклов»", () => {
-    expect(course.map((q) => q.id)).toEqual(["basics", "loops_prep", "kt1", "calc"]);
-    expect(course.map((q) => q.track)).toEqual(["course", "course", "group", "course"]);
-    expect(course.map((q) => q.unlockAfter)).toEqual([null, "basics", null, "loops_prep"]);
+    expect(course.map((q) => q.id)).toEqual(["basics", "loops_prep", "kt1", "calc", "arrays_prep", "kt2"]);
+    expect(course.map((q) => q.track)).toEqual(["course", "course", "group", "course", "course", "group"]);
+    expect(course.map((q) => q.unlockAfter)).toEqual([null, "basics", null, "loops_prep", "calc", null]);
   });
 
   it("путь группы: подготовка из общего курса, потом КТ; «Калькулятор» на пути не стоит", () => {
-    expect(course.map((q) => q.groupAfter)).toEqual([null, "basics", "loops_prep", undefined]);
+    expect(course.map((q) => q.groupAfter)).toEqual([null, "basics", "loops_prep", undefined, "kt1", "arrays_prep"]);
     const group = loadGroupPath();
-    expect(group.steps).toEqual([{ prep: ["basics", "loops_prep"], kt: "kt1" }]);
+    expect(group.steps).toEqual([
+      { prep: ["basics", "loops_prep"], kt: "kt1" },
+      { prep: ["arrays_prep"], kt: "kt2" },
+    ]);
     expect(group.invite).toMatch(/^[a-z0-9]{4,32}$/);
   });
 
-  it("26 этапов; у каждого есть теория, стартовый код, решение и тесты", () => {
+  it("41 этап; у каждого есть теория, стартовый код, решение и тесты", () => {
     const stages = course.flatMap((q) => q.stages);
-    expect(stages).toHaveLength(26);
+    expect(stages).toHaveLength(41);
     for (const s of stages) {
       expect(s.theory.length, s.id).toBeGreaterThan(20);
       expect(s.starter, s.id).toContain("class");
@@ -34,6 +37,18 @@ describe("курс из content/quests", () => {
       expect(s.hints, s.id).toHaveLength(3);
       expect(s.exam, s.id).toHaveLength(3);
       expect(s.theory, s.id).toContain("### Что должна вывести программа");
+    }
+  });
+
+  it("общий курс не упоминает КТ: его видят все, а КТ — только группа", () => {
+    for (const q of course.filter((quest) => quest.track === "course")) {
+      for (const s of q.stages) {
+        const text = [s.title, s.theory, s.pitfalls, ...s.hints, JSON.stringify(s.quiz), JSON.stringify(s.exam)].join(
+          " ",
+        );
+        // «КТ» отдельным словом: в тексте может встретиться, например, «КТО»
+        expect(text, `${q.id}/${s.id}`).not.toMatch(/(^|[^А-Яа-яЁё])КТ([^А-Яа-яЁё]|$)|контрольн|билет/i);
+      }
     }
   });
 

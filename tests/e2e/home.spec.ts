@@ -15,7 +15,7 @@ test("главная: заголовок, язык, кнопка первого 
     "/learn/basics/program-structure",
   );
   // Общий курс «Java с нуля»: КТ в этот счёт не входят, они в разделе «Группа»
-  await expect(page.getByText("3 квеста, 20 этапов")).toBeVisible();
+  await expect(page.getByText("4 квеста, 28 этапов")).toBeVisible();
   expect(errors).toEqual([]);
 });
 

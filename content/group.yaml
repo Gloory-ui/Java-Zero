@@ -13,3 +13,5 @@ invite: epai4937
 steps:
   - prep: [basics, loops_prep]
     kt: kt1
+  - prep: [arrays_prep]
+    kt: kt2

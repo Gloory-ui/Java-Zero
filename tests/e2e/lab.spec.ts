@@ -93,3 +93,34 @@ test("настоящая Java: ошибка компиляции, затем с�
   expect(saved.state.cleanRun).toBe(1);
   expect(saved.state.stages["basics/program-structure"].xp).toBe(50);
 });
+
+test("вернулся к этапу и сразу нажал «Проверить»: проверяется сохранённый код, а не стартовый", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "CheerpJ тяжёлый: полный прогон только на десктопе");
+  test.setTimeout(240_000);
+  const code =
+    'public class Basics {\n    public static void main(String[] args) {\n        System.out.println("Привет, Java!");\n        System.out.println("Я пишу первую программу");\n    }\n}\n';
+  await page.addInitScript((saved) => {
+    if (sessionStorage.getItem("seeded")) return;
+    sessionStorage.setItem("seeded", "1");
+    const state = {
+      stages: { "basics/program-structure": { attempts: [], code: saved, startedAt: 1 } },
+      cleanRun: 0,
+      achievements: {},
+      dailyDone: {},
+      stats: {},
+      persona: "chill",
+      sound: false,
+    };
+    localStorage.setItem("java-zero-progress", JSON.stringify({ state, version: 2 }));
+  }, code);
+
+  await page.goto(STAGE);
+  await expect(page.locator("output")).toContainText("Java готова", { timeout: 180_000 });
+  await page.getByRole("button", { name: "Проверить", exact: true }).click();
+  await expect(page.getByText("Этап сдан")).toBeVisible({ timeout: 60_000 });
+
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("java-zero-progress") ?? "{}"));
+  expect(saved.state.stages["basics/program-structure"].code).toBe(code);
+});

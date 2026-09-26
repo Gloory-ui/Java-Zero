@@ -117,3 +117,24 @@ test("шапка участника с пунктом «Группа» влез�
     }
   }
 });
+
+test("после КТ 1 участник идёт в «Массивы», а КТ 2 ждёт подготовку", async ({ page }) => {
+  const done = {
+    basics: ["program-structure", "memory-boxes", "arithmetic", "remainder", "strings", "input", "conditions", "logic"],
+    loops_prep: ["for-anatomy", "break-continue", "accumulators", "nested-loops", "while-attempts", "prime-flag"],
+    kt1: ["multiplication-table", "skip-multiples", "even-and-triple", "even-odd-sums", "guess-number", "primes-to-n"],
+  };
+  const stages = Object.fromEntries(
+    Object.entries(done).flatMap(([quest, ids]) =>
+      ids.map((id) => [`${quest}/${id}`, { attempts: [], passedAt: 1, xp: 70 }]),
+    ),
+  );
+  await seed(page, { stages });
+  await page.goto("/group");
+  await expect(page.getByRole("heading", { level: 2, name: "Контрольная точка 2" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Продолжить" })).toHaveAttribute(
+    "href",
+    "/learn/arrays_prep/array-basics",
+  );
+  await expect(page.getByText("Откроется после квеста «Массивы и таблицы».")).toBeVisible();
+});
