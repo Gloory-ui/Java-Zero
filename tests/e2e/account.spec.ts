@@ -25,9 +25,11 @@ test("профиль показывает статистику и ранг го�
 
   // Характер ментора — в панели «Настройки»
   await page.getByRole("button", { name: "Настройки" }).click();
-  // Кликаем по карточке целиком: панель выезжает, и точка внутри текста может прийтись на край карточки
+  // Выбираем с клавиатуры: на телефоне панель выезжает снизу, и на медленном CI клик мышью попадал
+  // в соседнюю карточку, пока панель ещё двигалась. Фокус и пробел от анимации не зависят
   const dushny = page.getByRole("dialog", { name: "Настройки" }).locator("label").filter({ hasText: "Душный препод" });
-  await dushny.click();
+  await dushny.getByRole("radio").focus();
+  await page.keyboard.press("Space");
   await expect(dushny.getByRole("radio")).toBeChecked();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("java-zero-progress") ?? "{}"));
   expect(saved.state.persona).toBe("dushny");
