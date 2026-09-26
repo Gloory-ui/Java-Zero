@@ -1,0 +1,80 @@
+id: parse-errors
+title: "NumberFormatException: число из строки"
+hints:
+  - "Каждое слово пробуй превратить в число через `Integer.parseInt(word)` внутри `try`."
+  - "В `try` после успешного разбора: `sum += n; count++;`. В `catch (NumberFormatException e)` — сообщение о пропуске."
+  - "`try { int n = Integer.parseInt(word); sum += n; count++; } catch (NumberFormatException e) { System.out.println(\"Пропускаю: \" + word); }`"
+sampleInput: |
+  12 abc 5 3.5 -4 7x
+quiz:
+  question: Что сделает Integer.parseInt("3.5")?
+  options:
+    - Бросит NumberFormatException
+    - Вернёт 3
+    - Вернёт 4
+    - Вернёт 3.5
+  correct: 0
+  hint: parseInt понимает только целые числа.
+exam:
+  - q: Почему слова читают через next(), а не через nextInt()?
+    options:
+      - next() читает любое слово и не падает, а разбор числа мы делаем сами
+      - nextInt() не умеет отрицательные числа
+      - next() быстрее
+      - nextInt() читает только одну цифру
+    correct: 0
+    explain: nextInt() на слове «abc» бросит InputMismatchException и не сдвинется дальше. next() просто вернёт слово, а решаем уже мы.
+    advice: Для ненадёжного ввода — читай строкой, разбирай в try.
+  - q: Где увеличивать счётчик чисел?
+    options:
+      - В try после успешного parseInt
+      - До try
+      - В catch
+      - В finally
+    correct: 0
+    explain: Если parseInt бросит исключение, строки после него в try не выполнятся. Значит, счётчик вырастет только для настоящих чисел.
+    advice: Всё, что зависит от успеха операции, ставь после неё в том же try.
+  - q: Что вернёт Integer.parseInt("-4")?
+    options:
+      - "-4"
+      - "4"
+      - NumberFormatException
+      - "0"
+    correct: 0
+    explain: Знак минус в начале — часть записи числа, parseInt его понимает.
+    advice: А вот «+4» тоже понимается, но «4-» уже нет.
+memory:
+  note: Момент в catch для слова «7x».
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Scanner sc → объект в куче
+        - int count = 3
+        - int sum = 13
+        - String word → «7x»
+        - NumberFormatException e → объект в куче
+  heap:
+    - obj: NumberFormatException
+      data: "message = For input string: \"7x\""
+tests:
+  - name: Слова из примера
+    stdin: |
+      12 abc 5 3.5 -4 7x
+    stdout: |
+      Пропускаю: abc
+      Пропускаю: 3.5
+      Пропускаю: 7x
+      Чисел: 3
+      Сумма: 13
+  - name: Одни слова
+    stdin: |
+      один два
+    stdout: |
+      Пропускаю: один
+      Пропускаю: два
+      Чисел: 0
+      Сумма: 0
+  - kind: source
+    name: Ловим NumberFormatException
+    pattern: 'catch\s*\(\s*NumberFormatException'
+    message: "Поймай ошибку разбора: catch (NumberFormatException e)"
