@@ -4,7 +4,9 @@ title: Контрольная точка 1
 subtitle: 6 аттестационных заданий
 fileName: KT1.java
 order: 3
-unlockAfter: loops_prep
+# Раздел «Группа»: КТ открывается по пути из content/group.yaml, а не по unlockAfter
+track: group
+unlockAfter: null
 rank:
   title: ГРОЗА СЕССИИ
   icon: swords

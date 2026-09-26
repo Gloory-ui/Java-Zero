@@ -42,8 +42,14 @@ export type DailyState = {
   seen: string[];
 };
 
-/** Счётчики для достижений с уровнями: защиты на 5, верные квизы, запуски, вопросы ментору */
-export type GameStats = Partial<Record<"duelExcellent" | "duelGood" | "quizRight" | "runs" | "mentor", number>>;
+/**
+ * Счётчики для достижений с уровнями: защиты на 5, верные квизы, запуски, вопросы ментору.
+ * group — не счётчик, а отметка «участник группы» (1): так она синхронизируется с аккаунтом без новой колонки в БД,
+ * а слияние по максимуму её не теряет.
+ */
+export type GameStats = Partial<
+  Record<"duelExcellent" | "duelGood" | "quizRight" | "runs" | "mentor" | "group", number>
+>;
 
 export type ProgressData = {
   stages: Record<string, StageProgress>;

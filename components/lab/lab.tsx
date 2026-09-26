@@ -17,7 +17,15 @@ import { checkFinished, runFinished } from "@/lib/game/events";
 import type { XpPart } from "@/lib/game/xp";
 import { EngineRestartedError, getEngine, useEngine } from "@/lib/java/engine";
 import { type Diagnostic, ioInputs, judge } from "@/lib/java/judge";
-import { isQuestCompleted, isStagePassed, isStageUnlocked, nextStage } from "@/lib/progress/selectors";
+import {
+  isGroupMember,
+  isQuestCompleted,
+  isStagePassed,
+  isStageUnlocked,
+  nextStage,
+  pathFor,
+  pathQuests,
+} from "@/lib/progress/selectors";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
 import { SOLUTION_UNLOCK_ATTEMPTS, stageKey } from "@/lib/progress/types";
 import { CodeEditor, type CodeEditorHandle } from "./code-editor";
@@ -275,7 +283,11 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
   const next = quest.stages[stageIndex + 1];
   const prev = quest.stages[stageIndex - 1];
   const nextUnlocked = next ? isStageUnlocked(progress, course, quest, stageIndex + 1) : false;
-  const continueTo = hydrated ? nextStage(progress, course) : null;
+  // Участник группы на квесте её пути идёт по пути группы: после «Циклов» — КТ 1, и карта у него — раздел «Группа»
+  const path = pathFor(progress, course, questId);
+  const continueTo = hydrated ? nextStage(progress, course, pathQuests(course, path)) : null;
+  const map =
+    path === "group" ? { href: "/group", label: "раздел «Группа»" } : { href: "/course", label: "карту курса" };
 
   const success = (
     <div className="relative flex flex-col gap-3 rounded-lg border border-success/40 bg-success/10 p-4 starting:opacity-0 starting:motion-safe:translate-y-1 motion-safe:transition-[opacity,translate] motion-safe:duration-300 motion-safe:ease-snappy">
@@ -308,12 +320,32 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
         {next ? (
           <ButtonLink href={stageHref(questId, next.id)}>Следующий этап →</ButtonLink>
         ) : (
-          <ButtonLink href="/course">Квест пройден: открыть карту курса</ButtonLink>
+          <ButtonLink href={map.href}>Квест пройден: открыть {map.label}</ButtonLink>
         )}
       </div>
       {stage.loopTracer && <LoopTracer rows={stage.loopTracer.rows} cols={stage.loopTracer.cols} />}
     </div>
   );
+
+  // Задания КТ — только для одногруппников: остальным объясняем, где раздел и как в него попасть
+  if (hydrated && quest.track === "group" && !isGroupMember(progress, course)) {
+    return (
+      <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-4 px-4">
+        <p className="font-mono text-xs tracking-widest text-gold uppercase">{stage.badge}</p>
+        <h1 className="font-display text-2xl font-semibold">Задание для одногруппников</h1>
+        <p className="text-muted">
+          «{quest.title}» — из раздела «Группа»: там контрольные точки из вуза. Раздел открывается по ссылке-приглашению
+          из чата группы.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <ButtonLink href="/course">Курс «Java с нуля»</ButtonLink>
+          <ButtonLink href="/group" variant="secondary">
+            О разделе «Группа»
+          </ButtonLink>
+        </div>
+      </main>
+    );
+  }
 
   if (hydrated && !unlocked) {
     return (
@@ -329,8 +361,8 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
               Продолжить с доступного этапа
             </ButtonLink>
           )}
-          <ButtonLink href="/course" variant="secondary">
-            Карта курса
+          <ButtonLink href={map.href} variant="secondary">
+            {path === "group" ? "Раздел «Группа»" : "Карта курса"}
           </ButtonLink>
         </div>
       </main>
@@ -340,8 +372,12 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh">
       <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-3 sm:px-4">
-        <Link href="/course" className={buttonClasses({ variant: "ghost" }, "px-2")} aria-label="К карте курса">
-          ← <span className="hidden sm:inline">Курс</span>
+        <Link
+          href={map.href}
+          className={buttonClasses({ variant: "ghost" }, "px-2")}
+          aria-label={path === "group" ? "К разделу «Группа»" : "К карте курса"}
+        >
+          ← <span className="hidden sm:inline">{path === "group" ? "Группа" : "Курс"}</span>
         </Link>
         <div className="min-w-0 flex-1">
           <p className="truncate font-mono text-[11px] tracking-widest text-gold uppercase">

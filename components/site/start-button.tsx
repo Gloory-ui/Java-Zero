@@ -2,16 +2,22 @@
 
 import { ButtonLink } from "@/components/ui/button";
 import type { QuestOutline } from "@/lib/content/outline";
-import { nextStage } from "@/lib/progress/selectors";
+import { nextStage, pathFor, pathQuests } from "@/lib/progress/selectors";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
 
-/** Главная кнопка: новичка ведёт на первый этап, вернувшегося — на первый несданный. */
+/**
+ * Главная кнопка: новичка ведёт на первый этап, вернувшегося — на первый несданный.
+ * Участника группы ведёт по пути группы, остальных — по общему курсу.
+ */
 export function StartButton({ course }: { course: QuestOutline[] }) {
   const hydrated = useProgressHydrated();
   const stages = useProgress((s) => s.stages);
-  const first = course[0];
+  const stats = useProgress((s) => s.stats);
+  const progress = { stages, stats };
+  const path = pathQuests(course, hydrated ? pathFor(progress, course) : "course");
+  const first = path[0];
   const started = hydrated && Object.keys(stages).length > 0;
-  const next = hydrated ? nextStage({ stages }, course) : null;
+  const next = hydrated ? nextStage(progress, course, path) : null;
   const target = next ?? { questId: first.id, stageId: first.stages[0].id };
   const title = course.find((q) => q.id === target.questId)?.stages.find((s) => s.id === target.stageId)?.title;
 

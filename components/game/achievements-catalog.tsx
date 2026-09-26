@@ -7,6 +7,7 @@ import type { QuestOutline } from "@/lib/content/outline";
 import { type AchievementGroup, achievementCatalog, facts, GROUP_LABEL } from "@/lib/game/achievements";
 import { useRarity } from "@/lib/game/rarity";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
+import { useVisibleCourse } from "@/lib/progress/visible";
 import { AchievementBadge, RARITY_COLOR } from "./achievement-badge";
 import { rarityText, whenText } from "./achievements-panel";
 
@@ -15,7 +16,9 @@ type Filter = "all" | AchievementGroup;
 const FILTERS: readonly Filter[] = ["all", "course", "mastery", "exam", "streak", "daily", "secret"];
 
 /** Все достижения курса по группам: условие, редкость, прогресс серии и дата получения */
-export function AchievementsCatalog({ course }: { course: QuestOutline[] }) {
+export function AchievementsCatalog({ course: fullCourse }: { course: QuestOutline[] }) {
+  // КТ видят только участники группы
+  const course = useVisibleCourse(fullCourse);
   const hydrated = useProgressHydrated();
   const progress = useProgress();
   const rarity = useRarity();

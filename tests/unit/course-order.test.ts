@@ -1,7 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { loadCourse, stageBadge } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
-import { isQuestUnlocked, isStageUnlocked, nextStage, skippedNewStages } from "@/lib/progress/selectors";
+import { achievementCatalog } from "@/lib/game/achievements";
+import { dailyContext } from "@/lib/game/daily";
+import {
+  coursePath,
+  groupPath,
+  isGroupMember,
+  isQuestUnlocked,
+  isStageUnlocked,
+  nextStage,
+  pathFor,
+  skippedNewStages,
+  visibleCourse,
+} from "@/lib/progress/selectors";
 import type { StageProgress } from "@/lib/progress/types";
 
 const course = toOutline(loadCourse());
@@ -88,5 +100,64 @@ describe("пометка «новый»", () => {
       "basics/conditions",
       "basics/logic",
     ]);
+  });
+});
+
+describe("два раздела: «Java с нуля» и «Группа»", () => {
+  const stagesOf = (...ids: string[]) =>
+    course.filter((q) => ids.includes(q.id)).flatMap((q) => q.stages.map((s) => `${q.id}/${s.id}`));
+  /** Прошёл «Фундамент» и «Циклы» */
+  const loopsDone = passed(...stagesOf("basics", "loops_prep"));
+  const member = (p: ReturnType<typeof passed>) => ({ ...p, stats: { group: 1 } });
+
+  it("общий курс — без КТ; путь группы — подготовка, потом КТ", () => {
+    expect(coursePath(course).map((q) => q.id)).toEqual(["basics", "loops_prep", "calc"]);
+    expect(groupPath(course).map((q) => q.id)).toEqual(["basics", "loops_prep", "kt1"]);
+  });
+
+  it("гость раздела не видит КТ, и она у него не открывается; «Калькулятор» открыт после «Циклов»", () => {
+    expect(isGroupMember(loopsDone, course)).toBe(false);
+    expect(visibleCourse(loopsDone, course).map((q) => q.id)).toEqual(["basics", "loops_prep", "calc"]);
+    expect(isQuestUnlocked(loopsDone, course, quest("kt1"))).toBe(false);
+    expect(isQuestUnlocked(loopsDone, course, quest("calc"))).toBe(true);
+    expect(nextStage(loopsDone, course)).toEqual({ questId: "calc", stageId: "splash" });
+  });
+
+  it("участник группы: КТ 1 открывается после подготовки, «Продолжить» в группе ведёт к ней", () => {
+    expect(isQuestUnlocked(member(passed()), course, quest("kt1"))).toBe(false);
+    const p = member(loopsDone);
+    expect(visibleCourse(p, course)).toHaveLength(course.length);
+    expect(isQuestUnlocked(p, course, quest("kt1"))).toBe(true);
+    expect(nextStage(p, course, groupPath(course))).toEqual({ questId: "kt1", stageId: "multiplication-table" });
+    // На карте общего курса он идёт дальше по общему курсу
+    expect(nextStage(p, course)).toEqual({ questId: "calc", stageId: "splash" });
+  });
+
+  it("путь студента: участник на квесте пути группы идёт по нему, на «Калькуляторе» — по общему курсу", () => {
+    const p = member(loopsDone);
+    expect(pathFor(p, course, "loops_prep")).toBe("group");
+    expect(pathFor(p, course, "kt1")).toBe("group");
+    expect(pathFor(p, course, "calc")).toBe("course");
+    expect(pathFor(loopsDone, course, "loops_prep")).toBe("course");
+  });
+
+  it("кто уже сдавал задания КТ 1, в группе без приглашения", () => {
+    const oldStudent = passed("kt1/multiplication-table");
+    expect(isGroupMember(oldStudent, course)).toBe(true);
+    expect(isQuestUnlocked(oldStudent, course, quest("kt1"))).toBe(true);
+  });
+
+  it("«Выпускник» — за общий курс: задания КТ для него не нужны", () => {
+    const graduate = achievementCatalog(course).find((a) => a.id === "graduate");
+    const main = coursePath(course).reduce((n, q) => n + q.stages.length, 0);
+    expect(graduate?.goal).toBe(main);
+  });
+
+  it("квест дня про КТ выпадает только участнику группы с открытой КТ", () => {
+    expect(dailyContext(loopsDone, course).ktOpen).toBe(false);
+    expect(dailyContext(member(loopsDone), course).ktOpen).toBe(true);
+    // Гостю раздела этапы КТ не считаются оставшимися
+    const left = (p: ReturnType<typeof passed>) => dailyContext(p, course).remainingStages;
+    expect(left(member(passed())) - left(passed())).toBe(quest("kt1").stages.length);
   });
 });

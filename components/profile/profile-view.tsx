@@ -19,6 +19,7 @@ import { RANKS } from "@/lib/game/ranks";
 import { questProgress } from "@/lib/progress/selectors";
 import { useProgress, useProgressHydrated } from "@/lib/progress/store";
 import { EMPTY_PROGRESS } from "@/lib/progress/types";
+import { useVisibleCourse } from "@/lib/progress/visible";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -81,7 +82,9 @@ function AccountCard() {
   );
 }
 
-export function ProfileView({ course }: { course: QuestOutline[] }) {
+export function ProfileView({ course: fullCourse }: { course: QuestOutline[] }) {
+  // КТ видят только участники группы
+  const course = useVisibleCourse(fullCourse);
   const hydrated = useProgressHydrated();
   const stored = useProgress();
   const progress = hydrated ? stored : EMPTY_PROGRESS;

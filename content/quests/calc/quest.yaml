@@ -4,7 +4,7 @@ title: Калькулятор
 subtitle: switch, методы, массивы и рекурсия
 fileName: Calculator.java
 order: 4
-unlockAfter: kt1
+unlockAfter: loops_prep
 rank:
   title: УКРОТИТЕЛЬ СТЕКА
   icon: zap

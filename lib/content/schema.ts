@@ -79,7 +79,12 @@ export const questSchema = z.object({
   subtitle: z.string().min(1),
   fileName: javaFileName,
   order: z.number().int(),
-  /** Квест, который нужно закрыть, чтобы открыть этот; null — открыт сразу */
+  /**
+   * course — общий курс «Java с нуля» для всех; group — раздел «Группа» (контрольные точки из вуза).
+   * Квесты группы видят только одногруппники, а открываются они по пути из content/group.yaml.
+   */
+  track: z.enum(["course", "group"]).default("course"),
+  /** Квест общего курса, который нужно закрыть, чтобы открыть этот; null — открыт сразу. У квестов группы — null */
   unlockAfter: slug.nullable(),
   /** Звание за закрытие квеста */
   // Титул за квест; icon — имя SVG-иконки из lib/icons.ts
@@ -88,11 +93,22 @@ export const questSchema = z.object({
   stageBadge: z.string().min(1).default("ЭТАП {n} / {total}"),
 });
 
+/** content/group.yaml: путь группы — подготовка из общего курса, затем КТ, строго по порядку */
+export const groupSchema = z.object({
+  title: z.string().min(1),
+  subtitle: z.string().min(1),
+  /** Код ссылки-приглашения /group?join=<код> */
+  invite: z.string().regex(/^[a-z0-9]{4,32}$/, "латиница в нижнем регистре и цифры, от 4 до 32 символов"),
+  steps: z.array(z.object({ prep: z.array(slug).min(1), kt: slug })).min(1),
+});
+
 export type IoTest = z.infer<typeof ioTestSchema>;
 export type SourceTest = z.infer<typeof sourceTestSchema>;
 export type StageTest = z.infer<typeof stageTestSchema>;
 export type StageMeta = z.infer<typeof stageSchema>;
 export type QuestMeta = z.infer<typeof questSchema>;
+export type Track = QuestMeta["track"];
+export type GroupPath = z.infer<typeof groupSchema>;
 
 export type Stage = Omit<StageMeta, "badge"> & {
   /** Всегда задана: из stage.yaml или по шаблону квеста */
@@ -105,4 +121,8 @@ export type Stage = Omit<StageMeta, "badge"> & {
   solution: string;
 };
 
-export type Quest = QuestMeta & { stages: Stage[] };
+export type Quest = QuestMeta & {
+  stages: Stage[];
+  /** Квест стоит на пути группы: после какого квеста он там открывается (null — первый). Нет поля — не на пути */
+  groupAfter?: string | null;
+};

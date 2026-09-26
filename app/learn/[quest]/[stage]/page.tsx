@@ -19,6 +19,8 @@ export async function generateMetadata({ params }: PageProps<"/learn/[quest]/[st
   return {
     title: `${found.stage.title} · ${found.quest.title}`,
     description: `${found.stage.badge}. Задание по Java с проверкой настоящим компилятором прямо в браузере.`,
+    // Задания КТ — раздел для группы: в поиске им делать нечего
+    ...(found.quest.track === "group" ? { robots: { index: false, follow: false } } : {}),
   };
 }
 

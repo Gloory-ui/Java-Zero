@@ -49,6 +49,7 @@ export function isPristine(p: ProgressData): boolean {
     Object.keys(p.stages).length === 0 &&
     Object.keys(p.achievements).length === 0 &&
     Object.keys(p.dailyDone).length === 0 &&
+    Object.keys(p.stats).length === 0 &&
     p.cleanRun === 0 &&
     p.persona === EMPTY_PROGRESS.persona &&
     p.sound === EMPTY_PROGRESS.sound

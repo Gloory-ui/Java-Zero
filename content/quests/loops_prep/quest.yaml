@@ -1,7 +1,7 @@
 id: loops_prep
 num: "01"
-title: Подготовка к КТ 1
-subtitle: Циклы for/while, break, флаги
+title: Циклы
+subtitle: for и while, break и continue, накопители, флаги
 fileName: LoopsPrep.java
 order: 2
 unlockAfter: basics
@@ -9,4 +9,4 @@ rank:
   title: ОПЕРАТОР ЦИКЛА
   icon: repeat
   color: "#38bdf8"
-stageBadge: "ПОДГОТОВКА {n} / {total}"
+stageBadge: "ЭТАП {n} / {total}"

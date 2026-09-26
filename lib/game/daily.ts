@@ -1,6 +1,6 @@
 import type { QuestOutline } from "@/lib/content/outline";
 import type { IconName } from "@/lib/icons";
-import { isQuestUnlocked, isStagePassed } from "@/lib/progress/selectors";
+import { isQuestUnlocked, isStagePassed, visibleCourse } from "@/lib/progress/selectors";
 import type { DailyMetric, DailyState, ProgressData } from "@/lib/progress/types";
 import { hashString } from "./day";
 
@@ -121,13 +121,17 @@ export const findDaily = (id: string) => DAILY_TEMPLATES.find((t) => t.id === id
 
 export type DailyContext = { remainingStages: number; ktOpen: boolean };
 
-export function dailyContext(p: Pick<ProgressData, "stages">, course: QuestOutline[]): DailyContext {
+/** Квесты группы (КТ) считаются только у участника группы: остальным они не видны */
+export function dailyContext(
+  p: Pick<ProgressData, "stages"> & Partial<Pick<ProgressData, "stats">>,
+  course: QuestOutline[],
+): DailyContext {
   let remainingStages = 0;
   let ktOpen = false;
-  for (const quest of course) {
+  for (const quest of visibleCourse(p, course)) {
     const left = quest.stages.filter((s) => !isStagePassed(p, quest.id, s.id)).length;
     remainingStages += left;
-    if (left > 0 && /^kt\d+$/.test(quest.id) && isQuestUnlocked(p, course, quest)) ktOpen = true;
+    if (left > 0 && quest.track === "group" && isQuestUnlocked(p, course, quest)) ktOpen = true;
   }
   return { remainingStages, ktOpen };
 }

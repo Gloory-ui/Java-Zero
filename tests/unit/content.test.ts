@@ -1,13 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { loadCourse } from "@/lib/content/load";
-import { questSchema, stageSchema } from "@/lib/content/schema";
+import { loadCourse, loadGroupPath } from "@/lib/content/load";
+import { groupSchema, questSchema, stageSchema } from "@/lib/content/schema";
 
 describe("курс из content/quests", () => {
   const course = loadCourse();
 
-  it("четыре квеста по порядку, каждый открывается после предыдущего", () => {
+  it("общий курс идёт по цепочке без КТ: «Калькулятор» открывается сразу после «Циклов»", () => {
     expect(course.map((q) => q.id)).toEqual(["basics", "loops_prep", "kt1", "calc"]);
-    expect(course.map((q) => q.unlockAfter)).toEqual([null, "basics", "loops_prep", "kt1"]);
+    expect(course.map((q) => q.track)).toEqual(["course", "course", "group", "course"]);
+    expect(course.map((q) => q.unlockAfter)).toEqual([null, "basics", null, "loops_prep"]);
+  });
+
+  it("путь группы: подготовка из общего курса, потом КТ; «Калькулятор» на пути не стоит", () => {
+    expect(course.map((q) => q.groupAfter)).toEqual([null, "basics", "loops_prep", undefined]);
+    const group = loadGroupPath();
+    expect(group.steps).toEqual([{ prep: ["basics", "loops_prep"], kt: "kt1" }]);
+    expect(group.invite).toMatch(/^[a-z0-9]{4,32}$/);
   });
 
   it("26 этапов; у каждого есть теория, стартовый код, решение и тесты", () => {
@@ -62,5 +70,15 @@ describe("схема контента", () => {
     const rank = { title: "Ранг", icon: "star", color: "#ffffff" };
     expect(questSchema.safeParse({ ...quest, rank, fileName: "KT2.java" }).success).toBe(true);
     expect(questSchema.safeParse({ ...quest, rank, fileName: "kt2.java" }).success).toBe(false);
+  });
+
+  it("квест без track — из общего курса; путь группы требует хотя бы один шаг и код из латиницы", () => {
+    const quest = { id: "arrays", num: "03", title: "Массивы", subtitle: "…", order: 5, unlockAfter: "calc" };
+    const rank = { title: "Ранг", icon: "star", color: "#ffffff" };
+    expect(questSchema.parse({ ...quest, rank, fileName: "Arrays.java" }).track).toBe("course");
+    const group = { title: "Группа", subtitle: "КТ", invite: "abc123", steps: [{ prep: ["basics"], kt: "kt1" }] };
+    expect(groupSchema.safeParse(group).success).toBe(true);
+    expect(groupSchema.safeParse({ ...group, steps: [] }).success).toBe(false);
+    expect(groupSchema.safeParse({ ...group, invite: "Код группы" }).success).toBe(false);
   });
 });
