@@ -55,8 +55,8 @@ export function LevelChip({ className, compact = false }: { className?: string; 
     <Link
       href="/profile"
       className={cn(
-        "relative inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface/60 pr-3 pl-1 font-mono text-xs transition-colors duration-150 ease-snappy hover:border-border-strong",
-        compact && "max-sm:pr-1",
+        "relative inline-flex h-11 items-center gap-2 sm:h-9 rounded-full border border-border bg-surface/60 pr-3 pl-1 font-mono text-xs transition-colors duration-150 ease-snappy hover:border-border-strong",
+        compact && "max-sm:min-w-11 max-sm:pr-1",
         !hydrated && "invisible",
         className,
       )}

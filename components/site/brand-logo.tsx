@@ -34,7 +34,7 @@ export function BrandLogo() {
       href="/"
       onClick={onClick}
       aria-label="Java-Zero, на главную"
-      className="flex shrink-0 items-center gap-2 font-display text-base font-semibold whitespace-nowrap"
+      className="flex min-h-11 min-w-11 shrink-0 items-center gap-2 font-display text-base font-semibold whitespace-nowrap sm:min-h-0"
     >
       <BrandMark
         size={28}

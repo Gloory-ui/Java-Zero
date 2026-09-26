@@ -317,7 +317,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
 
   if (hydrated && !unlocked) {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-4 px-4">
+      <main id="main" className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-4 px-4">
         <p className="font-mono text-xs tracking-widest text-gold uppercase">{stage.badge}</p>
         <h1 className="font-display text-2xl font-semibold">Этап пока закрыт</h1>
         <p className="text-muted">
@@ -340,7 +340,11 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh">
       <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-3 sm:px-4">
-        <Link href="/course" className={buttonClasses({ variant: "ghost" }, "px-2")} aria-label="К карте курса">
+        <Link
+          href="/course"
+          className={buttonClasses({ variant: "ghost" }, "min-w-11 px-2 sm:min-w-0")}
+          aria-label="К карте курса"
+        >
           ← <span className="hidden sm:inline">Курс</span>
         </Link>
         <div className="min-w-0 flex-1">
@@ -349,30 +353,36 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
           </p>
           <h1 className="truncate text-sm font-semibold sm:text-base">{stage.title}</h1>
         </div>
-        <nav aria-label="Этапы квеста" className="flex items-center gap-1">
+        <nav aria-label="Этапы квеста" className="hidden items-center gap-1 sm:flex">
           {prev ? (
             <Link
               href={stageHref(questId, prev.id)}
-              className={buttonClasses({ variant: "ghost" }, "px-2")}
+              className={buttonClasses({ variant: "ghost" }, "min-w-11 px-2 sm:min-w-0")}
               aria-label="Предыдущий этап"
             >
               ‹
             </Link>
           ) : (
-            <span className={buttonClasses({ variant: "ghost" }, "px-2 opacity-30")} aria-hidden="true">
+            <span
+              className={buttonClasses({ variant: "ghost" }, "min-w-11 px-2 opacity-30 sm:min-w-0")}
+              aria-hidden="true"
+            >
               ‹
             </span>
           )}
           {next && nextUnlocked ? (
             <Link
               href={stageHref(questId, next.id)}
-              className={buttonClasses({ variant: "ghost" }, "px-2")}
+              className={buttonClasses({ variant: "ghost" }, "min-w-11 px-2 sm:min-w-0")}
               aria-label="Следующий этап"
             >
               ›
             </Link>
           ) : (
-            <span className={buttonClasses({ variant: "ghost" }, "px-2 opacity-30")} title="Сначала сдай этот этап">
+            <span
+              className={buttonClasses({ variant: "ghost" }, "min-w-11 px-2 opacity-30 sm:min-w-0")}
+              title="Сначала сдай этот этап"
+            >
               ›
             </span>
           )}
@@ -384,7 +394,10 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
         <ThemeToggle />
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(360px,42%)_minmax(0,1fr)]">
+      <main
+        id="main"
+        className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(360px,42%)_minmax(0,1fr)]"
+      >
         <section aria-label="Задание" className="flex min-h-0 flex-col border-border lg:border-r">
           <div
             role="tablist"
@@ -401,7 +414,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
                 aria-controls="tab-panel"
                 onClick={() => switchTab(t.id)}
                 className={cn(
-                  "relative shrink-0 px-2.5 py-2 text-sm font-medium transition-colors duration-150 ease-snappy sm:px-3",
+                  "relative min-h-11 shrink-0 px-2.5 py-2 text-sm font-medium transition-colors duration-150 ease-snappy sm:min-h-0 sm:px-3",
                   tab === t.id ? "text-text" : "text-muted hover:text-text",
                 )}
               >
@@ -586,7 +599,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
             />
           </div>
         </section>
-      </div>
+      </main>
 
       <Mentor stageKey={key} getContext={mentorContext} />
 

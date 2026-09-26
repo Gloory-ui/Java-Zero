@@ -18,7 +18,7 @@ export function LabStatus() {
         aria-pressed={soundOn}
         aria-label={soundOn ? "Выключить звуки" : "Включить звуки"}
         title={soundOn ? "Звуки включены" : "Звуки выключены"}
-        className="grid size-9 place-items-center rounded-md text-muted transition-colors duration-150 ease-snappy hover:bg-card hover:text-text"
+        className="grid size-11 place-items-center sm:size-9 rounded-md text-muted transition-colors duration-150 ease-snappy hover:bg-card hover:text-text"
       >
         <svg
           viewBox="0 0 24 24"

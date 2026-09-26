@@ -21,7 +21,7 @@ export default async function UserPage({ params }: PageProps<"/u/[handle]">) {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto min-h-[70dvh] max-w-4xl px-4 py-8">
+      <main id="main" className="mx-auto min-h-[70dvh] max-w-4xl px-4 py-8">
         <PublicProfilePage handle={handle} course={toOutline(getCourse())} />
       </main>
       <SiteFooter />

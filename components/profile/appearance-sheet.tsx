@@ -293,7 +293,7 @@ export function AppearanceSheet({
               aria-pressed={profile.title === null}
               onClick={() => profile.set({ title: null })}
               className={cn(
-                "rounded-lg border px-3 py-1.5 font-mono text-xs tracking-wide uppercase transition-colors",
+                "min-h-11 rounded-lg border px-3 py-1.5 font-mono text-xs tracking-wide uppercase transition-colors sm:min-h-0",
                 profile.title === null ? "border-accent bg-accent-soft" : "border-border hover:border-border-strong",
               )}
             >
@@ -307,7 +307,7 @@ export function AppearanceSheet({
                 aria-pressed={profile.title === t.text}
                 onClick={() => profile.set({ title: t.text })}
                 className={cn(
-                  "rounded-lg border px-3 py-1.5 font-mono text-xs tracking-wide uppercase transition-colors",
+                  "min-h-11 rounded-lg border px-3 py-1.5 font-mono text-xs tracking-wide uppercase transition-colors sm:min-h-0",
                   profile.title === t.text
                     ? "border-accent bg-accent-soft"
                     : "border-border hover:border-border-strong",

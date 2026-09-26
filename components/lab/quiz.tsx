@@ -22,7 +22,7 @@ export function Quiz({ quiz, stageKey }: { quiz: StageMeta["quiz"]; stageKey: st
               // biome-ignore lint/suspicious/noArrayIndexKey: варианты статичны и не переставляются
               key={i}
               className={cn(
-                "flex cursor-pointer items-start gap-3 rounded-md border px-4 py-3 text-sm transition-[background-color,border-color,transform] duration-150 ease-snappy active:scale-[0.99] motion-reduce:active:scale-100",
+                "relative flex cursor-pointer items-start gap-3 rounded-md border px-4 py-3 text-sm transition-[background-color,border-color,transform] duration-150 ease-snappy active:scale-[0.99] motion-reduce:active:scale-100",
                 "has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent",
                 state === "idle" && "border-border bg-card hover:border-border-strong hover:bg-card-hover",
                 state === "right" && "border-success bg-success/10",

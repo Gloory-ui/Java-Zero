@@ -161,7 +161,7 @@ export default function Home() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="main">
         <section className="mx-auto grid max-w-5xl items-center gap-10 px-4 pt-14 pb-20 md:grid-cols-[1.1fr_1fr] md:pt-20">
           <div className="flex flex-col gap-6">
             <p className={`font-mono text-xs tracking-[0.2em] text-gold uppercase ${enter}`}>

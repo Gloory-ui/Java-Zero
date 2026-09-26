@@ -50,6 +50,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
+        {/* Первая остановка Tab: перепрыгнуть шапку сразу к содержанию страницы. Видна только с клавиатуры */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-lg focus:bg-accent-solid focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-white focus:shadow-glow"
+        >
+          Перейти к содержанию
+        </a>
         {children}
         <Toaster />
         <GameBootstrap course={toOutline(getCourse())} />

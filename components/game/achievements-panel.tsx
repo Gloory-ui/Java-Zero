@@ -75,7 +75,10 @@ export function AchievementsPanel({ course }: { course: QuestOutline[] }) {
           <Icon name="trophy" className="mr-2 inline size-5 align-[-3px] text-gold" />
           Достижения <span className="font-mono text-sm text-muted">· {earned.length}</span>
         </h2>
-        <Link href="/achievements" className="text-sm text-accent hover:underline">
+        <Link
+          href="/achievements"
+          className="inline-flex min-h-11 items-center text-sm text-accent hover:underline sm:min-h-0"
+        >
           Все достижения →
         </Link>
       </div>

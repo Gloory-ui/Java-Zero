@@ -45,7 +45,7 @@ export function AccountMenu() {
     return (
       <Link
         href="/profile"
-        className="rounded-full"
+        className="grid size-11 place-items-center rounded-full sm:size-9"
         aria-label={`Профиль: ${name ?? user.name ?? user.email ?? "аккаунт"}`}
       >
         <Avatar name={name ?? user.name} src={custom ?? user.avatar} />
@@ -56,7 +56,7 @@ export function AccountMenu() {
     return (
       <Link
         href={`/login?next=${encodeURIComponent(pathname)}`}
-        className={buttonClasses({ variant: "secondary" }, "h-9")}
+        className={buttonClasses({ variant: "secondary" }, "h-11 sm:h-9")}
       >
         Войти
       </Link>
@@ -64,7 +64,7 @@ export function AccountMenu() {
   }
   if (status === "loading") return <span className="size-8 animate-pulse rounded-full bg-card" aria-hidden="true" />;
   return (
-    <Link href="/profile" className={buttonClasses({ variant: "ghost" }, "h-9")}>
+    <Link href="/profile" className={buttonClasses({ variant: "ghost" }, "h-11 sm:h-9")}>
       Профиль
     </Link>
   );

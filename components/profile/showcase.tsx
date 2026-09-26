@@ -34,7 +34,7 @@ export function Showcase({
           Витрина
         </h2>
         {onEdit && items.length > 0 && (
-          <button type="button" onClick={onEdit} className="text-sm text-accent hover:underline">
+          <button type="button" onClick={onEdit} className="min-h-11 text-sm text-accent hover:underline sm:min-h-0">
             Изменить
           </button>
         )}

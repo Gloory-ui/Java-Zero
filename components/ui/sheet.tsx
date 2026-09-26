@@ -89,7 +89,7 @@ export function Sheet({
           type="button"
           onClick={requestClose}
           aria-label="Закрыть"
-          className="grid size-9 shrink-0 place-items-center rounded-md text-muted transition-colors duration-150 hover:bg-card hover:text-text"
+          className="grid size-11 shrink-0 place-items-center sm:size-9 rounded-md text-muted transition-colors duration-150 hover:bg-card hover:text-text"
         >
           <Icon name="x" className="size-4" />
         </button>

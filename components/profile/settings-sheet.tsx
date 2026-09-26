@@ -171,7 +171,8 @@ function Switch({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
-        "relative h-7 w-12 shrink-0 rounded-full border transition-colors duration-200 disabled:opacity-40",
+        // Видимый переключатель 48×28, зона нажатия шире на 8 px с каждой стороны — 44 px по высоте
+        "relative h-7 w-12 shrink-0 rounded-full border transition-colors duration-200 after:absolute after:-inset-2 after:content-[''] disabled:opacity-40",
         checked ? "border-accent bg-accent-solid" : "border-border-strong bg-card",
       )}
     >
@@ -281,7 +282,7 @@ export function SettingsSheet({
               <label
                 key={p.id}
                 className={cn(
-                  "flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors duration-150 ease-snappy has-focus-visible:outline-2 has-focus-visible:outline-accent",
+                  "relative flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors duration-150 ease-snappy has-focus-visible:outline-2 has-focus-visible:outline-accent",
                   progress.persona === p.id ? "border-accent bg-card" : "border-border hover:border-border-strong",
                 )}
               >

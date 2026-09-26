@@ -137,6 +137,19 @@
     outline-offset: 2px;
   }
 
+  /* Tailwind 4 оставляет кнопкам обычную стрелку. Всё, что нажимается, показывает «руку» (правило UI/UX Pro Max) */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="switch"]:not(:disabled),
+  summary,
+  select:not(:disabled),
+  label:has(> input:not(:disabled)),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    cursor: pointer;
+  }
+
   /* Лигатуры в коде путают новичков: «<=» не должно превращаться в «≤» */
   code,
   kbd,
