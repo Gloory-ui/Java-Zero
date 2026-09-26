@@ -10,10 +10,45 @@ import type { CompileResult, RunResult } from "./judge";
  */
 export type EngineStatus = "off" | "booting" | "warming" | "ready" | "busy" | "restarting" | "failed";
 
-type EngineStore = { status: EngineStatus; since: number; error?: string };
+type EngineStore = {
+  status: EngineStatus;
+  since: number;
+  error?: string;
+  /** Доля загруженной среды CheerpJ 0…1, пока статус booting */
+  loaded?: number;
+  /** Сколько обычно длится текущая фаза на этом устройстве, мс: по прошлому запуску */
+  expectMs?: number;
+};
 export const useEngine = create<EngineStore>(() => ({ status: "off", since: Date.now() }));
 
-const setStatus = (status: EngineStatus, error?: string) => useEngine.setState({ status, since: Date.now(), error });
+// Длительности фаз прошлого запуска: по ним статус показывает «ещё ~N с»
+const TIMING_KEY = "java-zero-engine-timing";
+type Timing = { bootMs: number; warmMs: number };
+const DEFAULT_TIMING: Timing = { bootMs: 12_000, warmMs: 25_000 };
+
+function readTiming(): Timing {
+  try {
+    const raw = localStorage.getItem(TIMING_KEY);
+    const t = raw ? (JSON.parse(raw) as Partial<Timing>) : {};
+    return {
+      bootMs: typeof t.bootMs === "number" ? t.bootMs : DEFAULT_TIMING.bootMs,
+      warmMs: typeof t.warmMs === "number" ? t.warmMs : DEFAULT_TIMING.warmMs,
+    };
+  } catch {
+    return DEFAULT_TIMING;
+  }
+}
+
+function saveTiming(t: Timing) {
+  try {
+    localStorage.setItem(TIMING_KEY, JSON.stringify(t));
+  } catch {
+    // приватный режим: без подсказки о времени
+  }
+}
+
+const setStatus = (status: EngineStatus, extra: Partial<Omit<EngineStore, "status" | "since">> = {}) =>
+  useEngine.setState({ status, since: Date.now(), error: undefined, loaded: undefined, expectMs: undefined, ...extra });
 
 export class EngineRestartedError extends Error {
   constructor() {
@@ -57,7 +92,7 @@ class JavaEngine {
         // Сторож мог уже перезапустить движок: тогда эта попытка устарела и не должна затирать статус новой
         if (this.booting === attempt) {
           this.booting = null;
-          setStatus("failed", error instanceof Error ? error.message : String(error));
+          setStatus("failed", { error: error instanceof Error ? error.message : String(error) });
         }
         throw error;
       });
@@ -72,9 +107,20 @@ class JavaEngine {
   }
 
   private async boot(): Promise<void> {
-    setStatus(this.worker ? "restarting" : "booting");
+    const timing = readTiming();
+    const t0 = Date.now();
+    setStatus(this.worker ? "restarting" : "booting", { loaded: 0, expectMs: timing.bootMs });
     this.worker = new Worker("/java/worker.js");
-    this.worker.onmessage = ({ data }: MessageEvent<{ id: number; ok: boolean; result?: string; error?: string }>) => {
+    this.worker.onmessage = ({
+      data,
+    }: MessageEvent<
+      | { id: number; ok: boolean; result?: string; error?: string; type?: undefined }
+      | { type: "progress"; done: number; total: number }
+    >) => {
+      if (data.type === "progress") {
+        if (data.total > 0) useEngine.setState({ loaded: Math.min(1, data.done / data.total) });
+        return;
+      }
       const p = this.pending.get(data.id);
       if (!p) return;
       this.pending.delete(data.id);
@@ -83,10 +129,12 @@ class JavaEngine {
       else p.reject(new Error(data.error));
     };
     await this.call("init", [], INIT_WATCHDOG_MS);
-    setStatus("warming");
+    const t1 = Date.now();
+    setStatus("warming", { expectMs: timing.warmMs });
     await this.call("compile", ["Warmup.java", WARMUP_SOURCE], COLD_COMPILE_WATCHDOG_MS);
     await this.call("run", ["3", 2_000], RUN_MARGIN_MS + 2_000);
     this.warm = true;
+    saveTiming({ bootMs: t1 - t0, warmMs: Date.now() - t1 });
     setStatus("ready");
   }
 
@@ -152,6 +200,27 @@ class JavaEngine {
 }
 
 let instance: JavaEngine | null = null;
+
+/**
+ * Ранний прогрев, пока студент ещё выбирает этап: на карте курса и в разделе «Группа».
+ * Не запускается при экономии трафика и на медленной сети: среда весит около 15 МБ.
+ * Движок один на вкладку и переживает переходы между страницами, поэтому к открытию этапа он уже тёплый.
+ */
+export function prewarmEngine(): void {
+  if (typeof window === "undefined" || instance) return;
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } })
+    .connection;
+  if (connection?.saveData || /2g/.test(connection?.effectiveType ?? "")) return;
+  const start = () => {
+    if (!instance)
+      getEngine()
+        .start()
+        .catch(() => {});
+  };
+  // Сначала страница: прогрев ждёт, пока браузер освободится
+  if ("requestIdleCallback" in window) window.requestIdleCallback(start, { timeout: 4_000 });
+  else setTimeout(start, 1_500);
+}
 
 /** Один движок на вкладку: переживает переходы между этапами. */
 export function getEngine(): JavaEngine {

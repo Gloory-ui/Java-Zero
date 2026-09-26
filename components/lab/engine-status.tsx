@@ -6,8 +6,8 @@ import { getEngine, type EngineStatus as Status, useEngine } from "@/lib/java/en
 
 const LABELS: Record<Status, string> = {
   off: "Java не запущена",
-  booting: "Java запускается",
-  warming: "Java прогревается",
+  booting: "Загружаем Java",
+  warming: "Прогреваем компилятор",
   ready: "Java готова",
   busy: "Java работает",
   restarting: "Java перезапускается",
@@ -24,9 +24,23 @@ const DOT: Record<Status, string> = {
   failed: "bg-danger",
 };
 
-/** Статус Java-движка: первые секунды он прогревается, и студенту важно видеть почему. */
+/** Подпись к ожиданию: процент загрузки среды или примерное время до готовности по прошлому запуску */
+function waitHint(status: Status, seconds: number, loaded?: number, expectMs?: number): string {
+  if (status === "booting" && loaded !== undefined && loaded > 0 && loaded < 1)
+    return ` · ${Math.round(loaded * 100)}%`;
+  if (expectMs !== undefined) {
+    const left = Math.round(expectMs / 1000) - seconds;
+    if (left > 1) return ` · ещё ~${left} с`;
+  }
+  return seconds > 1 ? ` · ${seconds} с` : "";
+}
+
+/**
+ * Статус Java-движка. Первый запуск за визит — около полуминуты: среда загружается, компилятор прогревается.
+ * Студенту важно видеть, что происходит и сколько ждать, поэтому показываем процент и оценку по прошлому запуску.
+ */
 export function EngineStatus() {
-  const { status, since, error } = useEngine();
+  const { status, since, error, loaded, expectMs } = useEngine();
   const [now, setNow] = useState(() => Date.now());
   const waiting = status === "booting" || status === "warming" || status === "restarting";
 
@@ -45,7 +59,7 @@ export function EngineStatus() {
       >
         <span className={cn("size-2 rounded-full", DOT[status])} aria-hidden="true" />
         {LABELS[status]}
-        {waiting && seconds > 1 ? ` · ${seconds} с` : ""}
+        {waiting ? waitHint(status, seconds, loaded, expectMs) : ""}
       </output>
       {status === "failed" && (
         <button

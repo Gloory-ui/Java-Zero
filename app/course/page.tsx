@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CourseMap } from "@/components/course/course-map";
 import { DailyQuests } from "@/components/game/daily-quests";
 import { LevelCard } from "@/components/game/level-card";
+import { JavaPrewarm } from "@/components/lab/java-prewarm";
 import { SiteFooter, SiteHeader } from "@/components/site/site-header";
 import { getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
@@ -23,6 +24,7 @@ export default function CoursePage() {
         <LevelCard />
         <DailyQuests />
         <CourseMap course={toOutline(getCourse())} />
+        <JavaPrewarm />
       </main>
       <SiteFooter />
     </>
