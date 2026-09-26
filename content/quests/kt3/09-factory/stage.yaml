@@ -1,0 +1,91 @@
+id: factory
+title: Статический метод-фабрика
+hints:
+  - "Объявление: `static Animal createKitten(String name) { ... }` внутри класса `Animal`."
+  - 'Внутри: `Animal kitten = new Animal(name, "кот", 1);`, `kitten.medicalHistory = "Первичный осмотр в приюте";`, `return kitten;`.'
+  - "В `main`: `Animal kitten = Animal.createKitten(sc.next());`, потом `kitten.printInfo();`, `kitten.printCard();` и `Animal.printCounter();`."
+sampleInput: |
+  Пушок
+quiz:
+  question: Как вызвать фабрику createKitten?
+  options:
+    - Animal.createKitten("Пушок")
+    - new createKitten("Пушок")
+    - createKitten.Animal("Пушок")
+    - kitten.createKitten()
+  correct: 0
+  hint: static-метод вызывают через имя класса.
+exam:
+  - q: Что такое статический метод-фабрика?
+    options:
+      - static-метод, который создаёт и возвращает объект с готовыми значениями
+      - Конструктор без параметров
+      - Метод, который удаляет объекты
+      - Поле со счётчиком
+    correct: 0
+    explain: Вызывающему коду не нужно помнить предустановленные значения — их знает фабрика.
+    advice: Приведи пример из Java — Integer.valueOf или List.of.
+  - q: Учтёт ли счётчик counter котёнка из фабрики?
+    options:
+      - Да, фабрика создаёт его через new, а значит через конструктор
+      - Нет, фабрика обходит конструктор
+      - Только если вызвать printCounter
+      - Только для static-объектов
+    correct: 0
+    explain: Любой new вызывает конструктор, а counter++ стоит в конструкторе.
+    advice: Проверь выводом Animal.printCounter() после фабрики.
+  - q: Почему фабрика объявлена static?
+    options:
+      - До вызова объекта ещё нет, поэтому метод принадлежит классу
+      - static-методы быстрее
+      - Иначе нельзя использовать new
+      - Так требует return
+    correct: 0
+    explain: Обычный метод вызывают у существующего объекта, а фабрика этот объект и делает.
+    advice: Сравни с Truck.createPickup() из подготовки.
+memory:
+  note: Момент перед return в createKitten при вводе «Пушок».
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+    - method: createKitten(String name)
+      vars:
+        - String name → "Пушок"
+        - Animal kitten → новый котёнок
+  heap:
+    - obj: Animal
+      data: 'name = "Пушок", species = "кот", age = 1, medicalHistory = "Первичный осмотр в приюте"'
+    - obj: Animal (класс)
+      data: static counter = 1
+tests:
+  - name: Котёнок Пушок
+    stdin: |
+      Пушок
+    stdout: |
+      Животное: Пушок, вид: кот, возраст: 1, хозяин: нет
+      ===== Карточка: Пушок =====
+      Вид: кот
+      Возраст: 1
+      Хозяин: нет
+      Медицинская история: Первичный осмотр в приюте
+      Создано животных: 1
+  - name: Котёнок Снежок
+    stdin: |
+      Снежок
+    stdout: |
+      Животное: Снежок, вид: кот, возраст: 1, хозяин: нет
+      ===== Карточка: Снежок =====
+      Вид: кот
+      Возраст: 1
+      Хозяин: нет
+      Медицинская история: Первичный осмотр в приюте
+      Создано животных: 1
+  - kind: source
+    name: Статическая фабрика
+    pattern: \bstatic\s+Animal\s+\w+\s*\(
+    message: "Добавь static Animal createKitten(String name)"
+  - kind: source
+    name: Фабрика вызывается через класс
+    pattern: \bAnimal\s*\.\s*(?!printCounter\b)\w+\s*\(
+    message: "Вызови фабрику через имя класса: Animal.createKitten(...)"

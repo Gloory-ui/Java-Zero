@@ -1,0 +1,81 @@
+id: links
+title: "Связь объектов: грузовик и водитель"
+hints:
+  - "В классе `Truck` объяви поле-ссылку `Driver driver;` — пока водителя нет, там `null`."
+  - 'Метод `void assignDriver(Driver driver)`: `this.driver = driver;` и вывод `"Водитель " + driver.name + " назначен на " + model`.'
+  - "В `printInfo()` проверь `if (driver == null)` — тогда «водитель: нет», иначе `driver.name`."
+sampleInput: |
+  Газель Иван
+quiz:
+  question: Что лежит в поле Driver driver, пока водителя не назначили?
+  options:
+    - "null"
+    - Пустой водитель без имени
+    - Строка «нет»
+    - Ноль
+  correct: 0
+  hint: Поле-ссылка по умолчанию никуда не указывает.
+exam:
+  - q: Что хранит поле Driver driver в объекте Truck?
+    options:
+      - Ссылку на объект Driver
+      - Копию водителя со всеми полями
+      - Имя водителя
+      - Номер водителя в массиве
+    correct: 0
+    explain: Поле объектного типа хранит ссылку. Водитель — отдельный объект в куче.
+    advice: Поэтому изменения водителя видны через грузовик.
+  - q: Зачем в printInfo() проверка driver == null?
+    options:
+      - Без водителя driver.name вызовет NullPointerException
+      - Так быстрее
+      - Иначе не скомпилируется
+      - Чтобы удалить водителя
+    correct: 0
+    explain: "У null нет полей. Проверка выбирает текст «водитель: нет»."
+    advice: Проверяй ссылку на null везде, где объекта может не быть.
+  - q: Один водитель назначен на два грузовика. Сколько объектов Driver в куче?
+    options:
+      - Один
+      - Два
+      - Три
+      - Ни одного
+    correct: 0
+    explain: Оба грузовика хранят ссылку на одного и того же водителя.
+    advice: Связь — это ссылка, а не копия.
+memory:
+  note: Момент после assignDriver при вводе «Газель Иван». Ссылка на водителя есть и в main, и в поле грузовика.
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - Truck truck → грузовик в куче
+        - Driver driver → водитель в куче
+  heap:
+    - obj: Truck
+      data: 'model = "Газель", driver → водитель Иван'
+    - obj: Driver
+      data: 'name = "Иван"'
+tests:
+  - name: Газель и Иван
+    stdin: |
+      Газель Иван
+    stdout: |
+      Грузовик Газель, водитель: нет
+      Водитель Иван назначен на Газель
+      Грузовик Газель, водитель: Иван
+  - name: КамАЗ и Ольга
+    stdin: |
+      КамАЗ Ольга
+    stdout: |
+      Грузовик КамАЗ, водитель: нет
+      Водитель Ольга назначен на КамАЗ
+      Грузовик КамАЗ, водитель: Ольга
+  - kind: source
+    name: Поле-ссылка на водителя
+    pattern: \bDriver\s+\w+\s*;
+    message: "В классе Truck нужно поле Driver driver;"
+  - kind: source
+    name: Метод assignDriver(Driver ...)
+    pattern: \bassignDriver\s*\(\s*Driver\s+\w+\s*\)
+    message: "Добавь метод void assignDriver(Driver driver)"

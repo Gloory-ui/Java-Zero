@@ -1,0 +1,93 @@
+id: compare-factory
+title: Сравнение объектов и статическая фабрика
+hints:
+  - "Сравнение — метод объекта: `boolean carriesMoreThan(Truck other) { return capacity > other.capacity; }`."
+  - 'Фабрика: `static Truck createPickup() { return new Truck("Пикап", 1); }`, вызов — `Truck pickup = Truck.createPickup();`.'
+  - "Три исхода: `if (truck.carriesMoreThan(pickup))`, `else if (pickup.carriesMoreThan(truck))`, иначе — «везут поровну»."
+sampleInput: |
+  КамАЗ 20
+quiz:
+  question: Что проверяет a == b для двух объектов?
+  options:
+    - Указывают ли a и b на один и тот же объект
+    - Равны ли все поля
+    - Равны ли имена классов
+    - Больше ли a, чем b
+  correct: 0
+  hint: Для объектов == сравнивает ссылки.
+exam:
+  - q: Почему фабричный метод createPickup() объявлен static?
+    options:
+      - Он создаёт объект, поэтому вызывается без готового объекта, через класс
+      - static-методы работают быстрее
+      - Иначе он не сможет вызвать new
+      - Так требует return
+    correct: 0
+    explain: До вызова фабрики пикапа ещё нет. static-метод вызывают через имя класса — Truck.createPickup().
+    advice: Сравни с Math.random() — тоже вызов через класс.
+  - q: Что вернёт kamaz.carriesMoreThan(pickup), если у обоих грузоподъёмность 5?
+    options:
+      - "false"
+      - "true"
+      - "0"
+      - Ошибку компиляции
+    correct: 0
+    explain: 5 не больше 5. Для равенства нужен отдельный исход — «везут поровну».
+    advice: Проверяй обе стороны, чтобы различить три случая.
+  - q: Какой параметр у метода сравнения carriesMoreThan?
+    options:
+      - Другой объект того же класса
+      - Число
+      - Имя грузовика
+      - Никакого
+    correct: 0
+    explain: Метод сравнивает поля своего объекта (this) с полями объекта other.
+    advice: Так же пишут сравнение котов по возрасту — метод получает второго кота.
+memory:
+  note: Момент внутри carriesMoreThan при сравнении КамАЗа с пикапом. this — КамАЗ, other — пикап.
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - Truck pickup → пикап в куче
+        - Truck truck → КамАЗ в куче
+    - method: carriesMoreThan(Truck other)
+      vars:
+        - Truck this → КамАЗ
+        - Truck other → пикап
+  heap:
+    - obj: Truck (КамАЗ)
+      data: 'model = "КамАЗ", capacity = 20'
+    - obj: Truck (Пикап)
+      data: 'model = "Пикап", capacity = 1'
+tests:
+  - name: КамАЗ везёт больше
+    stdin: |
+      КамАЗ 20
+    stdout: |
+      Фабрика выпустила: Пикап, 1 т
+      КамАЗ везёт больше, чем Пикап
+  - name: Пикап везёт больше
+    stdin: |
+      Мопед 0
+    stdout: |
+      Фабрика выпустила: Пикап, 1 т
+      Пикап везёт больше, чем Мопед
+  - name: Везут поровну
+    stdin: |
+      Каблук 1
+    stdout: |
+      Фабрика выпустила: Пикап, 1 т
+      Каблук и Пикап везут поровну
+  - kind: source
+    name: Статическая фабрика
+    pattern: \bstatic\s+Truck\s+\w+\s*\(\s*\)
+    message: "Добавь static Truck createPickup() { return new Truck(...); }"
+  - kind: source
+    name: Фабрика вызывается через класс
+    pattern: \bTruck\s*\.\s*\w+\s*\(
+    message: "Вызови фабрику через имя класса: Truck.createPickup()"
+  - kind: source
+    name: Метод сравнения с другим грузовиком
+    pattern: \bboolean\s+\w+\s*\(\s*Truck\s+\w+\s*\)
+    message: "Добавь boolean carriesMoreThan(Truck other)"
