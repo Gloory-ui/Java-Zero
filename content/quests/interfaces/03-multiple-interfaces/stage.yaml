@@ -1,0 +1,69 @@
+id: multiple-interfaces
+title: "Несколько интерфейсов и instanceof"
+hints:
+  - "Интерфейсы перечисляют через запятую: `class Duck implements Swimmer, Flyer`. Не забудь реализовать `fly()`."
+  - "Проверка с новой переменной: `if (t instanceof Swimmer s) { s.swim(); }`."
+  - "Нужны два отдельных `if`: утка проходит обе проверки, поэтому `else` здесь лишний."
+quiz:
+  question: Сколько интерфейсов может реализовать один класс?
+  options:
+    - Сколько угодно, через запятую
+    - Только один
+    - Не больше двух
+    - Столько же, сколько у него родителей
+  correct: 0
+  hint: С классами ограничение «один родитель», с интерфейсами его нет.
+exam:
+  - q: Что делает запись t instanceof Flyer f?
+    options:
+      - Проверяет, что объект реализует Flyer, и заводит переменную f этого типа
+      - Создаёт новый объект Flyer
+      - Превращает любой объект в Flyer
+      - Всегда возвращает true
+    correct: 0
+    explain: Если проверка прошла, внутри if доступна переменная f типа Flyer, и у неё можно звать fly().
+    advice: Такая запись заменяет проверку и приведение типа (Flyer) t в одной строке.
+  - q: Почему t.fly() не компилируется, если t объявлена как Object?
+    options:
+      - У типа Object нет метода fly(); компилятор смотрит на тип переменной
+      - Утка не умеет летать
+      - fly() — static-метод
+      - Object нельзя использовать в цикле
+    correct: 0
+    explain: Какие методы можно вызвать, компилятор решает по типу переменной, а не по объекту. У Object метода fly() нет.
+    advice: Сначала сузь тип через instanceof, потом вызывай метод.
+  - q: Утка реализует Swimmer и Flyer. Что выведет цикл, если вместо второго if написать else if?
+    options:
+      - Только «Утка плывёт»
+      - Обе строки
+      - Только «Утка летит»
+      - Ошибку компиляции
+    correct: 0
+    explain: else if выполняется, только когда первое условие ложно. У утки первое истинно, поэтому до fly() дело не дойдёт.
+    advice: Независимые проверки — отдельные if.
+memory:
+  note: Момент, когда цикл дошёл до утки и прошёл проверку на Flyer.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Object[] things → массив в куче
+        - Object t → объект Duck
+        - Flyer f → тот же объект Duck
+  heap:
+    - obj: Object[3]
+      data: "[0] → Duck, [1] → Penguin, [2] → Plane"
+tests:
+  - name: Кто что умеет
+    stdout: |
+      Утка плывёт
+      Утка летит
+      Пингвин плывёт
+      Самолёт летит
+  - kind: source
+    name: Утка реализует оба интерфейса
+    pattern: 'class\s+Duck\s+implements\s+(Swimmer\s*,\s*Flyer|Flyer\s*,\s*Swimmer)'
+    message: "Перечисли оба интерфейса: class Duck implements Swimmer, Flyer"
+  - kind: source
+    name: Проверка через instanceof
+    pattern: 'instanceof\s+Flyer'
+    message: "Проверь способность летать: if (t instanceof Flyer f)"
