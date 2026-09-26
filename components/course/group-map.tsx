@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { GroupLevelCard } from "@/components/game/group-level-card";
 import { ButtonLink } from "@/components/ui/button";
 import type { QuestOutline } from "@/lib/content/outline";
 import type { GroupPath } from "@/lib/content/schema";
@@ -78,6 +79,7 @@ export function GroupMap({ course, group }: Props) {
           засчитаны.
         </output>
       )}
+      <GroupLevelCard course={course} />
       {next && (
         <div>
           <ButtonLink href={`/learn/${next.questId}/${next.stageId}`} size="lg">
