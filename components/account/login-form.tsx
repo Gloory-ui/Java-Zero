@@ -10,6 +10,7 @@ import {
   sendMagicLink,
   signInWithProvider,
 } from "@/lib/account/actions";
+import { describeEmailLoginError } from "@/lib/account/errors";
 import { useAccount } from "@/lib/account/store";
 
 const RESEND_SECONDS = 60;
@@ -114,10 +115,7 @@ export function LoginForm() {
       setSentTo(address);
       setCooldown(RESEND_SECONDS);
     } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      setError(
-        /rate limit|seconds/i.test(message) ? "Письмо уже отправлено. Подожди минуту и попробуй снова." : message,
-      );
+      setError(describeEmailLoginError(e instanceof Error ? e.message : String(e)));
     } finally {
       setPending(null);
     }

@@ -18,6 +18,16 @@ export function describeSyncError(error: unknown): string {
   return code ? `${text} (код ${String(code)})` : text;
 }
 
+/** Ошибка отправки письма со ссылкой для входа — по-русски. Supabase отвечает по-английски. */
+export function describeEmailLoginError(message: string): string {
+  if (/rate limit|seconds/i.test(message)) return "Письмо уже отправлено. Подожди минуту и попробуй снова.";
+  if (/error sending|smtp/i.test(message)) {
+    return "Не удалось отправить письмо. Попробуй позже или войди через GitHub или Google.";
+  }
+  if (/invalid.*email|email.*invalid/i.test(message)) return "Проверь адрес почты: в нём ошибка.";
+  return message;
+}
+
 /** Пауза перед следующей попыткой: 15 с, 30 с, 1 мин, 2 мин, дальше каждые 5 минут. */
 export function retryDelay(attempt: number): number {
   return Math.min(15_000 * 2 ** attempt, 300_000);
