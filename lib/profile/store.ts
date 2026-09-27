@@ -32,7 +32,8 @@ export const EMPTY_PROFILE: ProfileData = {
   handle: null,
   displayName: null,
   bio: "",
-  isPublic: false,
+  // Профили открыты по умолчанию: скрыть статистику и достижения можно в настройках
+  isPublic: true,
 };
 
 type State = ProfileData & {

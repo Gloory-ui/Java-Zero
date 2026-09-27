@@ -246,7 +246,7 @@ export function SettingsSheet({
           title="Публичный профиль"
           hint={
             signedIn
-              ? "Открытый профиль видят по ссылке, он попадает в таблицу лидеров. Код и ошибки никто не видит."
+              ? "Страница по ссылке и место в таблице лидеров есть у всех. Скрытый профиль показывает только имя, оформление и уровень. Код и ошибки никто не видит."
               : "Ник и публичный профиль доступны после входа в аккаунт."
           }
         >
@@ -255,15 +255,14 @@ export function SettingsSheet({
               <HandleField />
               <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3">
                 <span className="text-sm">
-                  <span className="block font-medium">Показывать профиль всем</span>
+                  <span className="block font-medium">Показывать статистику и достижения</span>
                   <span className="block text-muted">
-                    {profile.handle ? `Ссылка: /u/${profile.handle}` : "Сначала сохрани ник"}
+                    {profile.handle ? `Ссылка: /u/${profile.handle}` : "Ник появится после синхронизации"}
                   </span>
                 </span>
                 <Switch
-                  label="Показывать профиль всем"
+                  label="Показывать статистику и достижения"
                   checked={profile.isPublic}
-                  disabled={!profile.handle}
                   onChange={(isPublic) => profile.set({ isPublic })}
                 />
               </div>
