@@ -40,7 +40,8 @@ export function runLocal(fileName: string, source: string, stdins: string[], tim
         ...inputs,
       ],
       // Рабочая папка — временная: программы из квеста про файлы пишут относительные пути, как в браузере в /files/
-      { encoding: "utf8", maxBuffer: 16 * 1024 * 1024, cwd: dir },
+      // Страховка от зависших потоков: драйвер ограничивает время программы, но не заблокированный join или take
+      { encoding: "utf8", maxBuffer: 16 * 1024 * 1024, cwd: dir, timeout: 60_000 },
     );
     return JSON.parse(out) as LocalRun;
   } finally {

@@ -1,0 +1,68 @@
+id: producer-consumer
+title: "Производитель и потребитель: BlockingQueue"
+hints:
+  - "Официант: `queue.put(\"заказ \" + i);` в цикле и `queue.put(\"СТОП\");` после него — всё внутри `try { ... } catch (InterruptedException e) { Thread.currentThread().interrupt(); }`."
+  - "Повар: `while (true) { String order = queue.take(); ... }`."
+  - "В цикле повара: `if (order.equals(\"СТОП\")) break;`, иначе печать `\"Готовлю: \" + order` и `cooked++`."
+quiz:
+  question: Что делает take() у пустой BlockingQueue?
+  options:
+    - Ждёт, пока в очереди появится элемент
+    - Возвращает null
+    - Бросает исключение
+    - Возвращает пустую строку
+  correct: 0
+  hint: Повар ждёт заказ, а не уходит домой.
+exam:
+  - q: Зачем официант кладёт в очередь «СТОП»?
+    options:
+      - Чтобы повар узнал, что заказов больше не будет, и вышел из цикла
+      - Чтобы очистить очередь
+      - Так требует ArrayBlockingQueue
+      - Чтобы остановить официанта
+    correct: 0
+    explain: take ждёт бесконечно. Без сигнала повар так и остался бы ждать следующего заказа.
+    advice: Сигнал окончания в очереди часто называют «ядовитой пилюлей».
+  - q: Почему заказы с offer могли пропасть?
+    options:
+      - При полной очереди offer возвращает false и не кладёт элемент
+      - offer кладёт в начало очереди
+      - offer удаляет старые элементы
+      - offer работает только с числами
+    correct: 0
+    explain: Очередь рассчитана на два заказа. Если повар не успел забрать, третий offer просто вернёт false.
+    advice: Когда терять данные нельзя — put, когда можно подождать с таймаутом — offer(x, время, единицы).
+  - q: Почему put в лямбде официанта обёрнут в try/catch?
+    options:
+      - put бросает проверяемое InterruptedException, а Runnable не может его пробросить
+      - Иначе put не сработает
+      - Чтобы поймать полную очередь
+      - Так требует join
+    correct: 0
+    explain: У метода run() интерфейса Runnable нет throws. Проверяемое исключение внутри нужно поймать.
+    advice: В catch принято восстановить флаг прерывания — Thread.currentThread().interrupt().
+memory:
+  note: Момент, когда повар взял третий заказ, а официант ждёт место в окошке.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - BlockingQueue<String> queue → объект в куче
+        - Thread waiter → ждёт в put
+        - int cooked = 2
+        - String order → «заказ 3»
+  heap:
+    - obj: ArrayBlockingQueue (2 места)
+      data: "заказ 4, заказ 5"
+tests:
+  - name: Кухня
+    stdout: |
+      Готовлю: заказ 1
+      Готовлю: заказ 2
+      Готовлю: заказ 3
+      Готовлю: заказ 4
+      Готовлю: заказ 5
+      Все заказы готовы: 5
+  - kind: source
+    name: Повар ждёт через take
+    pattern: '\.take\s*\(\s*\)'
+    message: "Повар берёт заказы через queue.take()"

@@ -1,0 +1,67 @@
+id: concurrent-collections
+title: "Потокобезопасные коллекции"
+hints:
+  - "В задаче: `for (String word : text.split(\" \")) counts.merge(word, 1, Integer::sum);` и `done.add(\"текст \" + id);`."
+  - "Для печати по алфавиту скопируй словарь: `new TreeMap<>(counts)`."
+  - "Сумма — цикл по `counts.values()`, готовые — `done.stream().sorted().toList()`."
+quiz:
+  question: Что сделает counts.merge("кот", 1, Integer::sum), если ключа «кот» ещё нет?
+  options:
+    - Положит «кот» со значением 1
+    - Бросит исключение
+    - Ничего не сделает
+    - Положит 0
+  correct: 0
+  hint: Функция нужна, только когда старое значение есть.
+exam:
+  - q: Почему в многопоточном счёте слов используют merge, а не get и put?
+    options:
+      - merge выполняет чтение и запись одним атомарным действием
+      - get у ConcurrentHashMap медленный
+      - put запрещён в потоках
+      - Разницы нет
+    correct: 0
+    explain: Между get и put другой поток может успеть записать своё значение, и одно прибавление потеряется. merge делает всё сразу.
+    advice: У ConcurrentHashMap есть merge, compute, putIfAbsent — выбирай их вместо пары get + put.
+  - q: Когда выгоден CopyOnWriteArrayList?
+    options:
+      - Когда записей мало, а чтений много
+      - Когда записей очень много
+      - Когда поток один
+      - Всегда
+    correct: 0
+    explain: Каждая запись копирует весь массив. Зато чтение идёт без замков и никогда не видит полузаписанный список.
+    advice: Списки подписчиков и настроек — хороший случай для него.
+  - q: Почему список готовых сортируют перед печатью?
+    options:
+      - Задачи заканчиваются в непредсказуемом порядке
+      - CopyOnWriteArrayList хранит элементы задом наперёд
+      - Так требует stream
+      - Иначе он не напечатается
+    correct: 0
+    explain: Потоки работают одновременно, и какая задача финиширует первой, заранее неизвестно.
+    advice: В многопоточных программах порядок событий не гарантирован — сортируй вывод или собирай по индексам.
+memory:
+  note: Момент после завершения пула.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - String[] texts → массив в куче
+        - Map<String, Integer> counts → ConcurrentHashMap в куче
+        - List<String> done → CopyOnWriteArrayList в куче
+        - ExecutorService pool → закрыт
+  heap:
+    - obj: ConcurrentHashMap
+      data: "кот=3, лис=3, пёс=2 в произвольном порядке"
+    - obj: CopyOnWriteArrayList
+      data: «текст 1», «текст 2», «текст 3» в порядке завершения
+tests:
+  - name: Счёт слов в пуле
+    stdout: |
+      Слова: {кот=3, лис=3, пёс=2}
+      Всего слов: 8
+      Готово: [текст 1, текст 2, текст 3]
+  - kind: source
+    name: Атомарный merge
+    pattern: '\.merge\s*\('
+    message: "Считай слова через counts.merge(word, 1, Integer::sum)"

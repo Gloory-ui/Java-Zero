@@ -1,0 +1,72 @@
+id: executor
+title: "ExecutorService: пул потоков"
+hints:
+  - "`ExecutorService pool = Executors.newFixedThreadPool(3);` и список `List<Future<Long>> futures`."
+  - "В цикле скопируй `int k = n;` и отправь `futures.add(pool.submit(() -> factorial(k)));`. Собирай результаты вторым циклом через `get()`."
+  - "В конце: `pool.shutdown();` и `\"Пул закрыт: \" + pool.awaitTermination(1, TimeUnit.SECONDS)`."
+quiz:
+  question: Что возвращает pool.submit(задача)?
+  options:
+    - Future — объект, через который потом получают результат
+    - Сам результат задачи
+    - Новый поток
+    - Ничего
+  correct: 0
+  hint: Задача ещё не выполнилась, а ответ нужен сразу.
+exam:
+  - q: Зачем вызывать pool.shutdown()?
+    options:
+      - Без него потоки пула продолжают ждать задач, и программа не завершится
+      - Чтобы получить результаты
+      - Чтобы задачи выполнились быстрее
+      - Он удаляет задачи
+    correct: 0
+    explain: Рабочие потоки пула живут, пока пул открыт. shutdown просит их закончить текущие задачи и выйти.
+    advice: Создал пул — продумай, где его закрыть. Удобно в finally.
+  - q: Почему результаты собирают вторым циклом, а не get() сразу после submit?
+    options:
+      - Иначе каждая задача будет ждать предыдущую, и параллельности не будет
+      - get нельзя вызывать в первом цикле
+      - Так меньше памяти
+      - Разницы нет
+    correct: 0
+    explain: get блокирует, пока задача не выполнится. Если ждать сразу, следующая задача даже не будет отправлена.
+    advice: Сначала раздай всю работу, потом собирай ответы.
+  - q: Почему внутри цикла копируют int k = n?
+    options:
+      - Лямбда может брать только переменные, которые не меняются, а n меняется циклом
+      - k быстрее n
+      - Так требует Future
+      - Чтобы посчитать факториал
+    correct: 0
+    explain: n увеличивается на каждом шаге, поэтому она не фактически final. k создаётся заново на каждом шаге и не меняется.
+    advice: Эта копия — обычный приём при отправке задач из цикла.
+memory:
+  note: Момент после отправки всех пяти задач.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - ExecutorService pool → пул из 3 потоков
+        - List<Future<Long>> futures → 5 обещаний результата
+  heap:
+    - obj: ThreadPoolExecutor
+      data: 3 рабочих потока, очередь задач
+    - obj: ArrayList<Future<Long>>
+      data: "5!, 6!, 7!, 8!, 9!"
+tests:
+  - name: Факториалы в пуле
+    stdout: |
+      5! = 120
+      6! = 720
+      7! = 5040
+      8! = 40320
+      9! = 362880
+      Пул закрыт: true
+  - kind: source
+    name: Пул потоков
+    pattern: 'Executors\s*\.\s*newFixedThreadPool\s*\('
+    message: "Создай пул через Executors.newFixedThreadPool(3)"
+  - kind: source
+    name: Задачи через submit
+    pattern: '\.submit\s*\('
+    message: "Отправляй задачи через pool.submit(...)"
