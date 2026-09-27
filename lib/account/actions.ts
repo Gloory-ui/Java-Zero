@@ -2,7 +2,7 @@
 
 import { type HandleCheck, saveHandle } from "@/lib/profile/actions";
 import { supabaseConfig } from "@/lib/supabase/config";
-import { HANDLE_RE, isEmailLogin, normalizeHandle } from "./handle";
+import { HANDLE_RE, isEmailLogin, normalizeHandle, safeNext } from "./handle";
 import { flushSync, loadSupabase, startAccount } from "./session";
 
 export type OAuthProvider = "github" | "google";
@@ -26,11 +26,7 @@ export function fetchAuthMethods(): Promise<AuthMethods> {
   return methods;
 }
 
-/** Куда вернуть после входа: только путь этого сайта, иначе ссылку входа можно подделать для перехода на чужой сайт. */
-export function safeNext(raw: string | null | undefined): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) return "/course";
-  return raw;
-}
+export { safeNext };
 
 function callbackUrl(next: string): string {
   return `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext(next))}`;
@@ -90,8 +86,13 @@ export async function resendSignupCode(email: string, next: string) {
   if (error) throw error;
 }
 
-/** Код из письма после регистрации. Ник записывается в профиль сразу: он нужен для входа по нику */
-export async function confirmSignup(email: string, code: string, handle: string): Promise<HandleCheck> {
+export type SignupResult = { saved: HandleCheck; handle: string | null };
+
+/**
+ * Код из письма после регистрации. Ник обычно уже записала база при создании аккаунта (из данных регистрации,
+ * при гонке — с цифрами на конце): тогда возвращаем его. Если ника нет, сохраняем выбранный — он нужен для входа
+ */
+export async function confirmSignup(email: string, code: string, handle: string): Promise<SignupResult> {
   const supabase = await loadSupabase();
   const token = code.replace(/\s/g, "");
   let { data, error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
@@ -99,9 +100,18 @@ export async function confirmSignup(email: string, code: string, handle: string)
   if (error) ({ data, error } = await supabase.auth.verifyOtp({ email, token, type: "signup" }));
   if (error) throw error;
   const uid = data.user?.id;
-  const saved = uid ? await saveHandle(handle, uid) : "error";
+  let result: SignupResult = { saved: "error", handle: null };
+  if (uid) {
+    const { data: row } = await supabase.from("profiles").select("handle").eq("id", uid).maybeSingle();
+    const current = (row as { handle: string | null } | null)?.handle ?? null;
+    if (current) result = { saved: current === normalizeHandle(handle) ? "ok" : "taken", handle: current };
+    else {
+      const saved = await saveHandle(handle, uid);
+      result = { saved, handle: saved === "ok" ? normalizeHandle(handle) : null };
+    }
+  }
   await activate();
-  return saved;
+  return result;
 }
 
 /** Вход паролем по почте или нику. По нику — через сервер: он знает почту, браузер её не видит */

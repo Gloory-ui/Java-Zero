@@ -28,8 +28,10 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://klnxcvkswjcidsivxlek.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | публичный anon-ключ из Supabase → Project Settings → API |
 | `GEMINI_API_KEY` | ключ Gemini |
+| `SUPABASE_SERVICE_ROLE_KEY` | секретный ключ Supabase: вход по нику, проверка ника |
+| `NEXT_PUBLIC_YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET` | приложение Яндекса для входа через Яндекс |
 
-Без переменных Supabase сайт работает, но без аккаунтов. Без `GEMINI_API_KEY` ментор отвечает «пока не подключён».
+Без переменных Supabase сайт работает, но без аккаунтов. Без `GEMINI_API_KEY` ментор отвечает «пока не подключён». Настройка входа — почта, коды в письмах, Яндекс — в [docs/auth.md](auth.md).
 
 ## Supabase
 

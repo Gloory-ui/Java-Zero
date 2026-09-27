@@ -11,3 +11,9 @@ export const isEmailLogin = (login: string) => /^[^@\s]+@[^@\s]+$/.test(login.tr
 /** Пароль: не короче 8 символов и не длиннее 72 байт — дальше bcrypt в Supabase всё равно отбрасывает */
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 72;
+
+/** Куда вернуть после входа: только путь этого сайта, иначе ссылку входа можно подделать для перехода на чужой сайт. */
+export function safeNext(raw: string | null | undefined): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) return "/course";
+  return raw;
+}

@@ -125,3 +125,23 @@ test("пароль можно показать и скрыть", async ({ page }
   await page.getByRole("button", { name: "Показать пароль" }).click();
   await expect(input).toHaveAttribute("type", "text");
 });
+
+test("Яндекс: без ключей приложения вход честно говорит, что не настроен", async ({ page }) => {
+  await page.goto("/api/auth/yandex?next=/course");
+  await expect(page.getByRole("heading", { name: "Вход не удался" })).toBeVisible();
+  await expect(page.getByRole("alert").filter({ hasText: "Вход через Яндекс пока не настроен." })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ко входу" })).toHaveAttribute("href", "/login");
+});
+
+test("Яндекс: сессия из адреса сохраняется, адрес очищается, студент идёт дальше", async ({ page }) => {
+  await mockSupabase(page);
+  await openLogin(page);
+  const { access_token, refresh_token } = session();
+  const fragment = new URLSearchParams({ access_token, refresh_token, next: "/course" });
+  await page.goto(`/auth/yandex#${fragment}`);
+  await expect.poll(() => new URL(page.url()).pathname).toBe("/course");
+  // Токены не остаются в адресе и в истории
+  expect(page.url()).not.toContain("access_token");
+  const stored = await page.evaluate(() => localStorage.getItem("java-zero-auth"));
+  expect(stored).toContain("refresh-token");
+});

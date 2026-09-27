@@ -27,6 +27,9 @@ import { cn } from "@/lib/cn";
 
 const RESEND_SECONDS = 60;
 
+/** Вход через Яндекс идёт через наш сервер; кнопка есть, только если на сборке задан ID приложения Яндекса */
+const YANDEX_ENABLED = Boolean(process.env.NEXT_PUBLIC_YANDEX_CLIENT_ID);
+
 /**
  * signin — вход по нику или почте; signup — регистрация; confirm — код подтверждения почты;
  * forgot — почта для восстановления; reset — код восстановления; password — новый пароль
@@ -40,6 +43,18 @@ function GitHubIcon() {
   return (
     <svg viewBox="0 0 24 24" className="size-5" fill="currentColor" aria-hidden="true">
       <path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z" />
+    </svg>
+  );
+}
+
+function YandexIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+      <circle cx="12" cy="12" r="12" fill="#FC3F1D" />
+      <path
+        fill="#fff"
+        d="M13.32 7.03h-.92c-1.68 0-2.57.85-2.57 2.11 0 1.43.61 2.1 1.87 2.95l1.04.7-3 4.48H7.5l2.7-4.01C8.65 12.16 7.77 11.1 7.77 9.28c0-2.28 1.59-3.83 4.61-3.83h3v12.8h-2.06V7.03Z"
+      />
     </svg>
   );
 }
@@ -309,13 +324,17 @@ export function LoginForm() {
   const onConfirm = (event: FormEvent) => {
     event.preventDefault();
     void run("confirm", async () => {
-      const saved = await confirmSignup(email.trim(), code, handle);
-      if (saved === "ok" || !normalizeHandle(handle)) {
+      const { saved, handle: actual } = await confirmSignup(email.trim(), code, handle);
+      if (saved === "ok") {
         router.replace(nextFromUrl());
         return;
       }
-      // Аккаунт создан, но ник заняли, пока шла регистрация: сказать, где выбрать другой
-      setNotice(`Аккаунт создан, но ник @${normalizeHandle(handle)} успели занять. Выбери другой в профиле.`);
+      // Аккаунт создан, но выбранный ник заняли, пока шла регистрация: сказать, какой получился и где сменить
+      setNotice(
+        actual
+          ? `Аккаунт создан. Ник @${normalizeHandle(handle)} успели занять, тебе достался @${actual}. Сменить можно в профиле.`
+          : `Аккаунт создан, но ник @${normalizeHandle(handle)} успели занять. Выбери другой в профиле.`,
+      );
     });
   };
 
@@ -398,7 +417,7 @@ export function LoginForm() {
   }
 
   const busy = pending !== null || status === "loading";
-  const oauth = (methods.github || methods.google) && (mode === "signin" || mode === "signup");
+  const oauth = (methods.github || methods.google || YANDEX_ENABLED) && (mode === "signin" || mode === "signup");
 
   const codeField = (
     <Field label="Код из письма" icon={<KeyRound className="size-4" />}>
@@ -587,7 +606,7 @@ export function LoginForm() {
             {methods.email ? "или через" : "войти через"}
             <span className="h-px flex-1 bg-border" />
           </div>
-          <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+          <div className="flex flex-wrap gap-2 [&>*]:min-w-28 [&>*]:flex-1">
             {methods.github && (
               <Button variant="secondary" size="lg" onClick={() => withProvider("github")} disabled={busy}>
                 <GitHubIcon />
@@ -598,6 +617,20 @@ export function LoginForm() {
               <Button variant="secondary" size="lg" onClick={() => withProvider("google")} disabled={busy}>
                 <GoogleIcon />
                 {pending === "google" ? "Переходим…" : "Google"}
+              </Button>
+            )}
+            {YANDEX_ENABLED && (
+              <Button
+                variant="secondary"
+                size="lg"
+                disabled={busy}
+                onClick={() => {
+                  setPending("yandex");
+                  window.location.assign(`/api/auth/yandex?next=${encodeURIComponent(nextFromUrl())}`);
+                }}
+              >
+                <YandexIcon />
+                {pending === "yandex" ? "Переходим…" : "Яндекс"}
               </Button>
             )}
           </div>
@@ -621,7 +654,7 @@ export function LoginForm() {
         </p>
       )}
 
-      {!methods.email && !methods.github && !methods.google && (
+      {!methods.email && !methods.github && !methods.google && !YANDEX_ENABLED && (
         <p className="text-muted">В проекте Supabase не включён ни один способ входа.</p>
       )}
     </div>
