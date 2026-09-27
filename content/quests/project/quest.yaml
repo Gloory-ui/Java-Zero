@@ -1,0 +1,12 @@
+id: project
+num: "15"
+title: "Итоговый проект: Библиотека"
+subtitle: консольное приложение из всего, что ты знаешь
+fileName: LibraryApp.java
+order: 19
+unlockAfter: threads
+rank:
+  title: ГЛАВНЫЙ БИБЛИОТЕКАРЬ
+  icon: library
+  color: "#e879f9"
+stageBadge: "ЭТАП {n} / {total}"

@@ -1,0 +1,91 @@
+id: sort-stats
+title: "Сортировка и статистика"
+hints:
+  - "Правило сортировки — `switch`, который возвращает компаратор: `case \"year\" -> Comparator.comparingInt(Book::year);` и так далее, в `default` — `throw new IllegalArgumentException(...)`."
+  - "Автор с названием: `Comparator.comparing(Book::author).thenComparing(Book::title)`. Результат — `books.values().stream().sorted(order).toList()`."
+  - "Статистика: `groupingBy(Book::author, TreeMap::new, Collectors.counting())`, `mapToInt(Book::year).average()`, `min(Comparator.comparingInt(Book::year))`."
+sampleInput: |
+  sort year
+  sort title
+  stats
+  exit
+quiz:
+  question: Что вернёт switch-выражение, если в ветке default стоит throw?
+  options:
+    - Ничего — для такого ключа бросится исключение
+    - "null"
+    - Первую ветку
+    - Ошибку компиляции
+  correct: 0
+  hint: Ветка с throw не даёт значения, она прерывает выполнение.
+exam:
+  - q: Почему sortedBy сортирует поток, а не сам словарь books?
+    options:
+      - Каталог должен помнить порядок добавления, а сортировка нужна только для вывода
+      - Словарь нельзя обойти
+      - Поток сортирует быстрее
+      - Так требует record
+    correct: 0
+    explain: sorted создаёт новый упорядоченный поток, исходный LinkedHashMap не меняется. После sort year команда list покажет прежний порядок.
+    advice: Представления данных для вывода не должны портить хранилище.
+  - q: Что напечатает Средний год для пустого каталога с averageYear().orElse(0)?
+    options:
+      - "0.0"
+      - Бросит исключение
+      - NaN
+      - Ничего
+    correct: 0
+    explain: У пустого потока среднего нет, OptionalDouble пустой, orElse(0) подставит ноль.
+    advice: Для «данных нет» можно печатать отдельное сообщение через isPresent().
+  - q: Зачем в groupingBy передают TreeMap::new?
+    options:
+      - Чтобы авторы шли по алфавиту и вывод был стабильным
+      - Чтобы посчитать книги
+      - Без него groupingBy не компилируется
+      - Чтобы удалить повторы
+    correct: 0
+    explain: Обычный groupingBy собирает HashMap, и порядок авторов непредсказуем.
+    advice: Для отчётов выбирай отсортированный вид словаря.
+memory:
+  note: Момент выбора правила для sort title.
+  stack:
+    - method: Library.sortedBy(String key)
+      vars:
+        - String key → «title»
+        - Comparator<Book> order → по названию
+    - method: run(Library lib, Scanner sc)
+      vars:
+        - String cmd → «sort»
+  heap:
+    - obj: List<Book>
+      data: "Война…, Мастер…, Преступление…, Собачье…"
+tests:
+  - name: Сортировки и статистика
+    stdin: |
+      sort year
+      sort title
+      stats
+      exit
+    stdout: |
+      B4 | Преступление и наказание | Достоевский | 1866
+      B2 | Война и мир | Толстой | 1869
+      B3 | Собачье сердце | Булгаков | 1925
+      B1 | Мастер и Маргарита | Булгаков | 1967
+      B2 | Война и мир | Толстой | 1869
+      B1 | Мастер и Маргарита | Булгаков | 1967
+      B4 | Преступление и наказание | Достоевский | 1866
+      B3 | Собачье сердце | Булгаков | 1925
+      По авторам: {Булгаков=2, Достоевский=1, Толстой=1}
+      Средний год: 1906.75
+      Самая старая: Преступление и наказание (1866)
+      До встречи!
+  - name: По автору и неизвестный ключ
+    stdin: |
+      sort author
+      sort price
+    stdout: |
+      B1 | Мастер и Маргарита | Булгаков | 1967
+      B3 | Собачье сердце | Булгаков | 1925
+      B4 | Преступление и наказание | Достоевский | 1866
+      B2 | Война и мир | Толстой | 1869
+      Ошибка: Сортировка: year, title или author
