@@ -3,15 +3,15 @@
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
-import { explainCompileError, explainRuntimeError, runtimeErrorLine } from "@/lib/java/explain";
+import { type Explanation, explainCompileError, explainRuntimeError, runtimeErrorLine } from "@/lib/java/explain";
 import type { CompileResult, Diagnostic, RunResult, RunStatus, TestVerdict } from "@/lib/java/judge";
 
 export type Outcome =
   | { kind: "idle" }
   | { kind: "running"; mode: "check" | "run"; cold: boolean }
   | { kind: "compile-error"; compile: CompileResult }
-  | { kind: "checked"; verdicts: TestVerdict[]; passed: boolean }
-  | { kind: "ran"; run: RunResult; stdin: string }
+  | { kind: "checked"; verdicts: TestVerdict[]; passed: boolean; notes?: Explanation[] }
+  | { kind: "ran"; run: RunResult; stdin: string; notes?: Explanation[] }
   | { kind: "engine-error"; message: string };
 
 const STATUS_TEXT: Partial<Record<RunStatus, string>> = {
@@ -41,6 +41,24 @@ function RunProblem({ status, error, exitCode = 0 }: { status?: RunStatus; error
       {explained && <p>{explained.fix}</p>}
       {error && <p className="font-mono text-xs break-words text-muted">{error.split("\n")[0]}</p>}
     </div>
+  );
+}
+
+/** Код работает, но в браузере иначе, чем на обычной JDK: жёлтая плашка с объяснением */
+function Notes({ notes }: { notes?: Explanation[] }) {
+  if (!notes || notes.length === 0) return null;
+  return (
+    <ul className="flex flex-col gap-2">
+      {notes.map((n) => (
+        <li key={n.title} className="rounded-md border border-gold/40 bg-gold/10 px-3 py-2">
+          <p className="flex items-center gap-2 font-medium">
+            <Icon name="lightbulb" className="size-4 text-gold" />
+            {n.title}
+          </p>
+          <p className="mt-1 text-muted">{n.fix}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -190,7 +208,7 @@ export function ResultsPanel({
             aria-hidden="true"
           />
           {outcome.mode === "check" ? "Компилирую и запускаю тесты…" : "Компилирую и запускаю…"}
-          {outcome.cold && " Первая компиляция после загрузки страницы занимает до минуты."}
+          {outcome.cold && " Первая компиляция после загрузки страницы занимает до полуминуты."}
         </p>
       )}
       {outcome.kind === "engine-error" && <p className="text-danger">{outcome.message}</p>}
@@ -200,12 +218,14 @@ export function ResultsPanel({
       {outcome.kind === "checked" && (
         <>
           {outcome.passed && success}
+          <Notes notes={outcome.notes} />
           <Verdicts verdicts={outcome.verdicts} />
         </>
       )}
       {outcome.kind === "ran" && (
         <div className="flex flex-col gap-2">
           <RunProblem status={outcome.run.status} error={outcome.run.error} exitCode={outcome.run.exitCode} />
+          <Notes notes={outcome.notes} />
           <Output
             label={outcome.stdin ? "Вывод программы" : "Вывод программы (ввод пустой)"}
             text={outcome.run.stdout}
