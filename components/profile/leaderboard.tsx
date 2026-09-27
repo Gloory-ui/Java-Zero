@@ -26,7 +26,13 @@ const PODIUM = ["#fbbf24", "#cbd5e1", "#f97316"];
 
 type State = { kind: "loading" } | { kind: "ready"; rows: LeaderRow[] } | { kind: "error"; message: string };
 
-/** Таблица лидеров по опыту: только публичные профили с ником */
+/**
+ * Строка скрыта: база отдаёт is_public = false. Поле появляется в LeaderRow вместе с миграцией публичных профилей;
+ * до неё строк скрытых профилей в таблице нет, поэтому отсутствие поля — открытый профиль.
+ */
+const isHidden = (row: LeaderRow) => (row as LeaderRow & { is_public?: boolean }).is_public === false;
+
+/** Таблица лидеров по опыту: все студенты с ником и опытом. У скрытых профилей замок, статистика видна только им */
 export function Leaderboard() {
   const [period, setPeriod] = useState<Period>("week");
   const [direction, setDirection] = useState(1);
@@ -117,7 +123,8 @@ export function Leaderboard() {
                 {period === "week" ? "За эту неделю пока никто не набрал опыт" : "В таблице пока никого"}
               </p>
               <p className="max-w-sm text-sm text-muted">
-                Задай ник и включи публичный профиль в настройках профиля — и сдай этап, чтобы попасть сюда первым.
+                Войди в аккаунт и сдай этап — и ты окажешься здесь первым. Ник у тебя уже есть, его можно поменять в
+                настройках профиля.
               </p>
             </div>
           )}
@@ -129,6 +136,7 @@ export function Leaderboard() {
                 const level = levelInfo(Number(row.xp_total)).level;
                 const rank = rankForLevel(level);
                 const podium = PODIUM[i];
+                const hidden = isHidden(row);
                 return (
                   <motion.li
                     key={row.handle}
@@ -169,6 +177,12 @@ export function Leaderboard() {
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold">
                           {row.display_name || `@${row.handle}`}
+                          {hidden && (
+                            <span className="ml-1.5 inline-flex align-[-0.125em] text-muted" title="Профиль скрыт">
+                              <Icon name="lock" className="size-3.5" />
+                              <span className="sr-only">, профиль скрыт</span>
+                            </span>
+                          )}
                           {mine && <span className="ml-2 text-xs font-normal text-muted">это ты</span>}
                         </span>
                         <span className="block truncate text-xs text-muted">
