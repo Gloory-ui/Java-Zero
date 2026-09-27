@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeEmailLoginError, describeSyncError, retryDelay } from "@/lib/account/errors";
+import { describeAuthError, describeSyncError, retryDelay } from "@/lib/account/errors";
 
 describe("ошибки синхронизации", () => {
   it("ошибка Supabase — объект, а не Error: вместо «[object Object]» понятный текст", () => {
@@ -18,13 +18,22 @@ describe("ошибки синхронизации", () => {
   });
 });
 
-describe("ошибка письма для входа", () => {
+describe("ошибки входа и регистрации", () => {
   it("ответы Supabase превращаются в понятный русский текст", () => {
-    expect(describeEmailLoginError("Error sending confirmation email")).toContain("Не удалось отправить письмо");
-    expect(describeEmailLoginError("Error sending magic link email")).toContain("GitHub или Google");
-    expect(describeEmailLoginError("For security purposes, you can only request this after 42 seconds.")).toBe(
-      "Письмо уже отправлено. Подожди минуту и попробуй снова.",
+    expect(describeAuthError("Invalid login credentials")).toBe("Неверный ник, почта или пароль.");
+    expect(describeAuthError("Email not confirmed")).toContain("Введи код из письма");
+    expect(describeAuthError("User already registered")).toContain("уже зарегистрирована");
+    expect(describeAuthError("Token has expired or is invalid")).toBe("Код неверный или устарел. Запроси новый.");
+    expect(describeAuthError("Password should be at least 8 characters.")).toBe(
+      "Пароль слишком короткий: нужно не меньше 8 символов.",
     );
-    expect(describeEmailLoginError("Что-то своё")).toBe("Что-то своё");
+    expect(describeAuthError("Error sending confirmation email")).toContain("Не удалось отправить письмо");
+    expect(describeAuthError("For security purposes, you can only request this after 42 seconds.")).toContain(
+      "Подожди минуту",
+    );
+  });
+
+  it("русский текст с сервера проходит как есть", () => {
+    expect(describeAuthError("Неверный ник или пароль.")).toBe("Неверный ник или пароль.");
   });
 });

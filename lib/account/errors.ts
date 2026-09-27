@@ -18,13 +18,31 @@ export function describeSyncError(error: unknown): string {
   return code ? `${text} (код ${String(code)})` : text;
 }
 
-/** Ошибка отправки письма со ссылкой для входа — по-русски. Supabase отвечает по-английски. */
-export function describeEmailLoginError(message: string): string {
-  if (/rate limit|seconds/i.test(message)) return "Письмо уже отправлено. Подожди минуту и попробуй снова.";
+/**
+ * Ошибки входа, регистрации и кодов из письма — по-русски. Supabase отвечает по-английски, а тексты
+ * нашего сервера уже русские и проходят как есть.
+ */
+export function describeAuthError(message: string): string {
+  if (/invalid login credentials/i.test(message)) return "Неверный ник, почта или пароль.";
+  if (/email not confirmed/i.test(message)) return "Почта не подтверждена. Введи код из письма.";
+  if (/already registered|already been registered|user already exists/i.test(message)) {
+    return "Эта почта уже зарегистрирована. Войди или восстанови пароль.";
+  }
+  if (/token has expired|otp.*(expired|invalid)|invalid.*(otp|token)/i.test(message)) {
+    return "Код неверный или устарел. Запроси новый.";
+  }
+  const short = /password should be at least (\d+)/i.exec(message);
+  if (short) return `Пароль слишком короткий: нужно не меньше ${short[1]} символов.`;
+  if (/weak|pwned|leaked|known to be/i.test(message)) return "Слишком простой пароль. Придумай другой.";
+  if (/same password|different from the old/i.test(message)) return "Новый пароль должен отличаться от старого.";
+  if (/signups? not allowed|signup is disabled/i.test(message)) return "Регистрация сейчас выключена.";
+  if (/rate limit|seconds|too many/i.test(message)) return "Слишком много попыток. Подожди минуту и попробуй снова.";
   if (/error sending|smtp/i.test(message)) {
     return "Не удалось отправить письмо. Попробуй позже или войди через GitHub или Google.";
   }
-  if (/invalid.*email|email.*invalid/i.test(message)) return "Проверь адрес почты: в нём ошибка.";
+  if (/invalid.*email|email.*invalid|unable to validate email/i.test(message))
+    return "Проверь адрес почты: в нём ошибка.";
+  if (/failed to fetch|network|load failed/i.test(message)) return "Нет связи с сервером. Проверь интернет.";
   return message;
 }
 
