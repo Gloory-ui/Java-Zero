@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GroupMap } from "@/components/course/group-map";
+import { JavaPrewarm } from "@/components/lab/java-prewarm";
 import { SiteFooter, SiteHeader } from "@/components/site/site-header";
 import { getCourse, getGroupPath } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
@@ -22,6 +23,7 @@ export default function GroupPage() {
           <p className="mt-1 text-muted">{group.subtitle}</p>
         </div>
         <GroupMap course={toOutline(getCourse())} group={{ invite: group.invite, steps: group.steps }} />
+        <JavaPrewarm />
       </main>
       <SiteFooter />
     </>
