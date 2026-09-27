@@ -1,5 +1,5 @@
 // Типы таблиц из supabase/migrations: 20260924120000_progress.sql, 20260926120000_gamification.sql,
-// 20260927120000_profile.sql.
+// 20260927120000_profile.sql, 20260929120000_public_profiles.sql.
 // После изменения схемы обновить вручную или командой `supabase gen types typescript`.
 
 type Table<Row, Required extends keyof Row> = {
@@ -38,28 +38,29 @@ export type ProfileRow = {
   updated_at: string;
 };
 
-/** Публичный профиль из get_public_profile(): только поля для показа */
+/**
+ * Публичный профиль из get_public_profile(): только поля для показа. Страница есть у каждого ника.
+ * У скрытого профиля (is_public = false) база не отдаёт статистику, титул, витрину и достижения
+ */
 export type PublicProfile = Pick<
   ProfileRow,
-  | "handle"
-  | "display_name"
-  | "avatar_url"
-  | "bio"
-  | "accent"
-  | "frame"
-  | "banner"
-  | "banner_url"
-  | "title"
-  | "showcase"
-  | "xp_total"
-  | "stages_passed"
-  | "streak_days"
-  | "best_streak"
-  | "created_at"
-> & { achievements: { id: string; at: string }[] };
+  "handle" | "display_name" | "avatar_url" | "bio" | "accent" | "frame" | "banner" | "banner_url" | "title" | "showcase"
+> & {
+  is_public: boolean;
+  xp_total: number;
+  stages_passed: number | null;
+  streak_days: number | null;
+  best_streak: number | null;
+  created_at: string;
+  achievements: { id: string; at: string }[];
+};
 
-/** Строка таблицы лидеров: xp — за период, xp_total — весь опыт (по нему считается уровень). Оба считает база */
+/**
+ * Строка таблицы лидеров: в таблице все студенты с опытом. xp — за период, xp_total — весь опыт
+ * (по нему считается уровень). Оба считает база. У скрытого профиля title всегда null
+ */
 export type LeaderRow = Pick<ProfileRow, "handle" | "display_name" | "avatar_url" | "accent" | "frame" | "title"> & {
+  is_public: boolean;
   xp_total: number;
   xp: number;
 };

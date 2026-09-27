@@ -85,6 +85,7 @@ const PUBLIC = {
   banner_url: 'https://evil.example/x.png") ; background: url("https://evil',
   title: "ГРОЗА СЕССИИ",
   showcase: ["quest_kt1", "first_var"],
+  is_public: true,
   xp_total: 1335,
   stages_passed: 14,
   streak_days: 5,
@@ -111,7 +112,29 @@ test("публичный профиль: данные из Supabase, небез�
   expect(css).not.toContain("evil");
 });
 
-test("публичный профиль: скрытый профиль — понятное сообщение, неверный ник — 404", async ({ page, request }) => {
+test("публичный профиль: скрытый — имя и уровень без статистики и достижений", async ({ page }) => {
+  const hidden = {
+    ...PUBLIC,
+    is_public: false,
+    title: null,
+    showcase: [],
+    stages_passed: null,
+    streak_days: null,
+    best_streak: null,
+    achievements: [],
+  };
+  await page.route("**/rest/v1/rpc/get_public_profile", (route) => route.fulfill({ json: hidden }));
+  await page.goto("/u/java_hero");
+  const name = page.getByRole("heading", { level: 1, name: "Аня Кодова" });
+  if (await accountsDisabled(page, name)) return;
+
+  await expect(page.getByRole("heading", { name: "Статистика и достижения скрыты" })).toBeVisible();
+  await expect(page.getByRole("progressbar", { name: "Опыт до следующего уровня" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Витрина" })).toHaveCount(0);
+  await expect(page.getByText("Этапов сдано", { exact: true })).toHaveCount(0);
+});
+
+test("публичный профиль: несуществующий ник — понятное сообщение, неверный ник — 404", async ({ page, request }) => {
   await page.route("**/rest/v1/rpc/get_public_profile", (route) => route.fulfill({ json: null }));
   await page.goto("/u/nobody_here");
   const missing = page.getByRole("heading", { name: "Профиль не найден" });

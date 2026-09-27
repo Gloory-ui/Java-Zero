@@ -20,7 +20,7 @@ const font = (pkg: string, file: string) =>
 const DISPLAY = "Unbounded, Unbounded Cyrillic";
 const BODY = "Onest, Onest Cyrillic";
 
-/** Публичный профиль по нику. Закрытый, несуществующий или недоступный — null: превью без личных данных */
+/** Профиль по нику. Несуществующий или недоступный — null. У скрытого база не отдаёт статистику и достижения */
 async function loadProfile(handle: string): Promise<PublicProfile | null> {
   if (!supabaseConfig || !HANDLE_RE.test(handle)) return null;
   try {
@@ -83,7 +83,8 @@ export default async function ProfileImage({ params }: { params: Promise<{ handl
   const xp = profile?.xp_total ?? 0;
   const level = levelInfo(xp).level;
   const rank = rankForLevel(level);
-  const name = profile ? profile.display_name || `@${profile.handle}` : "Профиль скрыт";
+  const name = profile ? profile.display_name || `@${profile.handle}` : "Профиль не найден";
+  const open = profile?.is_public !== false;
 
   return new ImageResponse(
     <div
@@ -173,12 +174,19 @@ export default async function ProfileImage({ params }: { params: Promise<{ handl
         </div>
       </div>
 
-      {profile ? (
+      {profile && open ? (
         <div style={{ display: "flex", gap: 72 }}>
           <Stat value={`Ур. ${level}`} label="Уровень" />
           <Stat value={xp.toLocaleString("ru-RU")} label="Опыт" />
-          <Stat value={String(profile.stages_passed)} label="Этапов сдано" />
+          <Stat value={String(profile.stages_passed ?? 0)} label="Этапов сдано" />
           <Stat value={String(profile.achievements.length)} label="Достижений" />
+        </div>
+      ) : profile ? (
+        <div style={{ display: "flex", gap: 72 }}>
+          <Stat value={`Ур. ${level}`} label="Уровень" />
+          <div style={{ display: "flex", alignItems: "flex-end", fontSize: 30, color: "#97a3b6" }}>
+            Статистика скрыта
+          </div>
         </div>
       ) : (
         <div style={{ fontSize: 30, color: "#97a3b6" }}>Java с нуля, шаг за шагом</div>
