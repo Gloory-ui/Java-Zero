@@ -1,0 +1,70 @@
+id: generic-methods
+title: "Обобщённые методы: один код для любых типов"
+hints:
+  - "Параметр типа объявляется у метода перед типом результата: `static <T> T firstOrDefault(List<T> list, T def)`."
+  - "`return list.isEmpty() ? def : list.get(0);`. В `countEqual` сравнивай через `item.equals(target)`."
+  - "`static <T> void swap(T[] arr, int i, int j) { T tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp; }` — и раскомментируй вызовы."
+quiz:
+  question: Где объявляют параметр типа у обобщённого метода?
+  options:
+    - Перед типом результата — static <T> T method(...)
+    - После имени метода — static T method<T>(...)
+    - В теле метода
+    - Только у класса
+  correct: 0
+  hint: Сначала объявляем T, потом им пользуемся.
+exam:
+  - q: Как компилятор узнаёт, чему равен T при вызове firstOrDefault(names, "никого")?
+    options:
+      - Выводит из типов аргументов — здесь List<String> и String
+      - Берёт Object всегда
+      - Спрашивает при запуске
+      - Никак, тип нужно указать явно
+    correct: 0
+    explain: Вывод типов смотрит на аргументы и на то, куда идёт результат. Явно писать Generics.<String>firstOrDefault(...) почти никогда не нужно.
+    advice: Если вывод не справляется, компилятор скажет об этом ошибкой.
+  - q: Почему swap не принимает int[]?
+    options:
+      - На место T можно подставить только класс, а int — примитив
+      - int[] нельзя передавать в методы
+      - Массивы не бывают обобщёнными
+      - swap работает только со строками
+    correct: 0
+    explain: int[] — не массив объектов. Integer[] подходит, потому что Integer — класс.
+    advice: Для int[] пишут отдельный метод или используют Integer[].
+  - q: Почему в countEqual сравнивают через equals, а не ==?
+    options:
+      - == сравнивает ссылки, а нужно сравнить значения
+      - == не работает с T
+      - equals быстрее
+      - Разницы нет
+    correct: 0
+    explain: Две строки «Аня» могут быть разными объектами. equals сравнит их текст, == — только адреса.
+    advice: Для обобщённого T сравнение значений — всегда equals.
+memory:
+  note: Момент внутри swap(nums, 0, 2) после первого присваивания.
+  stack:
+    - method: swap(T[] arr, int i, int j)
+      vars:
+        - T[] arr → массив nums
+        - int i = 0
+        - int j = 2
+        - T tmp → Integer 1
+    - method: main(String[] args)
+      vars:
+        - List<String> names → неизменяемый список
+        - Integer[] nums → массив в куче
+  heap:
+    - obj: Integer[3]
+      data: "3, 2, 3 — ещё не дописан"
+tests:
+  - name: Обобщённые методы
+    stdout: |
+      Аня
+      никого
+      2
+      [3, 2, 1]
+  - kind: source
+    name: Обобщённый метод swap
+    pattern: 'static\s+<\s*T\s*>\s+void\s+swap\s*\('
+    message: "Объяви static <T> void swap(T[] arr, int i, int j)"

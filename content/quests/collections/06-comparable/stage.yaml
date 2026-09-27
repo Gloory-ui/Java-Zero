@@ -1,0 +1,63 @@
+id: comparable
+title: "Comparable: естественный порядок"
+hints:
+  - "Класс объявляет порядок через интерфейс: `class Player implements Comparable<Player>` и метод `public int compareTo(Player other)`."
+  - "Больше очков — раньше, то есть по убыванию: аргументы `Integer.compare` меняются местами."
+  - "`return Integer.compare(other.score, this.score);` и в `main` — `Collections.sort(players);`."
+quiz:
+  question: Что должен вернуть compareTo, если this должен стоять раньше other?
+  options:
+    - Отрицательное число
+    - Положительное число
+    - Ноль
+    - "true"
+  correct: 0
+  hint: Как при вычитании a − b, когда a меньше b.
+exam:
+  - q: Почему Integer.compare надёжнее, чем this.score - other.score?
+    options:
+      - Вычитание больших чисел может переполнить int и перевернуть знак
+      - Вычитание не компилируется
+      - compare работает быстрее в сто раз
+      - compare сортирует по убыванию
+    correct: 0
+    explain: Разность двух больших int может выйти за пределы типа и стать отрицательной. Integer.compare сравнивает без вычитания.
+    advice: Для чисел в compareTo используй Integer.compare, Double.compare, Long.compare.
+  - q: Борис и Гоша набрали поровну, Борис стоял раньше. Где он окажется после Collections.sort?
+    options:
+      - Раньше Гоши — сортировка устойчивая
+      - Позже Гоши
+      - Как повезёт
+      - Один из них пропадёт
+    correct: 0
+    explain: Collections.sort не переставляет равные элементы. При равенстве compareTo вернул 0, и исходный порядок сохранился.
+    advice: Устойчивость удобна для сортировки в несколько проходов.
+  - q: Как отсортировать по возрастанию очков?
+    options:
+      - return Integer.compare(this.score, other.score);
+      - return Integer.compare(other.score, this.score);
+      - return this.score > other.score;
+      - return 0;
+    correct: 0
+    explain: Integer.compare(a, b) отрицательный, когда a < b. Если a — это this, меньшие очки встанут раньше.
+    advice: Перепутал порядок — поменяй аргументы местами.
+memory:
+  note: Момент после сортировки.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<Player> players → ArrayList в куче
+  heap:
+    - obj: ArrayList<Player>
+      data: "Вика 140, Аня 120, Борис 95, Гоша 95"
+tests:
+  - name: Таблица мест
+    stdout: |
+      1. Вика — 140
+      2. Аня — 120
+      3. Борис — 95
+      4. Гоша — 95
+  - kind: source
+    name: Player сравнимый
+    pattern: 'class\s+Player\s+implements\s+Comparable\s*<\s*Player\s*>'
+    message: "Добавь class Player implements Comparable<Player>"

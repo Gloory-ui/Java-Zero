@@ -1,0 +1,12 @@
+id: generics
+num: "10"
+title: Обобщения (дженерики)
+subtitle: обобщённые классы и методы, extends, wildcards, стирание типов
+fileName: Generics.java
+order: 14
+unlockAfter: collections
+rank:
+  title: ЗОДЧИЙ ОБОБЩЕНИЙ
+  icon: braces
+  color: "#a78bfa"
+stageBadge: "ЭТАП {n} / {total}"

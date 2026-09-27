@@ -5,6 +5,20 @@ import { groupSchema, questSchema, stageSchema } from "@/lib/content/schema";
 describe("курс из content/quests", () => {
   const course = loadCourse();
 
+  // Квесты 06–15 общего курса: каждый открывается после предыдущего
+  const LATER = [
+    "interfaces",
+    "strings",
+    "exceptions",
+    "collections",
+    "generics",
+    "streams",
+    "files",
+    "algorithms",
+    "threads",
+    "project",
+  ];
+
   it("общий курс идёт по цепочке без КТ: «Калькулятор» открывается сразу после «Циклов»", () => {
     expect(course.map((q) => q.id)).toEqual([
       "basics",
@@ -16,9 +30,10 @@ describe("курс из content/quests", () => {
       "oop_prep",
       "kt3",
       "inheritance",
+      ...LATER,
     ]);
     const tracks = ["course", "course", "group", "course", "course", "group", "course", "group", "course"];
-    expect(course.map((q) => q.track)).toEqual(tracks);
+    expect(course.map((q) => q.track)).toEqual([...tracks, ...LATER.map(() => "course")]);
     expect(course.map((q) => q.unlockAfter)).toEqual([
       null,
       "basics",
@@ -29,6 +44,8 @@ describe("курс из content/quests", () => {
       "arrays_prep",
       null,
       "oop_prep",
+      "inheritance",
+      ...LATER.slice(0, -1),
     ]);
   });
 
@@ -43,6 +60,7 @@ describe("курс из content/quests", () => {
       "kt2",
       "oop_prep",
       undefined,
+      ...LATER.map(() => undefined),
     ]);
     const group = loadGroupPath();
     expect(group.steps).toEqual([
@@ -53,9 +71,9 @@ describe("курс из content/quests", () => {
     expect(group.invite).toMatch(/^[a-z0-9]{4,32}$/);
   });
 
-  it("68 этапов; у каждого есть теория, стартовый код, решение и тесты", () => {
+  it("139 этапов; у каждого есть теория, стартовый код, решение и тесты", () => {
     const stages = course.flatMap((q) => q.stages);
-    expect(stages).toHaveLength(68);
+    expect(stages).toHaveLength(139);
     for (const s of stages) {
       expect(s.theory.length, s.id).toBeGreaterThan(20);
       expect(s.starter, s.id).toContain("class");

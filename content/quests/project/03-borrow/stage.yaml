@@ -1,0 +1,74 @@
+id: borrow
+title: "Выдача книг: свои исключения"
+hints:
+  - "В `borrow` первая проверка — есть ли книга: `if (!books.containsKey(id)) throw new BookNotFoundException(id);`."
+  - "Потом — не на руках ли она: `String current = borrowedBy.get(id); if (current != null) throw new AlreadyBorrowedException(id, current);`, и только затем `put`."
+  - "В `giveBack`: после проверки книги — `if (borrowedBy.remove(id) == null) throw new IllegalStateException(...)`. `onHands()` — `return new TreeMap<>(borrowedBy);`."
+quiz:
+  question: Что вернёт borrowedBy.remove("B3"), если B3 никто не брал?
+  options:
+    - "null"
+    - Пустую строку
+    - Бросит исключение
+    - «B3»
+  correct: 0
+  hint: remove возвращает то, что удалил.
+exam:
+  - q: Почему «книги нет» — проверяемое исключение, а «вернули невыданную» — непроверяемое?
+    options:
+      - Первое — обычная ситуация при вводе номера, второе — нарушение логики, которого не должно быть
+      - Проверяемые быстрее
+      - Непроверяемые нельзя поймать
+      - Это случайный выбор
+    correct: 0
+    explain: Человек легко ошибётся в номере, и программа обязана это обработать. Возврат невыданной книги говорит о путанице в данных.
+    advice: Проверяемые — для ожидаемых проблем, непроверяемые — для ошибок логики.
+  - q: Что случится, если в borrow не проверять, выдана ли книга?
+    options:
+      - put заменит читателя, и книга молча «перейдёт» к другому человеку
+      - Бросится исключение
+      - Книга выдастся дважды
+      - Ничего плохого
+    correct: 0
+    explain: В словаре у ключа одно значение. Повторный put перезапишет Аню Борисом без всякого предупреждения.
+    advice: Перед изменением состояния проверяй, что правило позволяет это изменение.
+  - q: Зачем onHands() возвращает new TreeMap<>(borrowedBy)?
+    options:
+      - Чтобы вызывающий код не мог менять выдачу в обход borrow и giveBack
+      - Чтобы отсортировать читателей
+      - Без new нельзя вернуть Map
+      - Так требует TreeMap
+    correct: 0
+    explain: Внутренний словарь — часть состояния библиотеки. Наружу уходит копия.
+    advice: Инкапсуляция работает, только если внутренние коллекции не утекают.
+memory:
+  note: Момент броска исключения при повторной выдаче B1.
+  stack:
+    - method: Library.borrow(String id, String reader)
+      vars:
+        - String id → «B1»
+        - String reader → «Борис»
+        - String current → «Аня»
+    - method: LibraryApp.borrow(Library lib, String id, String reader)
+      vars:
+        - поймает исключение
+    - method: main(String[] args)
+      vars:
+        - Library lib → объект в куче
+  heap:
+    - obj: TreeMap (borrowedBy)
+      data: "{B1=Аня}"
+tests:
+  - name: Выдача и возврат
+    stdout: |
+      B1 выдана: Аня
+      Ошибка: Книга B1 уже у читателя Аня
+      Ошибка: Нет книги с номером B9
+      B1 возвращена
+      Ошибка: Книга B3 и так в библиотеке
+      B1 выдана: Борис
+      На руках: {B1=Борис}
+  - kind: source
+    name: Проверяемое исключение объявлено
+    pattern: 'throw\s+new\s+AlreadyBorrowedException\s*\('
+    message: "Брось AlreadyBorrowedException для книги, которая уже на руках"

@@ -1,0 +1,76 @@
+id: input-validation
+title: "Надёжный ввод: спрашиваем, пока не получится"
+hints:
+  - "В `parseAge` после `Integer.parseInt(s)` добавь проверку диапазона с `throw new IllegalArgumentException(...)`."
+  - "Цикл `while (sc.hasNext())`: слово `String word = sc.next();`, в `try` — `age = parseAge(word); break;`."
+  - "Два `catch`: сначала `NumberFormatException` с «Это не число: » + word, потом `IllegalArgumentException` с `e.getMessage()`."
+sampleInput: |
+  двадцать -5 150 25 30
+quiz:
+  question: Почему catch (NumberFormatException e) ставят выше catch (IllegalArgumentException e)?
+  options:
+    - NumberFormatException — наследник IllegalArgumentException, частный тип должен быть выше
+    - Так быстрее
+    - Порядок catch не важен
+    - IllegalArgumentException нельзя ловить вторым
+  correct: 0
+  hint: Общий catch поймал бы и ошибку разбора числа.
+exam:
+  - q: Что сделает break внутри try после успешного parseAge?
+    options:
+      - Выйдет из цикла while — возраст принят
+      - Выйдет только из try
+      - Перейдёт в catch
+      - Ничего, break в try запрещён
+    correct: 0
+    explain: break выходит из ближайшего цикла, try ему не помеха. До break дело доходит, только если parseAge не бросил исключение.
+    advice: Схема «пробуй — break при успехе — catch при ошибке» — стандартный цикл надёжного ввода.
+  - q: Зачем age начинается с -1?
+    options:
+      - Это признак «возраст ещё не принят», ведь правильный возраст не бывает отрицательным
+      - Так требует Scanner
+      - Чтобы parseAge работал
+      - Это случайное значение
+    correct: 0
+    explain: После цикла нужно понять, был ли принят возраст. Значение, которое не может быть правильным ответом, работает как флаг.
+    advice: Можно завести и отдельный boolean accepted — так код понятнее.
+  - q: Какое исключение бросит parseAge("12.5")?
+    options:
+      - NumberFormatException
+      - IllegalArgumentException с текстом про диапазон
+      - ArithmeticException
+      - Никакого, вернёт 12
+    correct: 0
+    explain: Integer.parseInt не понимает дроби и бросает NumberFormatException ещё до проверки диапазона.
+    advice: Сначала разбор, потом проверка смысла — две разные беды.
+memory:
+  note: Момент после принятия возраста 25.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Scanner sc → объект в куче
+        - int age = 25
+  heap:
+    - obj: Scanner
+      data: Непрочитанным осталось «30».
+tests:
+  - name: Ввод из примера
+    stdin: |
+      двадцать -5 150 25 30
+    stdout: |
+      Это не число: двадцать
+      Возраст должен быть от 0 до 120: -5
+      Возраст должен быть от 0 до 120: 150
+      Возраст принят: 25
+  - name: Правильного ответа нет
+    stdin: |
+      abc 999
+    stdout: |
+      Это не число: abc
+      Возраст должен быть от 0 до 120: 999
+      Возраст не введён
+  - name: Граница диапазона
+    stdin: |
+      0
+    stdout: |
+      Возраст принят: 0

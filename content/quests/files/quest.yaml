@@ -1,0 +1,12 @@
+id: files
+num: "12"
+title: Файлы и ввод-вывод
+subtitle: Path и Files, чтение и запись, BufferedReader, CSV
+fileName: FileLab.java
+order: 16
+unlockAfter: streams
+rank:
+  title: АРХИВАРИУС
+  icon: file-archive
+  color: "#84cc16"
+stageBadge: "ЭТАП {n} / {total}"

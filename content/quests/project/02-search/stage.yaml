@@ -1,0 +1,67 @@
+id: search
+title: "Поиск: Optional и потоки"
+hints:
+  - "По номеру — прямо из словаря: `return Optional.ofNullable(books.get(id));`."
+  - "По автору — поток: `books.values().stream().filter(b -> b.author().equalsIgnoreCase(author)).toList()`."
+  - "По слову: `String needle = part.toLowerCase();` и фильтр `b.title().toLowerCase().contains(needle)`."
+quiz:
+  question: Что вернёт Optional.ofNullable(null)?
+  options:
+    - Пустой Optional
+    - Бросит NullPointerException
+    - Optional с null внутри
+    - "null"
+  correct: 0
+  hint: ofNullable создан как раз для значений, которые могут быть null.
+exam:
+  - q: Почему findById возвращает Optional<Book>, а не Book?
+    options:
+      - Книги может не быть, и тип сразу заставляет это учесть
+      - Book нельзя возвращать из метода
+      - Optional быстрее
+      - Так требует LinkedHashMap
+    correct: 0
+    explain: С Optional вызывающий код не забудет про случай «не найдена». С null он узнает о нём только по NullPointerException.
+    advice: Методы поиска одного объекта удобно делать с Optional.
+  - q: Почему поиск по слову приводит к нижнему регистру обе строки?
+    options:
+      - Иначе «МИР» не найдётся в «Война и мир»
+      - contains не работает с заглавными
+      - Так быстрее
+      - Достаточно привести одну
+    correct: 0
+    explain: contains сравнивает символы точно. Строки нужно привести к одному регистру, иначе заглавные и строчные не совпадут.
+    advice: Для поиска без учёта регистра нормализуй обе стороны.
+  - q: Что вернёт findByAuthor для автора, которого нет?
+    options:
+      - Пустой список
+      - "null"
+      - Пустой Optional
+      - Бросит исключение
+    correct: 0
+    explain: filter просто ничего не пропустит, и toList соберёт пустой список.
+    advice: Для «много результатов» возвращай список — пустой список лучше null.
+memory:
+  note: Момент поиска по автору.
+  stack:
+    - method: Library.findByAuthor(String author)
+      vars:
+        - String author → «булгаков»
+        - this → объект Library
+    - method: main(String[] args)
+      vars:
+        - Library lib → объект в куче
+  heap:
+    - obj: List<Book>
+      data: "Мастер и Маргарита, Собачье сердце"
+tests:
+  - name: Поиск
+    stdout: |
+      B3: Собачье сердце
+      B9: не найдена
+      Булгаков: [Мастер и Маргарита, Собачье сердце]
+      Со словом «МИР»: [Война и мир]
+  - kind: source
+    name: Безопасный Optional
+    pattern: 'Optional\s*\.\s*ofNullable\s*\('
+    message: "Оберни результат словаря в Optional.ofNullable(books.get(id))"

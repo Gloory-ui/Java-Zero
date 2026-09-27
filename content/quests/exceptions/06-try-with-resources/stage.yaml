@@ -1,0 +1,72 @@
+id: try-with-resources
+title: "try-with-resources: закрыть в любом случае"
+hints:
+  - "Класс становится ресурсом, если реализует интерфейс: `class Door implements AutoCloseable` с методом `public void close()`."
+  - "Два ресурса в одних скобках через точку с запятой: `try (Door a = new Door(\"A\"); Door b = new Door(\"B\")) { ... }`."
+  - "Во втором блоке после `try (Door c = new Door(\"C\")) { ... throw new IllegalStateException(\"дверь заклинило\"); }` поставь `catch (IllegalStateException e)`."
+quiz:
+  question: В каком порядке закроются ресурсы в try (A a = ...; B b = ...)?
+  options:
+    - Сначала b, потом a
+    - Сначала a, потом b
+    - Одновременно
+    - Закрывать нужно вручную
+  correct: 0
+  hint: Последний открытый — первый закрытый, как стопка тарелок.
+exam:
+  - q: Когда вызывается close() у ресурса из try-with-resources?
+    options:
+      - При любом выходе из блока try — обычном или из-за исключения
+      - Только если исключения не было
+      - Только в catch
+      - Когда программа завершится
+    correct: 0
+    explain: Ради этого конструкция и нужна. close() сработает даже при исключении и до того, как выполнится catch.
+    advice: Всё, что открывается и закрывается, открывай в скобках try.
+  - q: Что нужно, чтобы объект можно было объявить в скобках try?
+    options:
+      - Его класс реализует AutoCloseable
+      - У него есть метод open()
+      - Он наследует Exception
+      - Он объявлен как final
+    correct: 0
+    explain: try-with-resources работает с любым AutoCloseable — файлами, сканерами, соединениями и своими классами.
+    advice: Scanner тоже AutoCloseable, поэтому его можно открывать в try (...).
+  - q: "Что напечатается раньше при исключении в блоке — «Закрыта: C» или «Поймано»?"
+    options:
+      - "«Закрыта: C» — ресурс закрывается до catch"
+      - «Поймано» — catch всегда первый
+      - Только «Поймано»
+      - "Только «Закрыта: C»"
+    correct: 0
+    explain: Сначала Java выходит из блока try и закрывает ресурсы, потом передаёт исключение в catch.
+    advice: В catch ресурс уже закрыт, пользоваться им там нельзя.
+memory:
+  note: Момент внутри второго блока, перед throw.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Door c → объект в куче
+  heap:
+    - obj: Door
+      data: name = "C", открыта
+tests:
+  - name: Двери
+    stdout: |
+      Открыта: A
+      Открыта: B
+      Прохожу
+      Закрыта: B
+      Закрыта: A
+      Открыта: C
+      Сквозняк!
+      Закрыта: C
+      Поймано: дверь заклинило
+  - kind: source
+    name: Door — ресурс
+    pattern: 'class\s+Door\s+implements\s+AutoCloseable'
+    message: "Добавь class Door implements AutoCloseable"
+  - kind: source
+    name: Ресурс в скобках try
+    pattern: 'try\s*\(\s*Door\s+\w+\s*=\s*new\s+Door'
+    message: "Открой дверь в скобках: try (Door a = new Door(\"A\"); ...)"

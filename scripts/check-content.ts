@@ -2,6 +2,7 @@
 //   — каждое эталонное решение проходит все тесты этапа;
 //   — стартовый код компилируется, но проваливает хотя бы один тест (иначе этап сдаётся без работы).
 // Запуск: npm run content:check  (нужна Java 17+; JAVA_HOME или java в PATH)
+//         npm run content:check -- strings files  — только перечисленные квесты
 import { loadCourse } from "../lib/content/load";
 import type { Stage } from "../lib/content/schema";
 import { ioInputs, judge, type TestVerdict } from "../lib/java/judge";
@@ -44,7 +45,12 @@ function checkStage(fileName: string, stage: Stage): Check {
   return { stage: name, ok: problems.length === 0, problems, ms: Date.now() - started };
 }
 
-const course = loadCourse();
+const only = process.argv.slice(2);
+const course = loadCourse().filter((q) => only.length === 0 || only.includes(q.id));
+if (course.length === 0) {
+  console.error(`Нет квестов с id: ${only.join(", ")}`);
+  process.exit(1);
+}
 let failed = 0;
 let total = 0;
 for (const quest of course) {

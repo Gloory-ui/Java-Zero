@@ -1,0 +1,12 @@
+id: interfaces
+num: "06"
+title: Интерфейсы и перечисления
+subtitle: interface, default-методы, enum и record
+fileName: Interfaces.java
+order: 10
+unlockAfter: inheritance
+rank:
+  title: МАСТЕР КОНТРАКТОВ
+  icon: plug
+  color: "#22d3ee"
+stageBadge: "ЭТАП {n} / {total}"

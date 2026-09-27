@@ -20,7 +20,7 @@ test("профиль показывает статистику и ранг го�
   await page.goto("/profile");
   await expect(page.getByText("Этапов сдано")).toBeVisible();
   // У гостя раздела «Группа» КТ не считаются: 46 этапов общего курса
-  await expect(page.getByText("0 из 46")).toBeVisible();
+  await expect(page.getByText("0 из 117")).toBeVisible();
   await expect(page.getByText("БАЙТ-ПАДАВАН").first()).toBeVisible();
 
   // Характер ментора — в панели «Настройки»

@@ -1,0 +1,65 @@
+id: filter-map
+title: "Stream: filter, map и конвейер"
+hints:
+  - "Конвейер начинается с `words.stream()` и заканчивается `toList()` или `count()`."
+  - "`words.stream().filter(w -> w.length() > 3).map(String::toUpperCase).sorted().toList()`."
+  - "`long onP = words.stream().filter(w -> w.startsWith(\"п\")).count();` и `words.stream().map(String::length).toList()`."
+quiz:
+  question: Что произойдёт с исходным списком после words.stream().map(String::toUpperCase).toList()?
+  options:
+    - Ничего, поток создаёт новый список
+    - Все слова станут заглавными
+    - Список очистится
+    - Список отсортируется
+  correct: 0
+  hint: Поток читает источник, но не пишет в него.
+exam:
+  - q: Почему words.stream().filter(w -> w.isEmpty()) без конечного шага ничего не делает?
+    options:
+      - Промежуточные шаги ленивые и запускаются только конечным шагом
+      - filter не работает со строками
+      - Поток сразу закрывается
+      - Нужно вызвать start()
+    correct: 0
+    explain: filter, map и sorted только описывают конвейер. Работа начинается, когда вызывают toList, count или forEach.
+    advice: Каждый конвейер заканчивай конечной операцией.
+  - q: Что вернёт List.of(3, 1, 2).stream().sorted().toList()?
+    options:
+      - "[1, 2, 3]"
+      - "[3, 1, 2]"
+      - "3"
+      - Ошибку
+    correct: 0
+    explain: sorted упорядочивает элементы по естественному порядку, toList собирает результат.
+    advice: Для своего порядка передай компаратор — sorted(Comparator.reverseOrder()).
+  - q: Какой тип у результата stream().count()?
+    options:
+      - long
+      - int
+      - Integer
+      - double
+    correct: 0
+    explain: Элементов в потоке может быть очень много, поэтому count возвращает long.
+    advice: long можно просто печатать или хранить в переменной long.
+memory:
+  note: Момент после первого конвейера.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<String> words → неизменяемый список
+        - List<String> big → новый список
+  heap:
+    - obj: List<String> (words)
+      data: "поле, дом, парус, кит, перо, облако, пан"
+    - obj: List<String> (big)
+      data: "ОБЛАКО, ПАРУС, ПЕРО, ПОЛЕ"
+tests:
+  - name: Конвейеры над словами
+    stdout: |
+      [ОБЛАКО, ПАРУС, ПЕРО, ПОЛЕ]
+      На «п»: 4
+      Длины: [4, 3, 5, 3, 4, 6, 3]
+  - kind: source
+    name: Конвейер с filter и map
+    pattern: '\.stream\s*\(\s*\)[\s\S]*\.filter\s*\([\s\S]*\.map\s*\('
+    message: "Построй конвейер: stream().filter(...).map(...)"

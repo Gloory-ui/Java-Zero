@@ -1,0 +1,65 @@
+id: optional
+title: "Optional: значение, которого может не быть"
+hints:
+  - "Поиск первого: `students.stream().filter(s -> s.score() > 85).findFirst()` — это `Optional<Student>`."
+  - "Из коробки — имя или запасное: `.map(Student::name).orElse(\"никто\")`. Лучший: `.max(Comparator.comparingInt(Student::score)).ifPresent(s -> ...)`."
+  - "`findByName`: `return students.stream().filter(s -> s.name().equals(name)).findFirst();`."
+quiz:
+  question: Что вернёт Optional.empty().orElse("запас")?
+  options:
+    - запас
+    - "null"
+    - Бросит исключение
+    - Optional[запас]
+  correct: 0
+  hint: orElse нужен ровно для пустой коробки.
+exam:
+  - q: Почему findFirst возвращает Optional, а не сам элемент?
+    options:
+      - В потоке может не оказаться ни одного элемента
+      - Так быстрее
+      - Элемент нельзя вернуть из потока
+      - Optional печатается красивее
+    correct: 0
+    explain: После filter поток бывает пустым. Optional заставляет решить, что делать в этом случае, вместо тихого null.
+    advice: Метод, который может не найти результат, тоже удобно делать с Optional.
+  - q: Что сделает opt.map(String::length), если opt пустой?
+    options:
+      - Вернёт пустой Optional, функцию не вызовет
+      - Вернёт 0
+      - Бросит NullPointerException
+      - Вернёт null
+    correct: 0
+    explain: map у пустого Optional ничего не делает и передаёт пустоту дальше по цепочке. Запасное значение подставит orElse в конце.
+    advice: Цепочка map → orElse безопасна для пустых значений.
+  - q: Чем опасен opt.get()?
+    options:
+      - У пустого Optional он бросит NoSuchElementException
+      - Он удаляет значение
+      - Он работает только со строками
+      - Ничем
+    correct: 0
+    explain: get() — это «я уверен, что значение есть». Если уверенность ошибочна, будет исключение — та же проблема, что и с null.
+    advice: Используй orElse, orElseGet, ifPresent или map.
+memory:
+  note: Момент после поиска первого отличника.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<Student> students → неизменяемый список
+        - String first → «Аня»
+  heap:
+    - obj: List<Student>
+      data: "Борис 55, Аня 90, Вика 72, Гоша 48"
+tests:
+  - name: Поиск с Optional
+    stdout: |
+      Первый отличник: Аня
+      Выше 95: никто
+      Лучший: Аня (90)
+      Балл Гоши: 48
+      Балл Жени: -1
+  - kind: source
+    name: Поиск через findFirst
+    pattern: '\.findFirst\s*\(\s*\)'
+    message: "Ищи первого через filter(...).findFirst()"

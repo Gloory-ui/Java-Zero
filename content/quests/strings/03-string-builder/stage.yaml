@@ -1,0 +1,75 @@
+id: string-builder
+title: "StringBuilder: строка, которая меняется"
+hints:
+  - "Перевёрнутое слово — в одну строку: `String reversed = new StringBuilder(word).reverse().toString();`."
+  - "Для дефисов заведи `StringBuilder dashed = new StringBuilder();` и в цикле `dashed.append(word.charAt(i));`, а дефис — только если `i < word.length() - 1`."
+  - "Палиндром: `word.equalsIgnoreCase(reversed)`, а в выводе `(palindrome ? \"да\" : \"нет\")`."
+sampleInput: |
+  Казак
+quiz:
+  question: Зачем нужен StringBuilder, если строки можно складывать через +?
+  options:
+    - Он меняет текст на месте, без копии строки на каждом шаге
+    - Только он умеет хранить русские буквы
+    - Через + нельзя добавить число
+    - Он сравнивает строки быстрее equals
+  correct: 0
+  hint: Вспомни, что строки неизменяемы.
+exam:
+  - q: Что напечатает System.out.println(new StringBuilder("abc").equals("abc"))?
+    options:
+      - "false"
+      - "true"
+      - abc
+      - Ошибку компиляции
+    correct: 0
+    explain: StringBuilder не переопределяет equals, поэтому сравнение идёт по объектам. Объект StringBuilder никогда не равен строке.
+    advice: Сравнивай текст так — sb.toString().equals("abc").
+  - q: Что будет в sb после StringBuilder sb = new StringBuilder("ab"); sb.append(1).append('c');?
+    options:
+      - ab1c
+      - abc1
+      - ab
+      - Ошибка компиляции, append не принимает число
+    correct: 0
+    explain: append дописывает в конец и возвращает тот же sb, поэтому вызовы цепляются. Число превращается в текст.
+    advice: Цепочки append — обычный способ собрать строку из частей.
+  - q: Почему в цикле с дефисами проверяют i < word.length() - 1?
+    options:
+      - Чтобы после последней буквы не поставить лишний дефис
+      - Чтобы не выйти за границу строки
+      - Чтобы пропустить первую букву
+      - Так требует reverse()
+    correct: 0
+    explain: Дефис нужен между буквами. У последней буквы индекс length() - 1, после неё дефис не ставят.
+    advice: Разделитель «между» — частая задача. Позже её решит String.join.
+memory:
+  note: Момент после цикла с дефисами для ввода «Казак».
+  stack:
+    - method: main(String[] args)
+      vars:
+        - String word → «Казак»
+        - String reversed → «казаК»
+        - StringBuilder dashed → объект в куче
+  heap:
+    - obj: StringBuilder
+      data: "\"К-а-з-а-к\""
+tests:
+  - name: Палиндром с заглавной
+    stdin: |
+      Казак
+    stdout: |
+      Наоборот: казаК
+      Через дефис: К-а-з-а-к
+      Палиндром: да
+  - name: Не палиндром
+    stdin: |
+      Java
+    stdout: |
+      Наоборот: avaJ
+      Через дефис: J-a-v-a
+      Палиндром: нет
+  - kind: source
+    name: Переворот через StringBuilder
+    pattern: 'StringBuilder[\s\S]*reverse\s*\('
+    message: "Переверни слово через new StringBuilder(word).reverse()"

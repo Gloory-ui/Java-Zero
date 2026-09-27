@@ -1,0 +1,64 @@
+id: enum-basics
+title: "enum: закрытый список значений"
+hints:
+  - "`switch` со стрелками возвращает значение: `return switch (light) { case RED -> \"стой\"; ... };`."
+  - "Все три `case`: `RED`, `YELLOW`, `GREEN` — без `Light.` перед именем. Тогда `default` не нужен."
+  - "`Light[] all = Light.values();` и `Light next = all[(Light.GREEN.ordinal() + 1) % all.length];`."
+quiz:
+  question: Что вернёт Light.YELLOW.ordinal(), если enum Light { RED, YELLOW, GREEN }?
+  options:
+    - "1"
+    - "2"
+    - YELLOW
+    - "0"
+  correct: 0
+  hint: Номера констант считаются с нуля, как индексы массива.
+exam:
+  - q: Чем enum лучше набора строк "RED", "YELLOW", "GREEN"?
+    options:
+      - Компилятор знает все значения и не пропустит опечатку
+      - Строки нельзя сравнивать
+      - enum занимает меньше памяти, чем int
+      - enum можно менять во время работы программы
+    correct: 0
+    explain: Light.GRENN не скомпилируется, а строка "GRENN" пройдёт незаметно. Кроме того, switch по enum проверяет, что разобраны все значения.
+    advice: Если значений заранее известный небольшой набор, заведи enum.
+  - q: Как правильно сравнить сигнал с красным?
+    options:
+      - light == Light.RED
+      - light.equals("RED")
+      - light == "RED"
+      - light.ordinal() == "RED"
+    correct: 0
+    explain: Каждая константа enum существует в одном экземпляре, поэтому == сравнивает надёжно. Со строкой константа никогда не равна.
+    advice: Для enum == — нормальная и рекомендуемая проверка.
+  - q: Зачем в формуле следующего сигнала остаток % values().length?
+    options:
+      - Чтобы после последнего сигнала вернуться к первому
+      - Чтобы получить случайный сигнал
+      - Так требует switch
+      - Чтобы ordinal() стал строкой
+    correct: 0
+    explain: У GREEN номер 2, 2 + 1 = 3, а 3 % 3 = 0 — это RED. Без остатка индекс 3 вышел бы за массив.
+    advice: Остаток от деления на длину — стандартный способ ходить по кругу.
+memory:
+  note: Момент после вычисления следующего сигнала.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Light[] all → массив в куче
+        - Light next → константа RED
+  heap:
+    - obj: Light[3]
+      data: "[0] → RED, [1] → YELLOW, [2] → GREEN"
+tests:
+  - name: Сигналы светофора
+    stdout: |
+      0 RED: стой
+      1 YELLOW: жди
+      2 GREEN: иди
+      После GREEN: RED
+  - kind: source
+    name: Разбор через switch
+    pattern: 'switch\s*\(\s*light\s*\)'
+    message: "Разбери сигнал через switch (light)"

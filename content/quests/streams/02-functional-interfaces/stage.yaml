@@ -1,0 +1,72 @@
+id: functional-interfaces
+title: "Готовые функции: Predicate, Function, Consumer, Supplier"
+hints:
+  - "Условия: `s -> s.length() > 4` и `s -> s.startsWith(\"к\")`. В цикле проверяй `isLong.and(startsK).test(w)` и `isLong.negate().test(w)`."
+  - "`Function<String, Integer> len = s -> s.length();` и `len.apply(\"клавиатура\")`. Для крика: `Function<String, String> loud = shout.andThen(s -> s + \"!\");`."
+  - "`Supplier<String> greeting = () -> \"Привет, Java!\";`, `Consumer<String> printer = s -> System.out.println(\"Приветствие: \" + s);` и `printer.accept(greeting.get());`."
+quiz:
+  question: Какой интерфейс подходит для лямбды () -> "по умолчанию"?
+  options:
+    - Supplier<String>
+    - Consumer<String>
+    - Predicate<String>
+    - Function<String, String>
+  correct: 0
+  hint: Параметров нет, значение есть.
+exam:
+  - q: Что вернёт isLong.negate().test("окно"), если isLong = s -> s.length() > 4?
+    options:
+      - "true — у «окно» 4 буквы, условие ложно, а negate переворачивает"
+      - "false"
+      - "4"
+      - Ошибку компиляции
+    correct: 0
+    explain: isLong для «окно» даёт false, так как 4 не больше 4. negate превращает false в true.
+    advice: negate, and, or позволяют собирать условия из готовых частей.
+  - q: Что вернёт twice.andThen(plusOne).apply(5), если twice = x -> x * 2, а plusOne = x -> x + 1?
+    options:
+      - "11 — сначала умножение, потом сложение"
+      - "12 — сначала сложение"
+      - "10"
+      - "6"
+    correct: 0
+    explain: andThen выполняет свою функцию после исходной. 5 × 2 = 10, потом 10 + 1 = 11.
+    advice: Для обратного порядка есть compose.
+  - q: Чем Consumer отличается от Function?
+    options:
+      - Consumer ничего не возвращает, Function возвращает результат
+      - Consumer принимает два параметра
+      - Function не принимает параметров
+      - Ничем
+    correct: 0
+    explain: У Consumer метод accept с типом результата void — он только делает действие, например печатает.
+    advice: forEach у коллекций принимает именно Consumer.
+memory:
+  note: Момент перед печатью приветствия.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<String> words → неизменяемый список
+        - Predicate<String> isLong → лямбда
+        - List<String> longK → [компьютер, клавиатура]
+        - Supplier<String> greeting → лямбда
+        - Consumer<String> printer → лямбда
+  heap:
+    - obj: ArrayList (shorts)
+      data: "кот, окно, мышь"
+tests:
+  - name: Функции над словами
+    stdout: |
+      Длинные на «к»: [компьютер, клавиатура]
+      Короткие: [кот, окно, мышь]
+      Длина «клавиатура»: 10
+      Крик: КОТ!
+      Приветствие: Привет, Java!
+  - kind: source
+    name: Условия комбинируются
+    pattern: '\.and\s*\([\s\S]*\.negate\s*\(|\.negate\s*\([\s\S]*\.and\s*\('
+    message: "Используй isLong.and(startsK) и isLong.negate()"
+  - kind: source
+    name: Функции цепляются
+    pattern: '\.andThen\s*\('
+    message: "Собери крик через shout.andThen(...)"

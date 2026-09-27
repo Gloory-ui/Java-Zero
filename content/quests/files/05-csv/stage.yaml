@@ -1,0 +1,66 @@
+id: csv
+title: "CSV: таблица в текстовом файле"
+hints:
+  - "`List<String> lines = Files.readAllLines(csv);` и цикл с `i = 1`, чтобы пропустить заголовок."
+  - "Ячейки: `String[] cells = lines.get(i).split(\";\");`, сумма — `Integer.parseInt(cells[1]) * Double.parseDouble(cells[2])`."
+  - "Строка отчёта: `report.add(cells[0] + \": \" + String.format(\"%.2f\", sum));`, после цикла — итог."
+quiz:
+  question: Что вернёт "Сыр;3;120".split(";")[2]?
+  options:
+    - "\"120\""
+    - "\"3\""
+    - "\"Сыр\""
+    - "120 как число"
+  correct: 0
+  hint: Индексы с нуля, а результат split — строки.
+exam:
+  - q: Почему цикл по строкам CSV начинают с 1?
+    options:
+      - Строка 0 — заголовок с названиями столбцов
+      - Индексы списков начинаются с 1
+      - Первая строка всегда пустая
+      - Так быстрее
+    correct: 0
+    explain: В заголовке вместо чисел слова. Попытка разобрать их как числа бросит NumberFormatException.
+    advice: Перед обработкой CSV посмотри, есть ли в нём заголовок.
+  - q: Чем разобрать цену «45.5»?
+    options:
+      - Double.parseDouble
+      - Integer.parseInt
+      - String.valueOf
+      - Character.getNumericValue
+    correct: 0
+    explain: parseInt понимает только целые числа. Для дробей с точкой нужен Double.parseDouble.
+    advice: С деньгами в настоящих программах работают через BigDecimal, чтобы не терять копейки.
+  - q: Зачем собирать отчёт в список, а не писать в файл по строке?
+    options:
+      - Один Files.write запишет всё сразу, и файл не придётся открывать много раз
+      - По строке писать нельзя
+      - Список быстрее печатается
+      - Так требует формат CSV
+    correct: 0
+    explain: Каждый вызов writeString открывает и закрывает файл. Для небольшого отчёта проще собрать всё и записать разом.
+    advice: Для огромных отчётов — BufferedWriter и запись по строке.
+memory:
+  note: Момент после подсчёта итога.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Path csv → адрес sales.csv
+        - List<String> lines → 4 строки файла
+        - List<String> report → 4 строки отчёта
+        - double total = 540.9
+  heap:
+    - obj: ArrayList (report)
+      data: "Хлеб: 91.00, Молоко: 89.90, Сыр: 360.00, Итого: 540.90"
+tests:
+  - name: Отчёт по продажам
+    stdout: |
+      Хлеб: 91.00
+      Молоко: 89.90
+      Сыр: 360.00
+      Итого: 540.90
+  - kind: source
+    name: Разбор строк CSV
+    pattern: 'split\s*\(\s*";"\s*\)'
+    message: "Режь строки CSV через split(\";\")"

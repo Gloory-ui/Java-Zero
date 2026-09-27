@@ -1,0 +1,69 @@
+id: wildcards
+title: "Шаблоны: ? extends и ? super"
+hints:
+  - "Метод, который только читает числа, принимает `List<? extends Number>`, а тот, что дописывает `Integer`, — `List<? super Integer>`."
+  - "`static double sumAll(List<? extends Number> list)` — цикл `for (Number n : list)` и `sum += n.doubleValue();`."
+  - "`static void fillSquares(List<? super Integer> out, int n) { for (int i = 1; i <= n; i++) out.add(i * i); }` — и раскомментируй вызовы."
+quiz:
+  question: Можно ли передать List<Integer> туда, где ждут List<Number>?
+  options:
+    - Нет, List<Integer> не наследник List<Number>
+    - Да, Integer ведь наследник Number
+    - Да, но только пустой список
+    - Только через приведение (List<Number>)
+  correct: 0
+  hint: Иначе в список целых можно было бы положить дробь.
+exam:
+  - q: Что можно делать со списком List<? extends Number>?
+    options:
+      - Читать элементы как Number, но не добавлять
+      - Добавлять любые числа
+      - Только узнавать размер
+      - Ничего
+    correct: 0
+    explain: Внутри может быть List<Integer> или List<Double>. Прочитать Number безопасно всегда, а добавить — нет, тип мог не совпасть.
+    advice: Метод-«читатель» принимает ? extends.
+  - q: Какие списки подходят к параметру List<? super Integer>?
+    options:
+      - List<Integer>, List<Number> и List<Object>
+      - Только List<Integer>
+      - List<Double>
+      - Любые списки
+    correct: 0
+    explain: super означает «Integer или его предок». Number и Object — предки Integer, а Double — нет.
+    advice: Метод-«писатель» принимает ? super.
+  - q: Как запомнить, где extends, а где super?
+    options:
+      - Кто отдаёт данные — extends, кто принимает — super
+      - extends для строк, super для чисел
+      - super всегда лучше
+      - Это одно и то же
+    correct: 0
+    explain: Список, из которого берут, отдаёт — extends. Список, в который кладут, принимает — super.
+    advice: В английских книгах это правило называют PECS — Producer Extends, Consumer Super.
+memory:
+  note: Момент после fillSquares(numbers, 4).
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<Integer> ints → неизменяемый список
+        - List<Double> doubles → неизменяемый список
+        - List<Number> numbers → ArrayList в куче
+  heap:
+    - obj: ArrayList<Number>
+      data: "1, 4, 9, 16"
+tests:
+  - name: Сумма и квадраты
+    stdout: |
+      6.0
+      0.75
+      [1, 4, 9, 16]
+      [старт, 1, 4]
+  - kind: source
+    name: Читатель через extends
+    pattern: 'List\s*<\s*\?\s+extends\s+Number\s*>'
+    message: "sumAll должен принимать List<? extends Number>"
+  - kind: source
+    name: Писатель через super
+    pattern: 'List\s*<\s*\?\s+super\s+Integer\s*>'
+    message: "fillSquares должен принимать List<? super Integer>"

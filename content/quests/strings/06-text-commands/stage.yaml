@@ -1,0 +1,90 @@
+id: text-commands
+title: "Разбор команд: строка, число и switch"
+hints:
+  - "Сначала проверь выход: `if (cmd.equals(\"END\")) break;` — до `switch`, чтобы `break` вышел из цикла."
+  - "`switch (cmd)` со стрелками: `case \"ADD\" -> value += Integer.parseInt(parts[1]);` и так же для SUB, MUL, DIV."
+  - "`case \"PRINT\" -> System.out.println(\"Значение: \" + value);` и `default -> System.out.println(\"Неизвестная команда: \" + cmd);`."
+sampleInput: |
+  ADD 5
+  mul 3
+  SUB 4
+  DIV 2
+  PRINT
+  POW 2
+  ADD 10
+  END
+  PRINT
+quiz:
+  question: Что вернёт Integer.parseInt("042")?
+  options:
+    - "42"
+    - "\"042\""
+    - "0"
+    - Ошибку, ноль в начале запрещён
+  correct: 0
+  hint: parseInt превращает запись числа в само число.
+exam:
+  - q: Почему break для END стоит в if до switch, а не внутри case "END"?
+    options:
+      - break внутри switch выйдет только из switch, а цикл продолжится
+      - В switch нельзя писать case "END"
+      - if работает быстрее switch
+      - Чтобы END печатал итог
+    correct: 0
+    explain: break выходит из ближайшей конструкции, а для case это сам switch. Проверка до switch выходит именно из while.
+    advice: Когда нужно прервать цикл изнутри switch, проверь условие до него.
+  - q: Зачем команду приводят к заглавным через toUpperCase()?
+    options:
+      - switch по строке сравнивает через equals, и «mul» не совпадёт с «MUL»
+      - switch не умеет строчные буквы
+      - Чтобы parseInt работал
+      - Так требует split
+    correct: 0
+    explain: Сравнение строк в switch учитывает регистр. Одна нормализация перед switch избавляет от двух вариантов в каждом case.
+    advice: Входные данные сначала нормализуй — обрежь пробелы и приведи регистр.
+  - q: Что будет, если для строки «PRINT» сразу написать Integer.parseInt(parts[1])?
+    options:
+      - ArrayIndexOutOfBoundsException — в массиве одна часть
+      - Вернётся 0
+      - NumberFormatException
+      - Ничего, строка пропустится
+    correct: 0
+    explain: split("\\s+") для «PRINT» даёт массив из одного элемента. Индекса 1 в нём нет.
+    advice: Читай аргумент только в тех ветках, где он действительно есть.
+memory:
+  note: Момент после команды PRINT для ввода из примера.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Scanner sc → объект в куче
+        - int value = 5
+        - String line → «PRINT»
+        - String[] parts → массив в куче
+        - String cmd → «PRINT»
+  heap:
+    - obj: String[1]
+      data: "PRINT"
+tests:
+  - name: Сценарий из примера
+    stdin: |
+      ADD 5
+      mul 3
+      SUB 4
+      DIV 2
+      PRINT
+      POW 2
+      ADD 10
+      END
+      PRINT
+    stdout: |
+      Значение: 5
+      Неизвестная команда: POW
+      Итог: 15
+  - name: Без END и с пустой строкой
+    stdin: |
+      ADD 7
+
+      print
+    stdout: |
+      Значение: 7
+      Итог: 7

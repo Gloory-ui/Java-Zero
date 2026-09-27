@@ -1,0 +1,67 @@
+id: default-methods
+title: "default-методы: готовый код в интерфейсе"
+hints:
+  - "Метод с телом в интерфейсе помечают словом `default`. Внутри можно звать `price()`: у каждого класса он свой."
+  - "`default int withDiscount(int percent) { return price() - price() * percent / 100; }`"
+  - "В `Coffee`: `@Override public int withDiscount(int percent) { return price(); }`, а в `main` допиши `+ \" → \" + item.withDiscount(10)`."
+quiz:
+  question: Что даёт слово default у метода интерфейса?
+  options:
+    - Метод получает тело, и классы наследуют его готовым
+    - Метод становится обязательным для реализации
+    - Метод нельзя переопределить
+    - Метод вызывается без объекта
+  correct: 0
+  hint: Вспомни, зачем он понадобился — чтобы не править десять классов.
+exam:
+  - q: Класс реализует интерфейс с default-методом greet() и не пишет свою версию. Что будет при вызове greet()?
+    options:
+      - Сработает версия из интерфейса
+      - Ошибка компиляции
+      - Метод вернёт null
+      - Программа упадёт
+    correct: 0
+    explain: default-метод и есть готовая реализация. Класс получает её автоматически, как метод родителя.
+    advice: Переопределяй default-метод, только когда общая версия классу не подходит.
+  - q: Почему price() * (percent / 100) при percent = 10 даёт 0?
+    options:
+      - 10 / 100 в целых числах равно 0
+      - price() возвращает 0
+      - Скобки запрещены в return
+      - Так работает default
+    correct: 0
+    explain: Деление двух int отбрасывает дробную часть. 10 / 100 = 0, и произведение тоже 0.
+    advice: "Сначала умножь, потом дели: price() * percent / 100."
+  - q: Как вызвать static-метод hello() интерфейса Greeter?
+    options:
+      - Greeter.hello()
+      - new Greeter().hello()
+      - Через любой объект класса, который реализует Greeter
+      - Никак, у интерфейсов нет static-методов
+    correct: 0
+    explain: static-метод принадлежит самому интерфейсу. Классы, которые его реализуют, этот метод не наследуют.
+    advice: default — для объектов, static — для самого интерфейса.
+memory:
+  note: Момент вызова withDiscount(10) у торта. Работает общая версия из интерфейса.
+  stack:
+    - method: Priced.withDiscount(int percent)
+      vars:
+        - int percent = 10
+        - this → объект Cake
+    - method: main(String[] args)
+      vars:
+        - Priced[] items → массив в куче
+        - Priced item → объект Cake
+  heap:
+    - obj: Priced[3]
+      data: "[0] → Book, [1] → Coffee, [2] → Cake"
+tests:
+  - name: Цены со скидкой
+    stdout: |
+      Книга: 500 → 450
+      Кофе: 200 → 200
+      Торт: 850 → 765
+  - kind: source
+    name: default-метод в интерфейсе
+    pattern: 'default\s+int\s+withDiscount\s*\('
+    message: "Объяви в Priced метод default int withDiscount(int percent)"

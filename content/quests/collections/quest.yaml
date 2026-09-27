@@ -1,0 +1,12 @@
+id: collections
+num: "09"
+title: Коллекции
+subtitle: ArrayList, HashMap, HashSet, очереди, сортировка
+fileName: CollectionsLab.java
+order: 13
+unlockAfter: exceptions
+rank:
+  title: КОЛЛЕКЦИОНЕР
+  icon: boxes
+  color: "#10b981"
+stageBadge: "ЭТАП {n} / {total}"
