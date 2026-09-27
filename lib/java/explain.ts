@@ -1,3 +1,5 @@
+import { stripJavaComments } from "./judge";
+
 /**
  * Объяснения ошибок по-русски. Компилятор ECJ и JVM пишут по-английски, а новичок застревает именно на этом.
  * Правила проверяются по порядку, срабатывает первое подходящее. Один источник и для лаборатории, и для справочника.
@@ -264,6 +266,28 @@ function firstMatch(rules: Rule[], message: string): Explanation | null {
     if (m) return rule.explain(m);
   }
   return null;
+}
+
+/**
+ * Чем браузерная Java (CheerpJ) отличается от обычной JDK. Такой код компилируется и работает без ошибок,
+ * но результат другой, поэтому предупреждаем по самому исходнику: иначе новичок не поймёт, почему у него дома
+ * программа ведёт себя иначе.
+ */
+const BROWSER_LIMITS: readonly { pattern: RegExp; note: Explanation }[] = [
+  {
+    // Files.write/newBufferedWriter с APPEND, new FileWriter(f, true), new FileOutputStream(f, true)
+    pattern: /\bAPPEND\b|new\s+(?:FileWriter|FileOutputStream)\s*\([^;]*,\s*true\s*\)/,
+    note: {
+      title: "Дописывание в файл в браузере не работает",
+      fix: "Здесь, в браузерной Java, APPEND и FileWriter(файл, true) перезаписывают файл целиком. На обычном компьютере строки допишутся в конец. Чтобы работало везде: прочитай файл (Files.readAllLines), добавь строку в список и запиши файл заново (Files.write).",
+    },
+  },
+];
+
+/** Предупреждения об ограничениях браузерной Java для этого кода; комментарии не считаются. */
+export function browserLimits(source: string): Explanation[] {
+  const code = stripJavaComments(source);
+  return BROWSER_LIMITS.filter((l) => l.pattern.test(code)).map((l) => l.note);
 }
 
 /** Объяснение ошибки компиляции или null, если сообщение незнакомое. */

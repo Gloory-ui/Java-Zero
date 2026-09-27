@@ -16,6 +16,7 @@ import type { DuelQuestion } from "@/lib/game/duel";
 import { checkFinished, runFinished } from "@/lib/game/events";
 import type { XpPart } from "@/lib/game/xp";
 import { EngineRestartedError, getEngine, useEngine } from "@/lib/java/engine";
+import { browserLimits } from "@/lib/java/explain";
 import { type Diagnostic, ioInputs, judge } from "@/lib/java/judge";
 import {
   isGroupMember,
@@ -210,7 +211,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
         setPassXp(result.parts);
         setQuestClosed(isQuestCompleted(useProgress.getState(), quest));
       }
-      setOutcome({ kind: "checked", verdicts, passed: allPassed });
+      setOutcome({ kind: "checked", verdicts, passed: allPassed, notes: browserLimits(source) });
     } catch (error) {
       setOutcome({
         kind: "engine-error",
@@ -231,7 +232,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
       const { compile, runs } = await getEngine().check(quest.fileName, source, [stdin]);
       setDiagnostics(compile.diagnostics);
       if (!compile.compiled) return setOutcome({ kind: "compile-error", compile });
-      setOutcome({ kind: "ran", run: runs[0], stdin });
+      setOutcome({ kind: "ran", run: runs[0], stdin, notes: browserLimits(source) });
       runFinished(source, stdin, runs[0]);
     } catch (error) {
       setOutcome({ kind: "engine-error", message: error instanceof Error ? error.message : String(error) });
