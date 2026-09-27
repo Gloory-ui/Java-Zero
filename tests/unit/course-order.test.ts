@@ -45,8 +45,8 @@ describe("номер этапа", () => {
 });
 
 describe("порядок курса", () => {
-  it("68 этапов, «Фундамент» начинается с первой программы", () => {
-    expect(course.flatMap((q) => q.stages)).toHaveLength(68);
+  it("139 этапов, «Фундамент» начинается с первой программы", () => {
+    expect(course.flatMap((q) => q.stages)).toHaveLength(139);
     expect(quest("basics").stages[0].id).toBe("program-structure");
   });
 
@@ -104,7 +104,24 @@ describe("пометка «новый»", () => {
 });
 
 /** Общий курс «Java с нуля» по порядку */
-const MAIN = ["basics", "loops_prep", "calc", "arrays_prep", "oop_prep", "inheritance"];
+const MAIN = [
+  "basics",
+  "loops_prep",
+  "calc",
+  "arrays_prep",
+  "oop_prep",
+  "inheritance",
+  "interfaces",
+  "strings",
+  "exceptions",
+  "collections",
+  "generics",
+  "streams",
+  "files",
+  "algorithms",
+  "threads",
+  "project",
+];
 
 describe("два раздела: «Java с нуля» и «Группа»", () => {
   const stagesOf = (...ids: string[]) =>
