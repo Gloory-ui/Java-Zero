@@ -1,0 +1,80 @@
+id: counter
+title: Статический счётчик животных
+hints:
+  - "В начале класса: `static int counter = 0;`."
+  - "В конструкторе с параметрами последней строкой — `counter++;`. Конструктор по умолчанию вызывает его через `this(...)`, поэтому считается тоже."
+  - 'Метод `static void printCounter() { System.out.println("Создано животных: " + counter); }`, вызов — `Animal.printCounter();`.'
+sampleInput: |
+  2
+  Барсик кот 3
+  Шарик собака 5
+quiz:
+  question: Чему равен Animal.counter после трёх new Animal(...)?
+  options:
+    - "3"
+    - "1"
+    - "0"
+    - У каждого объекта своё значение
+  correct: 0
+  hint: static-поле общее для всех объектов класса.
+exam:
+  - q: Почему counter должен быть static?
+    options:
+      - Он считает объекты всего класса, а не принадлежит одному животному
+      - static-поля быстрее
+      - Иначе его нельзя увеличить
+      - Так требует конструктор
+    correct: 0
+    explain: Обычное поле своё у каждого объекта и после создания равно 1. static-поле одно на всех.
+    advice: Сравни с номером талона из этапа про static.
+  - q: Почему counter++ стоит только в конструкторе с параметрами?
+    options:
+      - Конструктор по умолчанию вызывает его через this(...), иначе будет двойной счёт
+      - В конструкторе по умолчанию нельзя менять static-поля
+      - Так короче
+      - Это ошибка, нужно в обоих
+    correct: 0
+    explain: new Animal() выполнит оба конструктора. С двумя counter++ одно животное посчиталось бы дважды.
+    advice: Проверь это выводом счётчика после new Animal().
+  - q: Как вызвать printCounter()?
+    options:
+      - Animal.printCounter()
+      - printCounter(Animal)
+      - new Animal.printCounter()
+      - Animal().printCounter
+    correct: 0
+    explain: static-метод принадлежит классу, его вызывают через имя класса.
+    advice: Так же, как Math.random().
+memory:
+  note: Момент после создания трёх животных при вводе из примера. counter хранится у класса в одном экземпляре.
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - int n = 2
+  heap:
+    - obj: Animal (класс)
+      data: static counter = 3
+tests:
+  - name: Два животных из ввода и одно по умолчанию
+    stdin: |
+      2
+      Барсик кот 3
+      Шарик собака 5
+    stdout: |
+      Создано животных: 2
+      Создано животных: 3
+  - name: Только животное по умолчанию
+    stdin: |
+      0
+    stdout: |
+      Создано животных: 0
+      Создано животных: 1
+  - kind: source
+    name: static-счётчик
+    pattern: \bstatic\s+int\s+counter\b
+    message: "Добавь поле static int counter = 0;"
+  - kind: source
+    name: static-метод вывода
+    pattern: \bstatic\s+void\s+(?!main\b)\w+\s*\(
+    message: "Добавь static void printCounter()"

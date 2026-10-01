@@ -1,0 +1,427 @@
+@import "tailwindcss";
+
+/* Тема переключается атрибутом data-theme на <html>; тёмная по умолчанию */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #08090c;
+  --surface: #0d1016;
+  --card: #131822;
+  --card-hover: #1a2030;
+  --border: rgb(255 255 255 / 0.08);
+  --border-strong: rgb(255 255 255 / 0.16);
+  --text: #f4f6f8;
+  --muted: #97a3b6;
+  --accent: #ff4d6d; /* текст и иконки: контраст 6:1 на --bg */
+  --accent-solid: #e11d48; /* заливка кнопок: белый текст 4.7:1 */
+  --accent-solid-hover: #be123c; /* светлее нельзя: #f43f5e даёт белому тексту 3.7:1 */
+  --accent-soft: rgb(255 42 85 / 0.12);
+  --glow: rgb(255 42 85 / 0.45); /* фирменный неон #ff2a55 — только свечения */
+  --gold: #f5a524;
+  --success: #10b981;
+  --danger: #ef4444;
+  --code-bg: #0a0c11;
+  /* Подсветка Java: все цвета ≥ 4.5:1 на --code-bg, включая номера строк — по ним сверяют ошибки */
+  --code-text: #e6e9ee;
+  --code-keyword: #ff7a93;
+  --code-type: #7cc4ff;
+  --code-string: #7ee2a8;
+  --code-number: #f5b042;
+  --code-comment: #7d8799;
+  --code-func: #d7b4ff;
+  --code-lineno: #7d8799;
+  /* Неон игровой системы: цвет выбирает студент во «Внешнем виде», по умолчанию фирменный.
+     --neon-user — свечения, рамки, полосы; --neon-ink — текст и иконки с контрастом не ниже 4.5:1 */
+  --neon-user: var(--accent);
+  --neon-ink: var(--neon-user);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --card: #f1f3f6;
+  --card-hover: #e8ebf0;
+  --border: rgb(15 23 42 / 0.1);
+  --border-strong: rgb(15 23 42 / 0.2);
+  --text: #0f172a;
+  --muted: #5b6678;
+  --accent: #be123c;
+  --accent-solid: #e11d48;
+  --accent-solid-hover: #be123c;
+  --accent-soft: rgb(225 29 72 / 0.1);
+  --glow: rgb(225 29 72 / 0.25);
+  --gold: #b45309;
+  --success: #047857;
+  --danger: #dc2626;
+  --code-bg: #ffffff;
+  --code-text: #1f2533;
+  --code-keyword: #c2185b;
+  --code-type: #0b62a8;
+  --code-string: #1b7a3e;
+  --code-number: #a14d00;
+  --code-comment: #687385;
+  --code-func: #7a3fb8;
+  --code-lineno: #687385;
+  /* На белом фоне светлые неоны (лайм, золото, циан) нечитаемы: текст темнее самого неона */
+  --neon-user: var(--accent);
+  --neon-ink: color-mix(in oklab, var(--neon-user) 50%, var(--text));
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-solid: var(--accent-solid);
+  --color-accent-solid-hover: var(--accent-solid-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-gold: var(--gold);
+  --color-neon: var(--neon-user);
+  --color-neon-ink: var(--neon-ink);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-code-bg: var(--code-bg);
+  --color-code-text: var(--code-text);
+  --color-code-comment: var(--code-comment);
+
+  /* Шрифты подключает next/font в app/layout.tsx; все три с кириллицей */
+  --font-display: var(--font-unbounded), var(--font-onest), system-ui, sans-serif;
+  --font-sans: var(--font-onest), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "Cascadia Code", monospace;
+}
+
+@theme {
+  /* Анимация: ease-out по умолчанию, интерфейс до 300 мс (скиллы emilkowal-animations, design-with-taste) */
+  --ease-snappy: cubic-bezier(0.23, 1, 0.32, 1); /* появление, реакция на действие */
+  --ease-onscreen: cubic-bezier(0.77, 0, 0.175, 1); /* перемещение по экрану */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* шторки и панели */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* исчезновение */
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-glow: 0 0 24px var(--glow);
+}
+
+@layer base {
+  html {
+    background-color: var(--bg);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--accent-soft);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Tailwind 4 оставляет кнопкам обычную стрелку. Всё, что нажимается, показывает «руку» (правило UI/UX Pro Max) */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="switch"]:not(:disabled),
+  summary,
+  select:not(:disabled),
+  label:has(> input:not(:disabled)),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Лигатуры в коде путают новичков: «<=» не должно превращаться в «≤» */
+  code,
+  kbd,
+  pre,
+  samp,
+  .font-mono {
+    font-variant-ligatures: none;
+    font-feature-settings:
+      "calt" 0,
+      "liga" 0;
+  }
+}
+
+/* Подсветка Java вне редактора (lib/highlight.ts): те же цвета, что у CodeMirror */
+.tok-keyword {
+  color: var(--code-keyword);
+}
+.tok-type {
+  color: var(--code-type);
+}
+.tok-string {
+  color: var(--code-string);
+}
+.tok-number {
+  color: var(--code-number);
+}
+.tok-comment {
+  color: var(--code-comment);
+  font-style: italic;
+}
+.tok-func {
+  color: var(--code-func);
+}
+
+/* Конфетти за закрытый квест (components/game/confetti.tsx): вылет вверх и падение с затуханием */
+@keyframes confetti-burst {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--r));
+    opacity: 0;
+  }
+}
+
+.confetti-piece {
+  animation: confetti-burst 1100ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+}
+
+/* ——— Неон игровой системы (components/game): цвет задаёт --neon на элементе, по умолчанию фирменный ———
+   Бесконечные анимации двигают только transform псевдоэлементов: их считает видеокарта, страница не перерисовывается */
+
+/* Кольцо вокруг аватара и эмблемы ранга: блик бегает по кругу. Вращение равномерное, поэтому linear */
+.neon-ring {
+  --neon: var(--neon-user);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--neon) 35%, transparent);
+}
+
+.neon-ring::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  z-index: -1;
+  background: conic-gradient(var(--neon), transparent 25%, var(--neon) 50%, transparent 75%, var(--neon));
+  animation: neon-spin 6s linear infinite;
+}
+
+@keyframes neon-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.neon-glow {
+  --neon: var(--neon-user);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--neon) 55%, transparent),
+    0 0 18px color-mix(in oklab, var(--neon) 40%, transparent),
+    inset 0 0 18px color-mix(in oklab, var(--neon) 12%, transparent);
+}
+
+.neon-text {
+  --neon: var(--neon-user);
+  text-shadow: 0 0 14px color-mix(in oklab, var(--neon) 65%, transparent);
+}
+
+/* Незаполненная часть полосы опыта: диагональная штриховка медленно бежит вправо.
+   Слой шире полосы на один период (14 px) и сдвигается ровно на период — стык не виден */
+.xp-stripes {
+  --neon: var(--gold);
+  position: relative;
+  overflow: hidden;
+}
+
+.xp-stripes::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 -14px;
+  background-image: linear-gradient(
+    -45deg,
+    color-mix(in oklab, var(--neon) 40%, transparent) 25%,
+    transparent 25%,
+    transparent 50%,
+    color-mix(in oklab, var(--neon) 40%, transparent) 50%,
+    color-mix(in oklab, var(--neon) 40%, transparent) 75%,
+    transparent 75%
+  );
+  background-size: 14px 14px;
+  animation: xp-stripes 1.4s linear infinite;
+}
+
+@keyframes xp-stripes {
+  to {
+    transform: translateX(14px);
+  }
+}
+
+/* Светлая тема: свечение слабее, иначе оно пачкает белый фон */
+[data-theme="light"] .neon-glow {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--neon) 60%, transparent),
+    0 0 10px color-mix(in oklab, var(--neon) 22%, transparent);
+}
+
+[data-theme="light"] .neon-text {
+  text-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-ring::before,
+  .xp-stripes::before {
+    animation: none;
+  }
+}
+
+/* ——— Баннеры профиля (lib/profile/cosmetics.ts): только CSS, цвет акцента берут из --neon ——— */
+
+.banner {
+  --neon: var(--accent);
+  background-color: #07080c;
+}
+
+.banner-grid {
+  background-image:
+    radial-gradient(80% 120% at 85% 0%, color-mix(in oklab, var(--neon) 45%, transparent), transparent 60%),
+    linear-gradient(color-mix(in oklab, var(--neon) 22%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--neon) 22%, transparent) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    28px 28px,
+    28px 28px;
+}
+
+.banner-aurora {
+  background-image:
+    radial-gradient(60% 90% at 15% 20%, rgb(16 185 129 / 0.55), transparent 65%),
+    radial-gradient(50% 80% at 55% 0%, rgb(34 211 238 / 0.45), transparent 65%),
+    radial-gradient(55% 90% at 90% 30%, color-mix(in oklab, var(--neon) 55%, transparent), transparent 65%),
+    linear-gradient(180deg, #06121a, #07080c);
+}
+
+.banner-circuit {
+  background-image:
+    radial-gradient(circle at 12px 12px, color-mix(in oklab, var(--neon) 70%, transparent) 2px, transparent 3px),
+    linear-gradient(
+      90deg,
+      transparent 11px,
+      color-mix(in oklab, var(--neon) 28%, transparent) 11px 13px,
+      transparent 13px
+    ),
+    linear-gradient(transparent 23px, color-mix(in oklab, var(--neon) 18%, transparent) 23px 25px, transparent 25px),
+    radial-gradient(90% 120% at 0% 100%, color-mix(in oklab, var(--neon) 35%, transparent), transparent 60%);
+  background-size:
+    48px 48px,
+    48px 48px,
+    96px 48px,
+    100% 100%;
+}
+
+.banner-sunset {
+  background-image:
+    radial-gradient(circle at 50% 105%, #fbbf24 0 14%, #f43f5e 22%, transparent 36%),
+    repeating-linear-gradient(0deg, #07080c 0 3px, transparent 3px 9px),
+    linear-gradient(180deg, #1e0b3a 0%, #6d1a5c 55%, #f43f5e 100%);
+  background-blend-mode: normal, multiply, normal;
+}
+
+.banner-nebula {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 60%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, #fff, transparent), radial-gradient(1px 1px at 85% 20%, #fff, transparent),
+    radial-gradient(60% 90% at 30% 40%, rgb(168 85 247 / 0.55), transparent 65%),
+    radial-gradient(50% 80% at 75% 60%, color-mix(in oklab, var(--neon) 50%, transparent), transparent 65%),
+    linear-gradient(135deg, #0b0620, #07080c);
+}
+
+.banner-matrix {
+  background-image:
+    repeating-linear-gradient(90deg, color-mix(in oklab, var(--neon) 40%, transparent) 0 2px, transparent 2px 22px),
+    repeating-linear-gradient(0deg, #07080c 0 6px, transparent 6px 14px),
+    linear-gradient(180deg, color-mix(in oklab, var(--neon) 25%, #07080c), #07080c);
+}
+
+/* ——— Рамки аватара (components/profile/profile-avatar.tsx) ——— */
+
+/* Пульс: мягкое свечение дышит; анимируется только opacity слоя со свечением */
+.frame-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  box-shadow: 0 0 22px 4px color-mix(in oklab, var(--neon) 70%, transparent);
+  animation: frame-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes frame-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Двойной контур: внешнее пунктирное кольцо медленно вращается */
+.frame-dual::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: inherit;
+  border: 2px dashed color-mix(in oklab, var(--neon) 80%, transparent);
+  animation: neon-spin 18s linear infinite;
+  pointer-events: none;
+}
+
+/* Орбита: светящаяся точка обходит аватар */
+.frame-orbit::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 0, var(--neon) 0 4px, transparent 5px);
+  filter: drop-shadow(0 0 6px var(--neon));
+  animation: neon-spin 4s linear infinite;
+  pointer-events: none;
+}
+
+/* Легенда: переливающееся золото, маджента и циан */
+.neon-ring-legend::before {
+  background: conic-gradient(#fbbf24, #e879f9, #22d3ee, #fbbf24);
+  animation-duration: 4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-pulse::after,
+  .frame-dual::before,
+  .frame-orbit::after {
+    animation: none;
+  }
+}

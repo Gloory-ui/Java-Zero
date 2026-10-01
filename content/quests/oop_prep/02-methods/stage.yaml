@@ -1,0 +1,79 @@
+id: methods
+title: "Методы: действие и return"
+hints:
+  - "В классе `Truck` объяви поля `int length; int width; int height;` и два метода: `void printInfo()` и `int getVolume()`."
+  - "`getVolume()` состоит из одной строки: `return length * width * height;`."
+  - 'В `main`: `truck.length = sc.nextInt();` и так же для остальных полей, потом `truck.printInfo();` и `System.out.println("Объём: " + truck.getVolume());`.'
+sampleInput: |
+  4 2 3
+quiz:
+  question: Что делает return в методе int getVolume()?
+  options:
+    - Отдаёт результат туда, где метод вызвали, и завершает метод
+    - Печатает число на экран
+    - Сохраняет число в поле
+    - Перезапускает метод
+  correct: 0
+  hint: Напечатать результат должен тот, кто вызвал метод.
+exam:
+  - q: Чем метод void отличается от метода int?
+    options:
+      - void ничего не возвращает, int возвращает целое число через return
+      - void работает быстрее
+      - int нельзя вызвать из main
+      - Это одно и то же
+    correct: 0
+    explain: Тип перед именем метода — тип результата. void означает, что результата нет.
+    advice: Если метод что-то считает, пусть возвращает результат, а печатает вызывающий код.
+  - q: Чьё поле length использует метод getVolume()?
+    options:
+      - Того объекта, у которого вызван метод
+      - Первого созданного грузовика
+      - Всех грузовиков сразу
+      - Никакого, поля в методе недоступны
+    correct: 0
+    explain: У truck1.getVolume() поля truck1, у truck2.getVolume() — поля truck2.
+    advice: Один метод работает с разными объектами — в этом смысл методов объекта.
+  - q: Что выведет System.out.println(t.getVolume() * 2) для грузовика 1 на 2 на 3?
+    options:
+      - "12"
+      - "6"
+      - "123"
+      - Ошибку компиляции
+    correct: 0
+    explain: "getVolume() вернёт 6, дальше обычная арифметика: 6 * 2 = 12."
+    advice: Вызов метода с результатом можно использовать в выражении, как обычное число.
+memory:
+  note: Момент внутри getVolume() при вводе 4 2 3. У метода свой кадр в стеке, в нём скрытая ссылка this на грузовик.
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - Truck truck → объект в куче
+    - method: getVolume()
+      vars:
+        - Truck this → тот же грузовик
+  heap:
+    - obj: Truck
+      data: length = 4, width = 2, height = 3
+tests:
+  - name: Грузовик 4 на 2 на 3
+    stdin: |
+      4 2 3
+    stdout: |
+      Грузовик 4 на 2 на 3
+      Объём: 24
+  - name: Грузовик 10 на 3 на 2
+    stdin: |
+      10 3 2
+    stdout: |
+      Грузовик 10 на 3 на 2
+      Объём: 60
+  - kind: source
+    name: Метод getVolume() возвращает int
+    pattern: \bint\s+getVolume\s*\(\s*\)[\s\S]*\breturn\b
+    message: "Объяви int getVolume() { return length * width * height; }"
+  - kind: source
+    name: Метод printInfo()
+    pattern: \bvoid\s+printInfo\s*\(\s*\)
+    message: Размеры печатает метод void printInfo()

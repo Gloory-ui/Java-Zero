@@ -1,0 +1,65 @@
+id: collections-utils
+title: "Collections и List.of: готовые инструменты"
+hints:
+  - "Все подсчёты — статические методы класса `Collections`: `max`, `min`, `frequency(список, значение)`."
+  - "`Collections.sort(marks);` печатаем, потом `Collections.reverse(marks);` и печатаем снова."
+  - "`try { List.of(1, 2).add(3); } catch (UnsupportedOperationException e) { System.out.println(\"List.of менять нельзя: \" + e.getClass().getSimpleName()); }`"
+quiz:
+  question: Что вернёт Collections.frequency(List.of(1, 2, 1, 1), 1)?
+  options:
+    - "3"
+    - "1"
+    - "0"
+    - "2"
+  correct: 0
+  hint: frequency считает, сколько раз значение встречается.
+exam:
+  - q: Как получить список по убыванию с помощью Collections?
+    options:
+      - Сначала sort, потом reverse
+      - Только reverse
+      - Только sort
+      - max в цикле
+    correct: 0
+    explain: reverse разворачивает текущий порядок. Чтобы порядок стал убывающим, список сначала сортируют по возрастанию.
+    advice: Для сложных правил удобнее list.sort(Comparator.reverseOrder()).
+  - q: Что будет при List.of(1, 2).add(3)?
+    options:
+      - UnsupportedOperationException при запуске
+      - Ошибка компиляции
+      - Список станет [1, 2, 3]
+      - Ничего не произойдёт
+    correct: 0
+    explain: Компилятор видит обычный List, у которого есть add. Но конкретный объект из List.of менять запрещено, и это выясняется только при запуске.
+    advice: Нужна изменяемая копия — new ArrayList<>(List.of(...)).
+  - q: Чем Collections отличается от Collection?
+    options:
+      - Collection — интерфейс коллекций, Collections — класс со статическими утилитами
+      - Это одно и то же
+      - Collections — устаревшее имя
+      - Collection хранит только числа
+    correct: 0
+    explain: Интерфейс Collection реализуют списки и множества. В классе Collections лежат вспомогательные методы для них.
+    advice: Похожая пара — массивы и класс Arrays с утилитами для них.
+memory:
+  note: Момент после разворота списка.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<Integer> marks → ArrayList в куче
+  heap:
+    - obj: ArrayList<Integer>
+      data: "9, 7, 5, 3, 3, 3"
+tests:
+  - name: Утилиты Collections
+    stdout: |
+      Максимум: 9
+      Минимум: 3
+      Троек: 3
+      По возрастанию: [3, 3, 3, 5, 7, 9]
+      По убыванию: [9, 7, 5, 3, 3, 3]
+      List.of менять нельзя: UnsupportedOperationException
+  - kind: source
+    name: Подсчёт через Collections.frequency
+    pattern: 'Collections\s*\.\s*frequency\s*\('
+    message: "Посчитай тройки через Collections.frequency(marks, 3)"

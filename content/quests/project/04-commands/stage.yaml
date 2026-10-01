@@ -1,0 +1,98 @@
+id: commands
+title: "Меню команд: Scanner и switch"
+hints:
+  - "`list`: возьми `Map<String, String> hands = lib.onHands();` и для каждой книги допиши `\" — у \" + reader`, если читатель есть."
+  - "`switch (cmd)` в `try`: `case \"list\" -> list(lib);`, `case \"find\" -> ...lib.search(arg)...`, `default -> ...\"Неизвестная команда: \" + cmd`."
+  - "`borrow`: `String[] who = arg.split(\"\\\\s+\", 2);`, при `who.length < 2` — подсказка формата. Общий `catch (BookNotFoundException | AlreadyBorrowedException | IllegalStateException e)`."
+sampleInput: |
+  borrow B2 Аня
+  list
+  find серд
+  return B2
+  return B2
+  fly
+  exit
+  list
+quiz:
+  question: Что вернёт "borrow B2 Анна Каренина".split("\\s+", 2)?
+  options:
+    - "[borrow, B2 Анна Каренина]"
+    - "[borrow, B2, Анна, Каренина]"
+    - "[borrow B2, Анна Каренина]"
+    - "[borrow]"
+  correct: 0
+  hint: Второй аргумент — сколько частей максимум.
+exam:
+  - q: Зачем один try вокруг всего switch, а не свой в каждой ветке?
+    options:
+      - Ошибки всех команд обрабатываются одинаково, и код не повторяется
+      - try нельзя ставить внутри switch
+      - Так быстрее
+      - Иначе не работает default
+    correct: 0
+    explain: Любая ветка может бросить исключение библиотеки. Общий catch печатает его и возвращает программу к чтению следующей команды.
+    advice: Обрабатывай ошибку там, где знаешь, что с ней делать. Для меню это одно место.
+  - q: Почему «exit» проверяют до switch?
+    options:
+      - return из метода сразу заканчивает цикл, а break в switch вышел бы только из switch
+      - switch не умеет строку exit
+      - Чтобы exit нельзя было ввести заглавными
+      - Так требует Scanner
+    correct: 0
+    explain: Внутри switch break относится к самому switch. Проверка до него позволяет выйти из метода run одной строкой.
+    advice: Команды, которые меняют поток управления, удобно обрабатывать до switch.
+  - q: Что напечатает программа на строку list после exit?
+    options:
+      - Ничего — после exit команды больше не читаются
+      - Каталог
+      - Неизвестная команда
+      - Ошибку
+    correct: 0
+    explain: exit вызывает return из run. Цикл чтения закончился, остаток ввода никто не читает.
+    advice: Проверь это на примере — последняя строка ввода нарочно идёт после exit.
+memory:
+  note: Момент разбора команды «borrow B2 Аня».
+  stack:
+    - method: run(Library lib, Scanner sc)
+      vars:
+        - String line → «borrow B2 Аня»
+        - String cmd → «borrow»
+        - String arg → «B2 Аня»
+        - String[] who → [B2, Аня]
+    - method: main(String[] args)
+      vars:
+        - вызвал run
+  heap:
+    - obj: Library
+      data: 4 книги, выданных нет
+tests:
+  - name: Сессия из примера
+    stdin: |
+      borrow B2 Аня
+      list
+      find серд
+      return B2
+      return B2
+      fly
+      exit
+      list
+    stdout: |
+      B2 выдана: Аня
+      B1 | Мастер и Маргарита | Булгаков | 1967
+      B2 | Война и мир | Толстой | 1869 — у Аня
+      B3 | Собачье сердце | Булгаков | 1925
+      B4 | Преступление и наказание | Достоевский | 1866
+      Найдено: [Собачье сердце]
+      B2 возвращена
+      Ошибка: Книга B2 и так в библиотеке
+      Неизвестная команда: fly
+      До встречи!
+  - name: Ошибки ввода
+    stdin: |
+      borrow B1
+      return B7
+      FIND мир
+    stdout: |
+      Формат: borrow номер имя
+      Ошибка: Нет книги с номером B7
+      Найдено: [Война и мир]

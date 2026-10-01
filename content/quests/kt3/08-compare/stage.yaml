@@ -1,0 +1,82 @@
+id: compare
+title: Сравнение животных по возрасту
+hints:
+  - "В `Animal`: `int compareByAge(Animal other) { return age - other.age; }`."
+  - "В `main` прочитай двух животных и сохрани результат: `int result = first.compareByAge(second);`."
+  - "Три ветки: `result > 0` — первый старше, `result < 0` — второй старше, иначе — одного возраста."
+sampleInput: |
+  Барсик кот 3 Шарик собака 5
+quiz:
+  question: Что вернёт barsik.compareByAge(sharik), если Барсику 3, а Шарику 5?
+  options:
+    - "-2"
+    - "2"
+    - "0"
+    - "8"
+  correct: 0
+  hint: "age - other.age = 3 - 5."
+exam:
+  - q: Что означает положительный результат compareByAge?
+    options:
+      - Животное, у которого вызван метод, старше
+      - Второе животное старше
+      - Животные ровесники
+      - Произошла ошибка
+    correct: 0
+    explain: age - other.age больше нуля, когда свой возраст больше чужого.
+    advice: Проговори на защите правило «плюс, минус, ноль».
+  - q: Почему метод может читать other.age, если age — private?
+    options:
+      - private ограничивает доступ другим классам, а метод — внутри Animal
+      - private не действует на методы
+      - other — копия текущего объекта
+      - Это ошибка компиляции
+    correct: 0
+    explain: Доступ проверяется по классу. Код класса Animal видит private-поля любых объектов Animal.
+    advice: Из main то же поле читают только через getAge().
+  - q: Зачем возвращать int, а не boolean?
+    options:
+      - int передаёт три исхода — больше, меньше, равно
+      - boolean нельзя вернуть
+      - int быстрее
+      - Так требует конструктор
+    correct: 0
+    explain: boolean различает только два случая. Разность сразу говорит и о равенстве.
+    advice: Так же устроены compareTo и Comparator в Java.
+memory:
+  note: Момент внутри compareByAge при вводе из примера. this — Барсик, other — Шарик.
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - Animal first → Барсик
+        - Animal second → Шарик
+    - method: compareByAge(Animal other)
+      vars:
+        - Animal this → Барсик
+        - Animal other → Шарик
+  heap:
+    - obj: Animal (Барсик)
+      data: 'name = "Барсик", age = 3'
+    - obj: Animal (Шарик)
+      data: 'name = "Шарик", age = 5'
+tests:
+  - name: Второй старше
+    stdin: |
+      Барсик кот 3 Шарик собака 5
+    stdout: |
+      Шарик старше, чем Барсик
+  - name: Первый старше
+    stdin: |
+      Кеша попугай 4 Мурка кошка 2
+    stdout: |
+      Кеша старше, чем Мурка
+  - name: Ровесники
+    stdin: |
+      Том кот 3 Бобик собака 3
+    stdout: |
+      Том и Бобик одного возраста
+  - kind: source
+    name: Метод compareByAge(Animal ...)
+    pattern: \bint\s+compareByAge\s*\(\s*Animal\s+\w+\s*\)
+    message: "Добавь в Animal метод int compareByAge(Animal other)"

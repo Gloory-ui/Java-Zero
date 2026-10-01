@@ -1,0 +1,12 @@
+id: arrays_prep
+num: "03"
+title: Массивы и таблицы
+subtitle: Массивы и таблицы, поиск, обмен, случайные числа
+fileName: ArraysPrep.java
+order: 5
+unlockAfter: calc
+rank:
+  title: ХРАНИТЕЛЬ ИНДЕКСОВ
+  icon: layers
+  color: "#f59e0b"
+stageBadge: "ЭТАП {n} / {total}"

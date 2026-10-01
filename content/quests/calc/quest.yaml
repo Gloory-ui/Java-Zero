@@ -1,0 +1,12 @@
+id: calc
+num: "02"
+title: Калькулятор
+subtitle: switch, методы, массивы и рекурсия
+fileName: Calculator.java
+order: 4
+unlockAfter: loops_prep
+rank:
+  title: УКРОТИТЕЛЬ СТЕКА
+  icon: zap
+  color: "#10b981"
+stageBadge: "ЭТАП {n} / {total}"

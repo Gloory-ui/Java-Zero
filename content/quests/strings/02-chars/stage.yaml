@@ -1,0 +1,78 @@
+id: chars
+title: "Символы: char и Character"
+hints:
+  - "Цикл по индексам `for (int i = 0; i < line.length(); i++)` и символ `char c = line.charAt(i);`."
+  - "Цепочка `if (Character.isLetter(c)) ... else if (Character.isDigit(c)) ... else if (Character.isWhitespace(c)) ... else ...` раскладывает символ ровно в одну группу."
+  - "Заглавные считай отдельным `if (Character.isUpperCase(c)) upper++;` после цепочки: заглавная буква — ещё и буква."
+sampleInput: |
+  Java 17 вышла в 2021 году!
+quiz:
+  question: Как объявить переменную-символ со значением буквы Я?
+  options:
+    - char c = 'Я';
+    - char c = "Я";
+    - String c = 'Я';
+    - char c = Я;
+  correct: 0
+  hint: Символ — в одинарных кавычках.
+exam:
+  - q: Что вернёт Character.isLetter('ё')?
+    options:
+      - true — isLetter знает буквы всех алфавитов
+      - false — только латиница считается буквами
+      - Ошибку компиляции
+      - "1"
+    correct: 0
+    explain: Character работает с Юникодом, поэтому кириллица, латиница и другие алфавиты — всё буквы.
+    advice: Для проверки «только латиница» понадобится другое условие, например c >= 'a' && c <= 'z'.
+  - q: Что напечатает System.out.println('a' + 1)?
+    options:
+      - "98"
+      - b
+      - a1
+      - Ошибку компиляции
+    correct: 0
+    explain: char — число, код символа. У «a» код 97, плюс 1 — 98. Чтобы получить букву, нужно привести тип (char).
+    advice: Склейка со строкой ("" + 'a' + 1) даст «a1», сложение двух чисел — 98.
+  - q: Почему заглавные буквы считают отдельным if, а не веткой else if?
+    options:
+      - Заглавная — ещё и буква, её нужно посчитать в обеих группах
+      - Так быстрее работает цикл
+      - isUpperCase нельзя писать в else if
+      - Чтобы не считать пробелы
+    correct: 0
+    explain: В цепочке else if символ попадает ровно в одну ветку. Буква «J» ушла бы либо в буквы, либо в заглавные, а нужно в обе.
+    advice: Пересекающиеся группы считают независимыми if.
+memory:
+  note: Момент после цикла для ввода из примера.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - String line → строка в куче
+        - int letters = 14
+        - int digits = 6
+        - int spaces = 5
+        - int other = 1
+        - int upper = 1
+  heap:
+    - obj: String
+      data: "\"Java 17 вышла в 2021 году!\""
+tests:
+  - name: Строка из примера
+    stdin: |
+      Java 17 вышла в 2021 году!
+    stdout: |
+      Букв: 14
+      Цифр: 6
+      Пробелов: 5
+      Других: 1
+      Заглавных: 1
+  - name: Латиница и цифры
+    stdin: |
+      ABC abc 123
+    stdout: |
+      Букв: 6
+      Цифр: 3
+      Пробелов: 2
+      Других: 0
+      Заглавных: 3

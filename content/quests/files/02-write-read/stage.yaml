@@ -1,0 +1,82 @@
+id: write-read
+title: "Запись и чтение: Files.write и readAllLines"
+hints:
+  - "Весь список в файл одной строкой кода: `Files.write(file, input);`."
+  - "Обратно — `List<String> lines = Files.readAllLines(file);` и цикл по индексам с печатью `(i + 1) + \". \" + lines.get(i)`."
+  - "Самую длинную ищи в том же цикле: `if (lines.get(i).length() > longest.length()) longest = lines.get(i);`."
+sampleInput: |
+  купить хлеб
+  сдать лабу
+  позвонить маме
+quiz:
+  question: Что вернёт Files.readAllLines(path)?
+  options:
+    - Список строк файла без переводов строк
+    - Весь файл одной строкой
+    - Количество строк
+    - Массив байтов
+  correct: 0
+  hint: All lines — все строки.
+exam:
+  - q: Что будет в файле после Files.write(p, List.of("а")) и затем Files.write(p, List.of("б"))?
+    options:
+      - Только «б» — вторая запись заменила файл
+      - «а» и «б»
+      - Только «а»
+      - Файл окажется пустым
+    correct: 0
+    explain: По умолчанию write открывает файл заново и стирает старое содержимое.
+    advice: Для дописывания нужен режим StandardOpenOption.APPEND.
+  - q: Чем readString отличается от readAllLines?
+    options:
+      - readString возвращает весь текст одной строкой, readAllLines — список строк
+      - readString читает только первую строку
+      - readAllLines не работает с русскими буквами
+      - Ничем
+    correct: 0
+    explain: В строке от readString переводы строк остаются внутри текста. readAllLines разрезает текст по ним.
+    advice: Нужны строки по отдельности — readAllLines.
+  - q: Когда не стоит читать файл через readAllLines?
+    options:
+      - Когда файл огромный и целиком не поместится в память
+      - Когда в файле русские буквы
+      - Когда строк больше десяти
+      - Никогда
+    correct: 0
+    explain: readAllLines загружает весь файл сразу. Для гигантских файлов читают построчно, через BufferedReader.
+    advice: Маленькие файлы — readAllLines, большие — построчное чтение.
+memory:
+  note: Момент после чтения файла обратно.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<String> input → ArrayList в куче
+        - Path file → адрес todo.txt
+        - List<String> lines → список из файла
+        - String longest → «позвонить маме»
+  heap:
+    - obj: List<String> (lines)
+      data: "купить хлеб, сдать лабу, позвонить маме"
+tests:
+  - name: Список дел
+    stdin: |
+      купить хлеб
+      сдать лабу
+      позвонить маме
+    stdout: |
+      1. купить хлеб
+      2. сдать лабу
+      3. позвонить маме
+      Строк: 3
+      Самая длинная: позвонить маме
+  - name: Одно дело
+    stdin: |
+      спать
+    stdout: |
+      1. спать
+      Строк: 1
+      Самая длинная: спать
+  - kind: source
+    name: Чтение из файла
+    pattern: 'Files\s*\.\s*readAllLines\s*\('
+    message: "Прочитай файл обратно через Files.readAllLines(file)"

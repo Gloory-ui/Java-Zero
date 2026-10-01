@@ -1,0 +1,81 @@
+id: input
+isNew: true
+title: "Ввод с клавиатуры: Scanner"
+hints:
+  - "Сначала создай «читателя» ввода: `Scanner sc = new Scanner(System.in);` — import уже есть в первой строке."
+  - "Каждый вызов `sc.nextInt()` читает следующее число: `int a = sc.nextInt();` и так же для второго."
+  - 'Печать: `System.out.println("Сумма: " + (a + b));` и такая же строка для произведения.'
+sampleInput: |
+  7 5
+quiz:
+  question: Зачем нужна строка import java.util.Scanner;?
+  options:
+    - Она создаёт объект для ввода
+    - Она подключает класс Scanner, чтобы компилятор его нашёл
+    - Она читает первое число
+    - Она нужна только для nextDouble
+  correct: 1
+  hint: import подключает класс из стандартной библиотеки, а объект создаёт new Scanner(System.in).
+exam:
+  - q: Какой метод Scanner читает целое число?
+    options:
+      - nextLine()
+      - next()
+      - nextInt()
+      - readInt()
+    correct: 2
+    explain: nextInt() читает следующее целое число. next() читает слово, nextLine() — строку целиком, а readInt у Scanner нет.
+    advice: Для дробных чисел используй nextDouble().
+  - q: Что будет, если nextInt() получит ввод «abc»?
+    options:
+      - Вернётся 0
+      - Программа упадёт с InputMismatchException
+      - Scanner пропустит слово и прочитает следующее число
+      - Код не скомпилируется
+    correct: 1
+    explain: Ввод не подходит по типу, и Scanner бросает InputMismatchException. Компилятор не знает, что введёт пользователь, поэтому код компилируется.
+    advice: Проверяй, что тип метода совпадает с тем, что вводят.
+  - q: Ввод — «10 20». Что прочитают два вызова sc.nextInt()?
+    options:
+      - 10, потом 20
+      - "1020"
+      - 10, потом ошибку — второе число на той же строке
+      - 20, потом 10
+    correct: 0
+    explain: Пробел и перевод строки одинаково разделяют значения. Каждый вызов забирает следующее число по порядку.
+    advice: Попробуй разные варианты ввода кнопкой «Запуск с вводом».
+memory:
+  note: Момент после чтения при вводе «7 5». Scanner — объект, он живёт в куче, а в стеке лежит ссылка sc на него.
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - int a = 7
+        - int b = 5
+  heap:
+    - obj: Scanner
+      data: Читает стандартный ввод. Уже отдал 7 и 5.
+tests:
+  - name: Сумма и произведение 7 и 5
+    stdin: |
+      7 5
+    stdout: |
+      Сумма: 12
+      Произведение: 35
+  - name: Отрицательное число
+    stdin: |
+      -3 4
+    stdout: |
+      Сумма: 1
+      Произведение: -12
+  - name: Числа на разных строках
+    stdin: |
+      0
+      9
+    stdout: |
+      Сумма: 9
+      Произведение: 0
+  - kind: source
+    name: Ввод через Scanner
+    pattern: new\s+Scanner\s*\(\s*System\.in\s*\)
+    message: "Создай Scanner: Scanner sc = new Scanner(System.in);"

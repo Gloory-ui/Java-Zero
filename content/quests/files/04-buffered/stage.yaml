@@ -1,0 +1,76 @@
+id: buffered
+title: "BufferedReader и BufferedWriter: по строке"
+hints:
+  - "Писатель в скобках `try`: `try (BufferedWriter out = Files.newBufferedWriter(file)) { ... }`. Внутри цикл с `out.write(String.valueOf(i * i)); out.newLine();`."
+  - "Читатель так же: `try (BufferedReader in = Files.newBufferedReader(file))` и цикл `while ((line = in.readLine()) != null)`."
+  - "В цикле чтения: `sum += Integer.parseInt(line); last = line;`."
+sampleInput: |
+  5
+quiz:
+  question: Что вернёт readLine(), когда строки в файле кончились?
+  options:
+    - "null"
+    - Пустую строку
+    - Бросит исключение
+    - "-1"
+  correct: 0
+  hint: По этому значению цикл понимает, что пора остановиться.
+exam:
+  - q: Почему BufferedWriter обязательно закрывают?
+    options:
+      - Он копит текст в памяти, и без закрытия часть может не попасть в файл
+      - Иначе файл нельзя будет удалить из программы
+      - Так быстрее работает чтение
+      - Закрывать не обязательно
+    correct: 0
+    explain: Буфер сбрасывается на диск большими порциями. close() записывает остаток и освобождает файл.
+    advice: try-with-resources закроет писателя даже при исключении.
+  - q: Что запишет out.write(65)?
+    options:
+      - Символ с кодом 65 — букву A
+      - Число 65
+      - Ничего
+      - Ошибку компиляции
+    correct: 0
+    explain: write(int) пишет один символ по его коду. Число как текст нужно передавать строкой.
+    advice: Для чисел — out.write(String.valueOf(x)).
+  - q: Чем построчное чтение лучше readAllLines для огромного файла?
+    options:
+      - В памяти одновременно лежит только одна строка
+      - Оно читает файл с конца
+      - Оно не требует try
+      - Ничем
+    correct: 0
+    explain: readAllLines держит весь файл в списке. BufferedReader отдаёт строки по одной, и память не растёт.
+    advice: Размер файла заранее неизвестен — читай построчно.
+memory:
+  note: Момент после чтения файла для n = 5.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - int n = 5
+        - Path file → адрес squares.txt
+        - int sum = 55
+        - String last → «25»
+  heap:
+    - obj: Scanner
+      data: Прочитано число 5.
+tests:
+  - name: Пять квадратов
+    stdin: |
+      5
+    stdout: |
+      Записано строк: 5
+      Сумма: 55
+      Последняя строка: 25
+  - name: Один квадрат
+    stdin: |
+      1
+    stdout: |
+      Записано строк: 1
+      Сумма: 1
+      Последняя строка: 1
+  - kind: source
+    name: Построчное чтение
+    pattern: 'readLine\s*\(\s*\)'
+    message: "Читай файл построчно через in.readLine()"

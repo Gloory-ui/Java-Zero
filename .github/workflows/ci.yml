@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [next, "feature/**", "fix/**"]
+  pull_request:
+    branches: [next, main]
+
+# Проверкам нужен только код: токен GitHub без права записи
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Линтер, типы, тесты, сборка
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - run: npm ci
+
+      - name: Biome
+        run: npx biome ci
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Юнит-тесты
+        run: npm test
+
+      # Каждое эталонное решение проходит тесты, каждый стартовый код компилируется и проваливается
+      - name: Контент курса
+        run: npm run content:check
+
+      - name: Сборка
+        run: npm run build
+
+      - name: Браузер для e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E-тесты
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Отчёт Playwright при падении
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

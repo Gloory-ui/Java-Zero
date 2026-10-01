@@ -1,0 +1,66 @@
+id: generic-class
+title: "Обобщённый класс: пара любых типов"
+hints:
+  - "Параметры типа объявляются после имени класса: `class Pair<A, B>`, а поля получают эти типы: `private final A first; private final B second;`."
+  - "Геттеры возвращают параметры: `A getFirst()`, `B getSecond()`. У `swap()` типы переставлены: `Pair<B, A> swap() { return new Pair<>(second, first); }`."
+  - "`toString()`: `return \"(\" + first + \", \" + second + \")\";`. Потом раскомментируй `main`."
+quiz:
+  question: Что такое T в объявлении class Box<T>?
+  options:
+    - Параметр типа — вместо него при создании подставят конкретный класс
+    - Поле класса
+    - Имя конструктора
+    - Сокращение от Text
+  correct: 0
+  hint: В Box<String> на месте T окажется String.
+exam:
+  - q: Почему p.getFirst().length() компилируется для Pair<String, Integer>?
+    options:
+      - Компилятор знает, что A = String, и getFirst() вернёт String
+      - length() есть у любого объекта
+      - Java приводит тип при запуске
+      - Не компилируется
+    correct: 0
+    explain: Параметры типа подставляются при объявлении переменной. Для p компилятор считает, что getFirst() возвращает String, и разрешает её методы.
+    advice: Дженерики переносят проверку типов с запуска на компиляцию.
+  - q: Что вернёт swap() у Pair<String, Integer>?
+    options:
+      - Pair<Integer, String>
+      - Pair<String, Integer>
+      - Pair<Object, Object>
+      - Ничего, это void
+    correct: 0
+    explain: swap объявлен как Pair<B, A>. Для A = String и B = Integer получается Pair<Integer, String>.
+    advice: Типы в сигнатуре описывают, как параметры переходят в результат.
+  - q: Что значит new Pair<>("Аня", 19) с пустыми угловыми скобками?
+    options:
+      - Компилятор сам выведет типы из объявления переменной и аргументов
+      - Пара без типов, как Object
+      - Ошибка, типы обязательны
+      - Пара только для строк
+    correct: 0
+    explain: Пустые угловые скобки называют ромбом. Типы уже написаны слева, повторять их не нужно.
+    advice: Пиши ромб всегда, когда тип понятен из левой части.
+memory:
+  note: Момент после swap().
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Pair<String, Integer> p → объект в куче
+        - Pair<Integer, String> s → объект в куче
+  heap:
+    - obj: Pair (p)
+      data: first = "Аня", second = 19
+    - obj: Pair (s)
+      data: first = 19, second = "Аня"
+tests:
+  - name: Пары
+    stdout: |
+      (Аня, 19)
+      22
+      (19, Аня)
+      (2.5, true)
+  - kind: source
+    name: Обобщённый класс
+    pattern: 'class\s+Pair\s*<\s*\w+\s*,\s*\w+\s*>'
+    message: "Объяви class Pair<A, B>"

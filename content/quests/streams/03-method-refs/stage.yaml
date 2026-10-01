@@ -1,0 +1,73 @@
+id: method-refs
+title: "Ссылки на методы: String::trim и компания"
+hints:
+  - "Каждый пропуск — одна ссылка: `String::trim`, `Integer::parseInt`, `System.out::println`, `Math::max`, `ArrayList::new`."
+  - "`raw.replaceAll(String::trim);`, потом `Function<String, Integer> parse = Integer::parseInt;` и цикл `nums.add(parse.apply(s));`."
+  - "`nums.forEach(System.out::println);`, `BiFunction<Integer, Integer, Integer> max = Math::max;`, `Supplier<List<String>> maker = ArrayList::new;`."
+quiz:
+  question: Какой лямбде равна ссылка String::toUpperCase?
+  options:
+    - s -> s.toUpperCase()
+    - () -> String.toUpperCase()
+    - s -> String.toUpperCase(s)
+    - (s, t) -> s.toUpperCase(t)
+  correct: 0
+  hint: Метод вызывается у самого параметра.
+exam:
+  - q: Что делает nums.forEach(System.out::println)?
+    options:
+      - Печатает каждый элемент с новой строки
+      - Печатает список целиком в скобках
+      - Ничего, это только ссылка
+      - Удаляет элементы после печати
+    correct: 0
+    explain: forEach вызывает переданное действие для каждого элемента. Действие здесь — println у объекта System.out.
+    advice: Ссылка на метод конкретного объекта пишется через этот объект — System.out::println.
+  - q: Что создаёт Supplier<List<String>> maker = ArrayList::new при вызове maker.get()?
+    options:
+      - Новый пустой ArrayList
+      - Копию предыдущего списка
+      - "null"
+      - Ошибку, у конструктора нет имени
+    correct: 0
+    explain: Ссылка на конструктор — функция, которая при каждом вызове создаёт новый объект.
+    advice: Такие ссылки часто передают в Collectors, например TreeMap::new.
+  - q: Почему Function<String, String> f = String::length не компилируется?
+    options:
+      - length возвращает int, а функция должна вернуть String
+      - length — статический метод
+      - Ссылки нельзя класть в переменные
+      - Нужны скобки length()
+    correct: 0
+    explain: Ссылка должна совпадать с методом интерфейса по параметрам и результату. Для length подойдёт Function<String, Integer>.
+    advice: Ошибка «Bad return type» подсказывает, что не совпал тип результата.
+memory:
+  note: Момент после перевода строк в числа.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - List<String> raw → ArrayList в куче
+        - Function<String, Integer> parse → ссылка Integer::parseInt
+        - List<Integer> nums → ArrayList в куче
+  heap:
+    - obj: ArrayList<String> (raw)
+      data: "42, 7, 15"
+    - obj: ArrayList<Integer> (nums)
+      data: "42, 7, 15"
+tests:
+  - name: Ссылки на методы
+    stdout: |
+      [42, 7, 15]
+      42
+      7
+      15
+      Максимум: 42
+      Новый список: []
+  - kind: source
+    name: Обрезка ссылкой
+    pattern: 'String::trim'
+    message: "Обрежь пробелы через raw.replaceAll(String::trim)"
+  - kind: source
+    name: Печать ссылкой
+    pattern: 'System\.out::println'
+    message: "Печатай через nums.forEach(System.out::println)"

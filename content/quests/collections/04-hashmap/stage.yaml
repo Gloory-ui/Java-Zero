@@ -1,0 +1,76 @@
+id: hashmap
+title: "Map: словарь «ключ → значение»"
+hints:
+  - "Счётчик — одной строкой: `counts.put(word, counts.getOrDefault(word, 0) + 1);`."
+  - "Обход пар по алфавиту: `for (Map.Entry<String, Integer> e : counts.entrySet())`, печать `e.getKey() + \": \" + e.getValue()`."
+  - "Самое частое ищи в том же цикле: `if (top == null || e.getValue() > counts.get(top)) top = e.getKey();`."
+sampleInput: |
+  кот пёс Кот мышь пёс кот
+quiz:
+  question: Что вернёт map.get(key), если такого ключа нет?
+  options:
+    - "null"
+    - "0"
+    - Бросит исключение
+    - Пустую строку
+  correct: 0
+  hint: Поэтому для счётчиков есть getOrDefault.
+exam:
+  - q: Что случится при put("Аня", 20), если ключ «Аня» уже есть со значением 19?
+    options:
+      - Значение заменится на 20, пара останется одна
+      - Появится вторая пара с тем же ключом
+      - Бросится исключение
+      - Ничего, останется 19
+    correct: 0
+    explain: Ключи в Map уникальны. put по существующему ключу перезаписывает значение.
+    advice: Чтобы не перезаписать случайно, есть putIfAbsent.
+  - q: Чем TreeMap отличается от HashMap?
+    options:
+      - TreeMap хранит ключи отсортированными
+      - TreeMap не умеет get
+      - HashMap хранит только числа
+      - Ничем
+    correct: 0
+    explain: HashMap быстрый, но порядок ключей в нём непредсказуем. TreeMap держит ключи по порядку.
+    advice: Нужен порядок добавления — LinkedHashMap.
+  - q: Почему counts.get(w) + 1 падает для нового слова?
+    options:
+      - get вернул null, а к null нельзя прибавить 1
+      - Слово слишком длинное
+      - TreeMap не хранит числа
+      - Нужно сначала вызвать size()
+    correct: 0
+    explain: Для отсутствующего ключа get возвращает null. Java пытается превратить null в int и бросает NullPointerException.
+    advice: Используй getOrDefault(w, 0) или merge(w, 1, Integer::sum).
+memory:
+  note: Момент после чтения всех слов из примера.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Scanner sc → объект в куче
+        - Map<String, Integer> counts → TreeMap в куче
+  heap:
+    - obj: TreeMap<String, Integer>
+      data: "{кот=3, мышь=1, пёс=2}"
+tests:
+  - name: Слова из примера
+    stdin: |
+      кот пёс Кот мышь пёс кот
+    stdout: |
+      кот: 3
+      мышь: 1
+      пёс: 2
+      Чаще всего: кот
+  - name: Ничья по частоте
+    stdin: |
+      b a B A c
+    stdout: |
+      a: 2
+      b: 2
+      c: 1
+      Чаще всего: a
+  - kind: source
+    name: Счётчик в словаре
+    pattern: 'getOrDefault\s*\(|\.merge\s*\('
+    message: "Увеличивай счётчик через counts.getOrDefault(word, 0) + 1"

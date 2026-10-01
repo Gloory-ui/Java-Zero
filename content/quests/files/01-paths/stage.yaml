@@ -1,0 +1,65 @@
+id: paths
+title: "Path и Files: где лежит файл"
+hints:
+  - "Порядок действий: `Files.createDirectories(dir);`, `Files.deleteIfExists(file);`, проверка `Files.exists(file)`, запись, снова проверка."
+  - "Запись строки: `Files.writeString(file, \"Привет, файл!\");`."
+  - "Имя, папка и размер: `file.getFileName()`, `file.getParent()`, `Files.size(file)`."
+quiz:
+  question: Что произойдёт при Path p = Path.of("new.txt");?
+  options:
+    - Появится только адрес, файл на диске не создаётся
+    - Создастся пустой файл
+    - Бросится исключение, если файла нет
+    - Файл откроется для записи
+  correct: 0
+  hint: Path — это адрес, а не файл.
+exam:
+  - q: Почему «Привет, файл!» занимает 23 байта, а не 13?
+    options:
+      - В UTF-8 русская буква занимает 2 байта, а латиница и знаки — по одному
+      - Java добавляет 10 служебных байтов
+      - size считает символы дважды
+      - Файл хранит перевод строки
+    correct: 0
+    explain: 10 русских букв × 2 байта + запятая, пробел и восклицательный знак по байту = 23.
+    advice: Размер файла и длина строки — разные величины.
+  - q: Зачем писать throws IOException у main?
+    options:
+      - Методы Files бросают проверяемое IOException, и его нужно обработать или объявить
+      - Иначе файл не создастся
+      - Так программа работает быстрее
+      - Это нужно только для чтения
+    correct: 0
+    explain: Диск может быть полон, папка — защищена. Компилятор требует решить, что делать с такой ошибкой.
+    advice: В учебных программах throws у main нормален. В настоящих — ловят и сообщают пользователю.
+  - q: Что сделает dir.resolve("hello.txt")?
+    options:
+      - Построит адрес файла hello.txt внутри папки dir
+      - Создаст файл
+      - Найдёт файл на диске
+      - Удалит папку
+    correct: 0
+    explain: resolve склеивает пути с правильным для системы разделителем. На диске при этом ничего не меняется.
+    advice: Строй пути через resolve, а не склейкой строк.
+memory:
+  note: Момент после записи в файл.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Path dir → адрес lab12
+        - Path file → адрес lab12/hello.txt
+  heap:
+    - obj: Path (file)
+      data: "fileName = hello.txt, parent = lab12"
+tests:
+  - name: Файл в папке
+    stdout: |
+      Есть до записи: false
+      Есть после записи: true
+      Имя: hello.txt
+      Папка: lab12
+      Размер в байтах: 23
+  - kind: source
+    name: Запись через Files
+    pattern: 'Files\s*\.\s*writeString\s*\('
+    message: "Запиши текст через Files.writeString(file, ...)"

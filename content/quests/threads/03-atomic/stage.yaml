@@ -1,0 +1,65 @@
+id: atomic
+title: "Atomic: потокобезопасно без замков"
+hints:
+  - "Каждое действие — один атомарный метод: `incrementAndGet`, `addAndGet`, `accumulateAndGet`."
+  - "`processed.incrementAndGet(); sum.addAndGet(data[i]);`."
+  - "Максимум: `max.accumulateAndGet(data[i], Math::max);`."
+quiz:
+  question: Что делает hits.incrementAndGet()?
+  options:
+    - Атомарно прибавляет 1 и возвращает новое значение
+    - Прибавляет 1 без защиты
+    - Возвращает значение, не меняя его
+    - Создаёт новый счётчик
+  correct: 0
+  hint: Increment and get — «увеличить и получить».
+exam:
+  - q: Почему sum.set(sum.get() + x) небезопасно?
+    options:
+      - Между get и set другой поток может изменить значение, и прибавление потеряется
+      - set не существует
+      - get возвращает копию
+      - Это безопасно
+    correct: 0
+    explain: Каждый метод по отдельности атомарен, но пара get + set — уже два шага. Нужна одна операция — addAndGet.
+    advice: Для «прочитать, изменить, записать» ищи готовый атомарный метод.
+  - q: Делает ли volatile операцию count++ безопасной?
+    options:
+      - Нет, volatile отвечает только за видимость значения всем потокам
+      - Да, полностью
+      - Только для int
+      - Только в одном потоке
+    correct: 0
+    explain: volatile гарантирует, что потоки видят последнее записанное значение. Но три шага count++ всё равно могут перемешаться.
+    advice: Флаг «работать или остановиться» — volatile, счётчик — Atomic.
+  - q: Почему максимум начинают с Integer.MIN_VALUE?
+    options:
+      - Любое число не меньше его, поэтому первое же сравнение даст правильный максимум
+      - Так требует AtomicInteger
+      - Чтобы сумма была верной
+      - 0 нельзя передать в конструктор
+    correct: 0
+    explain: Если бы все числа были отрицательными, начальный 0 остался бы «максимумом», хотя его в данных нет.
+    advice: Начальное значение поиска максимума — самое маленькое возможное.
+memory:
+  note: Момент после ожидания всех потоков.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - int[] data → массив в куче
+        - AtomicInteger processed → 9
+        - AtomicInteger sum → 129
+        - AtomicInteger max → 42
+  heap:
+    - obj: int[9]
+      data: "5, 17, 3 | 42, 8, 23 | 16, 4, 11 — три куска"
+tests:
+  - name: Обработка по кускам
+    stdout: |
+      Обработано: 9
+      Сумма: 129
+      Максимум: 42
+  - kind: source
+    name: Общий максимум атомарно
+    pattern: 'accumulateAndGet\s*\(|updateAndGet\s*\('
+    message: "Обнови максимум через max.accumulateAndGet(data[i], Math::max)"

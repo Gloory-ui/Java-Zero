@@ -1,0 +1,69 @@
+id: string-methods
+title: "Методы String: длина, поиск, вырезка"
+hints:
+  - "Каждая строка ответа — один метод строки: `charAt`, `indexOf`, `lastIndexOf`, `substring`, `toUpperCase`, `contains`, `replace`."
+  - "Последний символ — `s.charAt(s.length() - 1)`. Вырезка «Zero»: `s.substring(5, 9)` — конец не включается."
+  - "Например: `System.out.println(\"Последнее Java с индекса \" + s.lastIndexOf(\"Java\"));` и `System.out.println(\"Замена: \" + s.replace(\"Java\", \"Kotlin\"));`."
+quiz:
+  question: Что вернёт "молоко".indexOf("ко")?
+  options:
+    - "2"
+    - "4"
+    - "3"
+    - "-1"
+  correct: 0
+  hint: indexOf ищет первое вхождение, индексы с нуля.
+exam:
+  - q: Что напечатает код String s = "код"; s.toUpperCase(); System.out.println(s);?
+    options:
+      - код
+      - КОД
+      - Ошибку компиляции
+      - Пустую строку
+    correct: 0
+    explain: Строки неизменяемы. toUpperCase вернул новую строку «КОД», но её никуда не сохранили, а s осталась прежней.
+    advice: Результат метода строки сохраняй в переменную или сразу печатай.
+  - q: Что вернёт "Привет".substring(1, 4)?
+    options:
+      - рив
+      - риве
+      - Прив
+      - ивет
+    correct: 0
+    explain: Берутся индексы 1, 2, 3 — «р», «и», «в». Индекс 4 уже не входит.
+    advice: Длина вырезки substring(a, b) равна b - a.
+  - q: Почему строки сравнивают через equals, а не ==?
+    options:
+      - == проверяет, один ли это объект, а equals сравнивает текст
+      - == не работает с текстом и не компилируется
+      - equals быстрее
+      - Разницы нет
+    correct: 0
+    explain: Две строки с текстом «java» могут лежать в разных объектах. Тогда == даст false, а equals — true.
+    advice: Для строк, записей и других объектов сравнение содержимого — equals.
+memory:
+  note: Момент после поиска «Zero».
+  stack:
+    - method: main(String[] args)
+      vars:
+        - String s → строка в куче
+        - int zero = 5
+  heap:
+    - obj: String
+      data: "\"Java-Zero учит Java\", длина 19"
+tests:
+  - name: Разбор строки
+    stdout: |
+      Длина: 19
+      Первый символ: J
+      Последний символ: a
+      Zero начинается с индекса 5
+      Последнее Java с индекса 15
+      Вырезка: Zero
+      Крупно: JAVA-ZERO УЧИТ JAVA
+      Есть «учит»: true
+      Замена: Kotlin-Zero учит Kotlin
+  - kind: source
+    name: Вырезка через substring
+    pattern: 'substring\s*\('
+    message: "Вырежи «Zero» методом substring"

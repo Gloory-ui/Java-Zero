@@ -1,0 +1,68 @@
+id: records
+title: "record: класс-данные в одну строку"
+hints:
+  - "Запись объявляется как класс, только вместо полей — компоненты в скобках: `record Student(String name, int score) { ... }`."
+  - "Компактный конструктор без скобок: `Student { if (score > 100) score = 100; }`. Метод: `boolean passed() { return score >= 60; }`."
+  - "Печать `System.out.println(s);` покажет `Student[name=Аня, score=90]`, а для зачёта: `s.name() + \": \" + (s.passed() ? \"зачёт\" : \"незачёт\")`."
+quiz:
+  question: Как прочитать имя из record Student(String name, int score)?
+  options:
+    - s.name()
+    - s.getName()
+    - s.name
+    - Student.name()
+  correct: 0
+  hint: Геттер записи называется так же, как компонент.
+exam:
+  - q: Что напечатает System.out.println(new Point(1, 2)) для record Point(int x, int y)?
+    options:
+      - Point[x=1, y=2]
+      - Point@1b6d3586
+      - (1, 2)
+      - "x=1 y=2"
+    correct: 0
+    explain: У записи toString готов и показывает имя типа и все компоненты.
+    advice: Для обычного класса toString пришлось бы писать самому.
+  - q: Когда new Student("Аня", 90).equals(new Student("Аня", 90)) даёт true?
+    options:
+      - Всегда — record сравнивает значения компонентов
+      - Никогда — это два разных объекта
+      - Только если переопределить equals
+      - Только при сравнении через ==
+    correct: 0
+    explain: equals у записи сравнивает все компоненты. == по-прежнему сравнивает ссылки и даст false.
+    advice: Сравнивай записи через equals, как строки.
+  - q: Где можно поправить балл 120 на 100?
+    options:
+      - В компактном конструкторе, присвоив параметру score
+      - В методе passed()
+      - Где угодно через this.score = 100
+      - Нигде, запись нельзя менять
+    correct: 0
+    explain: Поля записи final. Компактный конструктор выполняется до записи в поля, и там можно поменять значение параметра.
+    advice: Проверку и нормализацию данных пиши в компактном конструкторе.
+memory:
+  note: Момент после создания группы. У Вики балл уже срезан до 100.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Student[] group → массив в куче
+  heap:
+    - obj: Student[3]
+      data: "[0] → Аня, [1] → Борис, [2] → Вика"
+    - obj: Student (Вика)
+      data: name = "Вика", score = 100
+tests:
+  - name: Записи студентов
+    stdout: |
+      Student[name=Аня, score=90]
+      Student[name=Борис, score=55]
+      Student[name=Вика, score=100]
+      Аня: зачёт
+      Борис: незачёт
+      Вика: зачёт
+      Записи равны: true
+  - kind: source
+    name: Объявлена запись
+    pattern: 'record\s+Student\s*\(\s*String\s+name\s*,\s*int\s+score\s*\)'
+    message: "Объяви record Student(String name, int score)"

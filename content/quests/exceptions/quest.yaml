@@ -1,0 +1,12 @@
+id: exceptions
+num: "08"
+title: Исключения
+subtitle: try и catch, finally, throw, свои исключения, try-with-resources
+fileName: Exceptions.java
+order: 12
+unlockAfter: strings
+rank:
+  title: УКРОТИТЕЛЬ ОШИБОК
+  icon: shield-alert
+  color: "#ef4444"
+stageBadge: "ЭТАП {n} / {total}"

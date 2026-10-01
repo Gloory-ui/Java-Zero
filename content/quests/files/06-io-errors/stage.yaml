@@ -1,0 +1,80 @@
+id: io-errors
+title: "Ошибки ввода-вывода: файла нет"
+hints:
+  - "Чтение каждого файла оберни в `try`, а отсутствие файла лови как `catch (NoSuchFileException e)`."
+  - "В `catch` печатай имя из ввода: `System.out.println(\"Нет файла: \" + name);`."
+  - "Уборка: цикл по трём именам и `if (Files.deleteIfExists(dir.resolve(name))) deleted++;`."
+sampleInput: |
+  a.txt
+  c.txt
+  b.txt
+quiz:
+  question: Что вернёт Files.deleteIfExists(p), если файла p нет?
+  options:
+    - "false"
+    - "true"
+    - Бросит NoSuchFileException
+    - "null"
+  correct: 0
+  hint: IfExists — «если существует».
+exam:
+  - q: Почему NoSuchFileException ловят раньше IOException?
+    options:
+      - Это наследник IOException, общий catch выше сделал бы частный недостижимым
+      - Иначе файл не прочитается
+      - Так быстрее
+      - Порядок не важен
+    correct: 0
+    explain: catch проверяются сверху вниз. IOException поймал бы и NoSuchFileException, и компилятор сообщил бы о недостижимом блоке.
+    advice: Частные исключения — выше общих, всегда.
+  - q: Что бросит Files.delete(p) для несуществующего файла?
+    options:
+      - NoSuchFileException
+      - Ничего, вернёт false
+      - NullPointerException
+      - FileAlreadyExistsException
+    correct: 0
+    explain: delete уверен, что файл есть. deleteIfExists сначала проверяет и не бросает исключение.
+    advice: Для уборки временных файлов подходит deleteIfExists.
+  - q: Почему в сообщении печатают имя из ввода, а не e.getMessage()?
+    options:
+      - Сообщение содержит полный путь с разделителями конкретной системы
+      - getMessage у этого исключения пустой
+      - getMessage бросает исключение
+      - Так требует Scanner
+    correct: 0
+    explain: В Windows путь будет с обратной чертой, в Linux и браузере — с прямой. Имя из ввода одинаковое везде и понятно пользователю.
+    advice: Сообщения для людей строй из того, что они сами ввели.
+memory:
+  note: Момент в catch для c.txt.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Path dir → адрес lab12err
+        - Scanner sc → объект в куче
+        - String name → «c.txt»
+        - NoSuchFileException e → объект в куче
+  heap:
+    - obj: NoSuchFileException
+      data: message — путь к lab12err/c.txt
+tests:
+  - name: Файлы из примера
+    stdin: |
+      a.txt
+      c.txt
+      b.txt
+    stdout: |
+      a.txt: альфа
+      Нет файла: c.txt
+      b.txt: бета
+      Удалено файлов: 2
+  - name: Только несуществующий
+    stdin: |
+      zzz.txt
+    stdout: |
+      Нет файла: zzz.txt
+      Удалено файлов: 2
+  - kind: source
+    name: Ловим NoSuchFileException
+    pattern: 'catch\s*\(\s*NoSuchFileException'
+    message: "Поймай отсутствие файла: catch (NoSuchFileException e)"

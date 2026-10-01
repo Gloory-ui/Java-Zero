@@ -1,0 +1,89 @@
+id: switch-zero
+title: Конструкция switch и защита от 0
+hints:
+  - Все операции уже готовы, кроме деления. Перед делением проверь, не ноль ли `b`.
+  - Внутри `case '/':` напиши `if (b == 0) { … } else { … }`.
+  - 'При нуле печатай `"Ошибка: деление на ноль!"`, иначе — результат `a / b`. `break;` после ветки уже стоит, оставь его.'
+sampleInput: |
+  10 / 4
+quiz:
+  question: Что предотвращает эффект 'проваливания' в конструкции switch?
+  options:
+    - continue
+    - break
+    - default
+    - return 0
+  correct: 1
+  hint: Оператор break останавливает выполнение дальнейших case.
+exam:
+  - q: Что вернет операция 10.0 / 0.0 в Java?
+    options:
+      - ArithmeticException
+      - Infinity по стандарту IEEE 754
+      - "0"
+      - NaN
+    correct: 1
+    explain: Вещественные числа в Java следуют стандарту IEEE 754, где деление ненулевого числа на 0.0 дает Infinity.
+    advice: Всегда помни об особенности IEEE 754 для double.
+  - q: Что будет, если в case забыть break?
+    options:
+      - Выполнение провалится в следующий case
+      - Ошибка компиляции
+      - switch сразу завершится
+      - Ничего
+    correct: 0
+    explain: switch начинает с совпавшего case и идёт вниз, пока не встретит break или конец.
+    advice: Ставь break в конце каждого case.
+  - q: Как записать метку для плюса, если op имеет тип char?
+    options:
+      - "case '+':"
+      - 'case "+":'
+      - "case +:"
+      - "case (+):"
+    correct: 0
+    explain: Символ char пишут в одинарных кавычках. "+" — это строка, и с char она не совместима.
+    advice: Одинарные кавычки — символ, двойные — строка.
+memory:
+  note: "Момент перед switch при вводе «10 / 4»: числа и знак уже прочитаны."
+  stack:
+    - method: main()
+      vars:
+        - Scanner sc → объект в куче
+        - double a = 10.0
+        - char op = '/'
+        - double b = 4.0
+  heap:
+    - obj: Scanner
+      data: "Читает ввод по частям: число, знак, число."
+    - obj: String "/"
+      data: sc.next() вернул строку "/", а charAt(0) взял из неё символ '/'.
+tests:
+  - name: "Сложение: 3 + 4"
+    stdin: |
+      3 + 4
+    stdout: |
+      7.0
+  - name: "Вычитание: 9 - 12"
+    stdin: |
+      9 - 12
+    stdout: |
+      -3.0
+  - name: "Умножение: 6 * 7"
+    stdin: |
+      6 * 7
+    stdout: |
+      42.0
+  - name: "Деление: 10 / 4"
+    stdin: |
+      10 / 4
+    stdout: |
+      2.5
+  - name: "Защита от деления на ноль: 5 / 0"
+    stdin: |
+      5 / 0
+    stdout: |
+      Ошибка: деление на ноль!
+  - kind: source
+    name: Выбор операции через switch
+    pattern: \bswitch\s*\(
+    message: Выбери операцию конструкцией switch (op)

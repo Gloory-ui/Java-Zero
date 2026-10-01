@@ -1,0 +1,78 @@
+id: enum-fields
+title: "enum с полями и конструктором"
+hints:
+  - "Аргументы конструктора пишут в скобках после константы: `SMALL(\"Маленький\", 150),`. После последней константы — `;`."
+  - "Поля `private final String label; private final int price;` и конструктор `Size(String label, int price) { this.label = label; this.price = price; }`."
+  - "Геттеры `String label()` и `int price()`, а в цикле: `System.out.println(size.label() + \": \" + size.price()); total += size.price();`."
+sampleInput: |
+  MEDIUM LARGE SMALL LARGE
+quiz:
+  question: Сколько раз вызывается конструктор enum Size с тремя константами?
+  options:
+    - Три раза, по одному на константу
+    - Каждый раз при Size.valueOf
+    - Ни разу, у enum нет конструкторов
+    - Один раз на всю программу
+  correct: 0
+  hint: Каждая константа — объект, и строится она один раз.
+exam:
+  - q: Почему после LARGE("Большой", 250) стоит точка с запятой?
+    options:
+      - Она отделяет список констант от полей и методов
+      - Так заканчивается каждая константа
+      - Без неё не работает valueOf
+      - Это необязательный стиль
+    correct: 0
+    explain: Константы перечисляют через запятую. Если после списка идёт что-то ещё, список закрывают точкой с запятой.
+    advice: Добавил поля в enum — проверь, что после констант стоит ;.
+  - q: Что вернёт Size.valueOf("LARGE").price()?
+    options:
+      - "250"
+      - "\"Большой\""
+      - "2"
+      - Ошибку компиляции
+    correct: 0
+    explain: valueOf находит константу LARGE, а её поле price задано в скобках — 250.
+    advice: valueOf удобно использовать для чтения значений из ввода.
+  - q: Можно ли создать новый размер через new Size("Огромный", 300)?
+    options:
+      - Нет, константы enum создаёт только сама Java
+      - Да, если конструктор public
+      - Да, внутри main
+      - Да, но только один раз
+    correct: 0
+    explain: Список значений enum закрыт. Конструктор вызывается только для констант из списка, вручную — никогда.
+    advice: Нужен новый размер — допиши константу в список.
+memory:
+  note: Момент после чтения всех размеров из примера.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Scanner sc → объект в куче
+        - int total = 850
+        - Size size → константа LARGE
+  heap:
+    - obj: Size.LARGE
+      data: label = "Большой", price = 250
+    - obj: Scanner
+      data: Ввод прочитан до конца.
+tests:
+  - name: Заказ из примера
+    stdin: |
+      MEDIUM LARGE SMALL LARGE
+    stdout: |
+      Средний: 200
+      Большой: 250
+      Маленький: 150
+      Большой: 250
+      Итого: 850
+  - name: Один маленький
+    stdin: |
+      SMALL
+    stdout: |
+      Маленький: 150
+      Итого: 150
+  - kind: source
+    name: Конструктор с подписью и ценой
+    pattern: 'Size\s*\(\s*String\s+\w+\s*,\s*int\s+\w+\s*\)'
+    message: "Добавь конструктор Size(String label, int price)"

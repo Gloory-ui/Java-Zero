@@ -1,0 +1,71 @@
+id: multi-catch-finally
+title: "Несколько catch и finally"
+hints:
+  - "Оберни обе строки метода в один `try`, а за ним поставь три `catch` — по одному на беду."
+  - "Сообщения строй из параметра: `catch (ArrayIndexOutOfBoundsException e) { System.out.println(\"Нет элемента с номером \" + indexText); }`."
+  - "Журнал — в `finally { System.out.println(\"--- запрос: \" + indexText); }`: он выполнится и после успеха, и после любого `catch`."
+quiz:
+  question: Когда выполняется блок finally?
+  options:
+    - Всегда — и после успешного try, и после catch
+    - Только если исключения не было
+    - Только если исключение было
+    - Только при return
+  correct: 0
+  hint: Для этого finally и придуман.
+exam:
+  - q: В каком порядке Java проверяет несколько блоков catch?
+    options:
+      - Сверху вниз, выполняется первый подходящий
+      - Все подходящие по очереди
+      - Снизу вверх
+      - Случайно
+    correct: 0
+    explain: Срабатывает только один catch — первый, чей тип подходит к исключению. Поэтому частные типы ставят выше общих.
+    advice: Если общий Exception окажется выше, компилятор сообщит о недостижимом блоке.
+  - q: Что напечатает метод с return 1 в try и println("F") в finally при вызове System.out.println(m())?
+    options:
+      - Сначала F, потом 1
+      - Только 1
+      - Сначала 1, потом F
+      - Только F
+    correct: 0
+    explain: finally выполняется перед тем, как метод действительно вернёт значение. Значит, F напечатается раньше, чем println получит 1.
+    advice: finally годится для уборки даже в методах с return.
+  - q: Как поймать два разных исключения одним блоком?
+    options:
+      - catch (NumberFormatException | NullPointerException e)
+      - catch (NumberFormatException, NullPointerException e)
+      - catch (NumberFormatException e, NullPointerException e)
+      - Никак, нужно два блока
+    correct: 0
+    explain: Вертикальная черта перечисляет типы в одном catch. Обработка у них будет общей.
+    advice: Используй, когда реакция на разные ошибки одинаковая.
+memory:
+  note: Момент в catch для запроса «1» — элемент пустой.
+  stack:
+    - method: pick(String indexText)
+      vars:
+        - String indexText → «1»
+        - NullPointerException e → объект в куче
+    - method: main(String[] args)
+      vars:
+        - вызвал pick("1")
+  heap:
+    - obj: String[3] (items)
+      data: "[0] → «кот», [1] → null, [2] → «пёс»"
+tests:
+  - name: Четыре запроса
+    stdout: |
+      КОТ
+      --- запрос: 0
+      Пустой элемент
+      --- запрос: 1
+      Нет элемента с номером 5
+      --- запрос: 5
+      Не число: два
+      --- запрос: два
+  - kind: source
+    name: Журнал в finally
+    pattern: 'finally\s*\{'
+    message: "Печатай «--- запрос» в блоке finally"

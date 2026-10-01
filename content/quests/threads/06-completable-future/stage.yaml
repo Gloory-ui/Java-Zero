@@ -1,0 +1,71 @@
+id: completable-future
+title: "CompletableFuture: цепочки задач"
+hints:
+  - "Курс: `CompletableFuture<Integer> rate = CompletableFuture.supplyAsync(() -> 90);`."
+  - "`price.thenCombine(rate, (p, r) -> p * r)`, потом `.thenApply(x -> x + x / 10)`. Итоги печатай через `join()`."
+  - "Упавшая задача: `supplyAsync(() -> { throw new IllegalStateException(\"сервер недоступен\"); })`, а ответ — `broken.exceptionally(e -> -1).join()`."
+quiz:
+  question: Что делает thenCombine?
+  options:
+    - Объединяет результаты двух задач, когда готовы обе
+    - Запускает две задачи по очереди
+    - Отменяет одну из задач
+    - Ждёт первую готовую задачу
+  correct: 0
+  hint: Combine — объединить.
+exam:
+  - q: Чем join() удобнее get() у CompletableFuture?
+    options:
+      - join не бросает проверяемых исключений, и throws писать не нужно
+      - join не ждёт результата
+      - get не существует
+      - join быстрее
+    correct: 0
+    explain: Оба метода ждут результата. get объявляет проверяемые InterruptedException и ExecutionException, а join оборачивает ошибку в непроверяемое CompletionException.
+    advice: В цепочках и лямбдах удобнее join.
+  - q: Что вернёт exceptionally(e -> -1), если задача выполнилась без ошибок?
+    options:
+      - Обычный результат задачи
+      - "-1"
+      - "null"
+      - Исключение
+    correct: 0
+    explain: exceptionally срабатывает только при ошибке. Иначе результат проходит сквозь него без изменений.
+    advice: exceptionally — страховка, а не замена результата.
+  - q: Почему итоги печатают в main после join, а не через thenAccept внутри цепочки?
+    options:
+      - Печать из фоновых потоков может перемешать строки разных цепочек
+      - thenAccept не умеет печатать
+      - join печатает сам
+      - Так требует Java
+    correct: 0
+    explain: Цепочки выполняются в общем пуле, и какая напечатает первой, заранее неизвестно.
+    advice: Когда порядок вывода важен, собирай результаты и печатай из одного потока.
+memory:
+  note: Момент после получения всех итогов.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - CompletableFuture<Integer> price → готово, 250
+        - CompletableFuture<Integer> rate → готово, 90
+        - CompletableFuture<Integer> rubles → готово, 22500
+        - CompletableFuture<Integer> withTax → готово, 24750
+  heap:
+    - obj: ForkJoinPool.commonPool
+      data: Общий пул, где выполнялись задачи
+tests:
+  - name: Цепочка задач
+    stdout: |
+      Цена: 250
+      Курс: 90
+      В рублях: 22500
+      С налогом: 24750
+      Запасной ответ: -1
+  - kind: source
+    name: Объединение двух задач
+    pattern: '\.thenCombine\s*\('
+    message: "Перемножь цену и курс через thenCombine"
+  - kind: source
+    name: Запасной ответ
+    pattern: '\.exceptionally\s*\('
+    message: "Подставь -1 через exceptionally"

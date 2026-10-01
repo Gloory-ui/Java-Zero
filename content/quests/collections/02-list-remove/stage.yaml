@@ -1,0 +1,79 @@
+id: list-remove
+title: "Удаление на ходу: Iterator и removeIf"
+hints:
+  - "Итератор: `Iterator<Integer> it = list.iterator();` и цикл `while (it.hasNext())`, в котором `int n = it.next();`."
+  - "Удаляет сам итератор: `if (n < 0) { it.remove(); }` — не `list.remove`."
+  - "Чётные — одной строкой: `list.removeIf(n -> n % 2 == 0);`."
+sampleInput: |
+  5 -3 8 -1 0 7 -10 4
+quiz:
+  question: Что бросит удаление из списка через list.remove внутри цикла for-each?
+  options:
+    - ConcurrentModificationException
+    - NullPointerException
+    - Ничего, всё сработает
+    - ArithmeticException
+  correct: 0
+  hint: Коллекцию поменяли, пока по ней шли.
+exam:
+  - q: Что удалит list.remove(1) у списка ArrayList<Integer> [5, 1, 7]?
+    options:
+      - Элемент с индексом 1 — число 1, так совпало
+      - Все единицы
+      - Первый элемент
+      - Ничего
+    correct: 0
+    explain: У remove(int) приоритет — это удаление по индексу. Здесь по индексу 1 как раз лежит единица, но для [1, 5, 7] удалилась бы пятёрка.
+    advice: Чтобы удалить число, пиши remove(Integer.valueOf(1)).
+  - q: Что значит запись n -> n % 2 == 0 в removeIf?
+    options:
+      - Условие для каждого элемента n — удалить, если n чётное
+      - Присвоить n значение n % 2
+      - Цикл от n до 0
+      - Сравнение двух списков
+    correct: 0
+    explain: Это лямбда — короткая запись функции. removeIf вызывает её для каждого элемента и удаляет те, где она вернула true.
+    advice: Лямбды ещё встретятся в сортировке и Stream API.
+  - q: Почему в цикле с итератором удаляют через it.remove(), а не list.remove(n)?
+    options:
+      - Итератор знает, что элемент удалён, и продолжает обход без ошибки
+      - list.remove не работает с числами
+      - it.remove() быстрее печатает
+      - Так короче
+    correct: 0
+    explain: Если список изменит кто-то другой, итератор это заметит и бросит ConcurrentModificationException. Своё удаление он учитывает.
+    advice: Правило простое — во время обхода меняй коллекцию только через итератор.
+memory:
+  note: Момент после удаления отрицательных.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Scanner sc → объект в куче
+        - ArrayList<Integer> list → объект в куче
+        - Iterator<Integer> it → итератор в куче, дошёл до конца
+  heap:
+    - obj: ArrayList<Integer>
+      data: "5, 8, 0, 7, 4"
+tests:
+  - name: Числа из примера
+    stdin: |
+      5 -3 8 -1 0 7 -10 4
+    stdout: |
+      Было: [5, -3, 8, -1, 0, 7, -10, 4]
+      Без отрицательных: [5, 8, 0, 7, 4]
+      Только нечётные: [5, 7]
+  - name: Подряд идущие отрицательные
+    stdin: |
+      -1 -2 -3 1
+    stdout: |
+      Было: [-1, -2, -3, 1]
+      Без отрицательных: [1]
+      Только нечётные: [1]
+  - kind: source
+    name: Удаление итератором
+    pattern: 'it\w*\s*\.\s*remove\s*\(\s*\)|\.iterator\s*\(\s*\)[\s\S]*\.remove\s*\(\s*\)'
+    message: "Удали отрицательные через итератор: it.remove()"
+  - kind: source
+    name: Удаление через removeIf
+    pattern: 'removeIf\s*\('
+    message: "Удали чётные через list.removeIf(n -> ...)"

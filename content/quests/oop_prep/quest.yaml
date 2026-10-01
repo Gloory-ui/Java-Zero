@@ -1,0 +1,12 @@
+id: oop_prep
+num: "04"
+title: Классы и объекты
+subtitle: Классы, методы, конструкторы, static, private и связи объектов
+fileName: OopPrep.java
+order: 7
+unlockAfter: arrays_prep
+rank:
+  title: ЗОДЧИЙ ОБЪЕКТОВ
+  icon: box
+  color: "#14b8a6"
+stageBadge: "ЭТАП {n} / {total}"

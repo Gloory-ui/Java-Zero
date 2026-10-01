@@ -1,0 +1,73 @@
+id: throw
+title: "throw: метод сообщает об ошибке сам"
+hints:
+  - "Защитная проверка стоит первой строкой метода: `if (amount <= 0) { throw new ...; }`, и только потом меняется баланс."
+  - "`throw new IllegalArgumentException(\"Сумма должна быть больше нуля\");` — одинаково в `deposit` и `withdraw`."
+  - "В `withdraw` вторая проверка: `if (amount > balance) { throw new IllegalStateException(\"Недостаточно средств: баланс \" + balance); }`."
+quiz:
+  question: Что происходит с методом сразу после throw?
+  options:
+    - Метод прекращает работу, исключение летит к вызывающему коду
+    - Метод продолжает выполняться
+    - Метод начинается заново
+    - Метод возвращает null
+  correct: 0
+  hint: throw прерывает выполнение так же, как встроенная ошибка.
+exam:
+  - q: Чем IllegalStateException отличается от IllegalArgumentException?
+    options:
+      - State — объект сейчас не может выполнить действие, Argument — сам аргумент плохой
+      - Ничем, это одно и то же
+      - State — для чисел, Argument — для строк
+      - State нельзя поймать
+    correct: 0
+    explain: Снять −50 нельзя никогда — это плохой аргумент. Снять 1000 можно, но не при балансе 300 — это недопустимое состояние.
+    advice: "Выбирай тип исключения по смыслу: так вызывающему коду проще реагировать."
+  - q: Почему проверку баланса ставят до balance -= amount?
+    options:
+      - Иначе счёт успеет уйти в минус до исключения
+      - Так требует компилятор
+      - Иначе исключение не бросится
+      - Разницы нет
+    correct: 0
+    explain: Если сначала изменить баланс, а потом бросить исключение, объект останется в испорченном состоянии.
+    advice: Сначала проверки, потом изменения — тогда при ошибке объект остаётся прежним.
+  - q: Что вернёт getMessage() у new IllegalStateException("мало денег")?
+    options:
+      - мало денег
+      - IllegalStateException
+      - "null"
+      - Пустую строку
+    correct: 0
+    explain: Текст, переданный в конструктор, и есть сообщение исключения.
+    advice: Пиши в сообщение то, что поможет понять причину, например текущий баланс.
+memory:
+  note: Момент броска исключения при снятии 1000.
+  stack:
+    - method: Account.withdraw(int amount)
+      vars:
+        - int amount = 1000
+        - this → объект Account
+    - method: run(Account acc, char op, int amount)
+      vars:
+        - char op = '-'
+    - method: main(String[] args)
+      vars:
+        - Account acc → объект в куче
+  heap:
+    - obj: Account
+      data: balance = 300
+    - obj: IllegalStateException
+      data: "message = \"Недостаточно средств: баланс 300\""
+tests:
+  - name: Операции по счёту
+    stdout: |
+      Пополнение 500: баланс 500
+      Снятие 200: баланс 300
+      Ошибка: Недостаточно средств: баланс 300
+      Ошибка: Сумма должна быть больше нуля
+      Снятие 300: баланс 0
+  - kind: source
+    name: Бросаем IllegalStateException
+    pattern: 'throw\s+new\s+IllegalStateException\s*\('
+    message: "Брось IllegalStateException, если денег не хватает"

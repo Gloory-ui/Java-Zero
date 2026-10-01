@@ -1,10 +1,22 @@
 # Зависимости Node.js
 node_modules/
 
-# Секретные переменные окружения
+# Секретные переменные окружения (.env.example коммитится)
 .env
 .env.local
 .env.*.local
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Тесты
+/coverage/
+/test-results/
+/playwright-report/
+/blob-report/
 
 # Логи ошибок npm
 npm-debug.log*
@@ -18,5 +30,3 @@ Thumbs.db
 # Настройки редакторов кода
 .vscode/
 .idea/
-node_modules/
-.env

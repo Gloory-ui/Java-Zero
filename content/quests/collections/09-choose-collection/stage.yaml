@@ -1,0 +1,79 @@
+id: choose-collection
+title: "Какую коллекцию выбрать: журнал посещений"
+hints:
+  - "Три коллекции, по одной на вопрос: `Set<String> firstVisits = new LinkedHashSet<>();`, `Map<String, Integer> visits = new TreeMap<>();`, `ArrayDeque<String> lastThree = new ArrayDeque<>();`."
+  - "Каждое имя идёт во все три: `firstVisits.add(name);`, счётчик через `getOrDefault`, `lastThree.offerLast(name);`."
+  - "Окно: `if (lastThree.size() > 3) { lastThree.pollFirst(); }`."
+sampleInput: |
+  Аня Борис Аня Вика Аня Борис Гоша
+quiz:
+  question: Какая коллекция хранит уникальные элементы в порядке добавления?
+  options:
+    - LinkedHashSet
+    - HashSet
+    - TreeSet
+    - ArrayList
+  correct: 0
+  hint: Linked — «связанная», помнит порядок.
+exam:
+  - q: Нужно по номеру студенческого быстро найти студента. Что выбрать?
+    options:
+      - HashMap<String, Student>
+      - ArrayList<Student>
+      - TreeSet<Student>
+      - ArrayDeque<Student>
+    correct: 0
+    explain: Поиск по ключу — работа словаря. В списке пришлось бы перебирать всех.
+    advice: Если в задаче звучит «найти по …», скорее всего нужен Map.
+  - q: Как выглядит TreeMap<String, Integer> в println?
+    options:
+      - "{Аня=3, Борис=2}"
+      - "[Аня=3, Борис=2]"
+      - "Аня: 3, Борис: 2"
+      - "(Аня, 3) (Борис, 2)"
+    correct: 0
+    explain: Словари печатаются в фигурных скобках, пары — через знак равенства.
+    advice: "Свой формат, например «Аня: 3», печатают циклом по entrySet()."
+  - q: Почему из окна удаляют через pollFirst(), а не pollLast()?
+    options:
+      - Самые старые элементы лежат в начале, новые добавляются в конец
+      - pollLast() не существует
+      - pollFirst() быстрее
+      - Разницы нет
+    correct: 0
+    explain: offerLast кладёт новое имя в конец. Значит, в начале — самое старое, его и нужно вытеснить.
+    advice: Окно — это очередь фиксированной длины.
+memory:
+  note: Момент после чтения всего журнала.
+  stack:
+    - method: main(String[] args)
+      vars:
+        - Set<String> firstVisits → LinkedHashSet в куче
+        - Map<String, Integer> visits → TreeMap в куче
+        - ArrayDeque<String> lastThree → объект в куче
+  heap:
+    - obj: LinkedHashSet
+      data: "Аня, Борис, Вика, Гоша"
+    - obj: TreeMap
+      data: "{Аня=3, Борис=2, Вика=1, Гоша=1}"
+    - obj: ArrayDeque
+      data: "Аня, Борис, Гоша"
+tests:
+  - name: Журнал из примера
+    stdin: |
+      Аня Борис Аня Вика Аня Борис Гоша
+    stdout: |
+      Первые визиты: [Аня, Борис, Вика, Гоша]
+      Визитов: {Аня=3, Борис=2, Вика=1, Гоша=1}
+      Последние трое: [Аня, Борис, Гоша]
+  - name: Меньше трёх визитов
+    stdin: |
+      Ян Ян
+    stdout: |
+      Первые визиты: [Ян]
+      Визитов: {Ян=2}
+      Последние трое: [Ян, Ян]
+  - kind: source
+    name: Порядок первых визитов
+    pattern: 'new\s+LinkedHashSet\s*<'
+    message: "Для первых визитов нужен LinkedHashSet"

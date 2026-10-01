@@ -1,0 +1,12 @@
+id: strings
+num: "07"
+title: Строки и текст
+subtitle: методы String, StringBuilder, форматирование, регулярные выражения
+fileName: Strings.java
+order: 11
+unlockAfter: interfaces
+rank:
+  title: ЮВЕЛИР СТРОК
+  icon: type
+  color: "#f472b6"
+stageBadge: "ЭТАП {n} / {total}"

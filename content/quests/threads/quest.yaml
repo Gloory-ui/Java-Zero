@@ -1,0 +1,12 @@
+id: threads
+num: "14"
+title: Многопоточность
+subtitle: Thread, synchronized, Atomic, пулы, CompletableFuture, очереди
+fileName: Threads.java
+order: 18
+unlockAfter: algorithms
+rank:
+  title: ЖОНГЛЁР ПОТОКАМИ
+  icon: cpu
+  color: "#f97316"
+stageBadge: "ЭТАП {n} / {total}"

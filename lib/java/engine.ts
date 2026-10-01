@@ -1,0 +1,229 @@
+"use client";
+
+import { create } from "zustand";
+import type { CompileResult, RunResult } from "./judge";
+
+/**
+ * Java-движок страницы: Web Worker с CheerpJ (public/java/worker.js).
+ * Первая компиляция холодного движка идёт десятки секунд, поэтому движок прогревается в фоне сразу при входе
+ * в лабораторию. Задания выполняются по одному; зависший воркер убивается и поднимается заново.
+ */
+export type EngineStatus = "off" | "booting" | "warming" | "ready" | "busy" | "restarting" | "failed";
+
+type EngineStore = {
+  status: EngineStatus;
+  since: number;
+  error?: string;
+  /** Доля загруженной среды CheerpJ 0…1, пока статус booting */
+  loaded?: number;
+  /** Сколько обычно длится текущая фаза на этом устройстве, мс: по прошлому запуску */
+  expectMs?: number;
+};
+export const useEngine = create<EngineStore>(() => ({ status: "off", since: Date.now() }));
+
+// Длительности фаз прошлого запуска: по ним статус показывает «ещё ~N с»
+const TIMING_KEY = "java-zero-engine-timing";
+type Timing = { bootMs: number; warmMs: number };
+const DEFAULT_TIMING: Timing = { bootMs: 12_000, warmMs: 25_000 };
+
+function readTiming(): Timing {
+  try {
+    const raw = localStorage.getItem(TIMING_KEY);
+    const t = raw ? (JSON.parse(raw) as Partial<Timing>) : {};
+    return {
+      bootMs: typeof t.bootMs === "number" ? t.bootMs : DEFAULT_TIMING.bootMs,
+      warmMs: typeof t.warmMs === "number" ? t.warmMs : DEFAULT_TIMING.warmMs,
+    };
+  } catch {
+    return DEFAULT_TIMING;
+  }
+}
+
+function saveTiming(t: Timing) {
+  try {
+    localStorage.setItem(TIMING_KEY, JSON.stringify(t));
+  } catch {
+    // приватный режим: без подсказки о времени
+  }
+}
+
+const setStatus = (status: EngineStatus, extra: Partial<Omit<EngineStore, "status" | "since">> = {}) =>
+  useEngine.setState({ status, since: Date.now(), error: undefined, loaded: undefined, expectMs: undefined, ...extra });
+
+export class EngineRestartedError extends Error {
+  constructor() {
+    super("Java-движок завис и перезапускается");
+  }
+}
+
+// Прогрев: маленькая программа с циклом и Scanner заставляет CheerpJ перевести в свой код нужные части ECJ
+const WARMUP_SOURCE = `import java.util.Scanner;
+public class Warmup {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        for (int i = 0; i < n; i++) System.out.print(i);
+    }
+}`;
+
+const INIT_WATCHDOG_MS = 120_000;
+const COLD_COMPILE_WATCHDOG_MS = 120_000;
+const WARM_COMPILE_WATCHDOG_MS = 20_000;
+const RUN_MARGIN_MS = 4_000;
+
+type Pending = {
+  resolve: (value: string) => void;
+  reject: (error: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+};
+
+class JavaEngine {
+  private worker: Worker | null = null;
+  private seq = 0;
+  private pending = new Map<number, Pending>();
+  private booting: Promise<void> | null = null;
+  private warm = false;
+  private queue: Promise<unknown> = Promise.resolve();
+
+  /** Поднимает и прогревает движок; повторные вызовы ждут того же запуска. */
+  start(): Promise<void> {
+    if (!this.booting) {
+      const attempt: Promise<void> = this.boot().catch((error: unknown) => {
+        // Сторож мог уже перезапустить движок: тогда эта попытка устарела и не должна затирать статус новой
+        if (this.booting === attempt) {
+          this.booting = null;
+          setStatus("failed", { error: error instanceof Error ? error.message : String(error) });
+        }
+        throw error;
+      });
+      this.booting = attempt;
+    }
+    return this.booting;
+  }
+
+  /** Ручной перезапуск, когда Java не запустилась (например, не загрузился CheerpJ из сети). */
+  retry(): void {
+    this.restart();
+  }
+
+  private async boot(): Promise<void> {
+    const timing = readTiming();
+    const t0 = Date.now();
+    setStatus(this.worker ? "restarting" : "booting", { loaded: 0, expectMs: timing.bootMs });
+    this.worker = new Worker("/java/worker.js");
+    this.worker.onmessage = ({
+      data,
+    }: MessageEvent<
+      | { id: number; ok: boolean; result?: string; error?: string; type?: undefined }
+      | { type: "progress"; done: number; total: number }
+    >) => {
+      if (data.type === "progress") {
+        if (data.total > 0) useEngine.setState({ loaded: Math.min(1, data.done / data.total) });
+        return;
+      }
+      const p = this.pending.get(data.id);
+      if (!p) return;
+      this.pending.delete(data.id);
+      clearTimeout(p.timer);
+      if (data.ok) p.resolve(data.result ?? "");
+      else p.reject(new Error(data.error));
+    };
+    await this.call("init", [], INIT_WATCHDOG_MS);
+    const t1 = Date.now();
+    setStatus("warming", { expectMs: timing.warmMs });
+    await this.call("compile", ["Warmup.java", WARMUP_SOURCE], COLD_COMPILE_WATCHDOG_MS);
+    await this.call("run", ["3", 2_000], RUN_MARGIN_MS + 2_000);
+    this.warm = true;
+    saveTiming({ bootMs: t1 - t0, warmMs: Date.now() - t1 });
+    setStatus("ready");
+  }
+
+  private call(op: string, args: unknown[], watchdogMs: number): Promise<string> {
+    const worker = this.worker;
+    if (!worker) return Promise.reject(new Error("Java-движок не запущен"));
+    const id = ++this.seq;
+    return new Promise<string>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new EngineRestartedError());
+        this.restart();
+      }, watchdogMs);
+      this.pending.set(id, { resolve, reject, timer });
+      worker.postMessage({ id, op, args });
+    });
+  }
+
+  /** Убивает воркер (например, программа студента поймала защиту от циклов в catch и крутится дальше). */
+  private restart(): void {
+    this.worker?.terminate();
+    for (const p of this.pending.values()) {
+      clearTimeout(p.timer);
+      p.reject(new EngineRestartedError());
+    }
+    this.pending.clear();
+    this.warm = false;
+    this.booting = null;
+    void this.start().catch(() => {});
+  }
+
+  /** Компилирует исходник и запускает его для каждого ввода. Задания выполняются строго по очереди. */
+  check(
+    fileName: string,
+    source: string,
+    stdins: string[],
+    runTimeoutMs = 3_000,
+  ): Promise<{ compile: CompileResult; runs: RunResult[] }> {
+    const job = this.queue.then(async () => {
+      await this.start();
+      setStatus("busy");
+      try {
+        const compile = JSON.parse(
+          await this.call(
+            "compile",
+            [fileName, source],
+            this.warm ? WARM_COMPILE_WATCHDOG_MS : COLD_COMPILE_WATCHDOG_MS,
+          ),
+        ) as CompileResult;
+        let runs: RunResult[] = [];
+        if (compile.compiled && stdins.length > 0) {
+          const watchdog = runTimeoutMs * stdins.length + RUN_MARGIN_MS;
+          runs = JSON.parse(await this.call("run", [stdins.join("\u0000"), runTimeoutMs], watchdog)) as RunResult[];
+        }
+        return { compile, runs };
+      } finally {
+        if (useEngine.getState().status === "busy") setStatus("ready");
+      }
+    });
+    this.queue = job.catch(() => {});
+    return job;
+  }
+}
+
+let instance: JavaEngine | null = null;
+
+/**
+ * Ранний прогрев, пока студент ещё выбирает этап: на карте курса и в разделе «Группа».
+ * Не запускается при экономии трафика и на медленной сети: среда весит около 15 МБ.
+ * Движок один на вкладку и переживает переходы между страницами, поэтому к открытию этапа он уже тёплый.
+ */
+export function prewarmEngine(): void {
+  if (typeof window === "undefined" || instance) return;
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } })
+    .connection;
+  if (connection?.saveData || /2g/.test(connection?.effectiveType ?? "")) return;
+  const start = () => {
+    if (!instance)
+      getEngine()
+        .start()
+        .catch(() => {});
+  };
+  // Сначала страница: прогрев ждёт, пока браузер освободится
+  if ("requestIdleCallback" in window) window.requestIdleCallback(start, { timeout: 4_000 });
+  else setTimeout(start, 1_500);
+}
+
+/** Один движок на вкладку: переживает переходы между этапами. */
+export function getEngine(): JavaEngine {
+  instance ??= new JavaEngine();
+  return instance;
+}

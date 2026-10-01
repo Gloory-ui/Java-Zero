@@ -1,0 +1,90 @@
+id: custom-exception
+title: "Своё исключение: checked и throws"
+hints:
+  - "Своё исключение — обычный класс-наследник: `class SeatTakenException extends Exception`, а в конструкторе `super(\"Место \" + seat + \" уже занято\");`."
+  - "Заголовок метода предупреждает вызывающих: `void book(int seat) throws SeatTakenException`. Внутри сначала проверка диапазона, потом занятости."
+  - "В `main`: `try { cinema.book(seat); System.out.println(...); } catch (SeatTakenException | IllegalArgumentException e) { System.out.println(e.getMessage()); }`."
+sampleInput: |
+  3 5 3 12 5 7
+quiz:
+  question: Что обязан сделать код, который вызывает метод с throws SeatTakenException?
+  options:
+    - Поймать исключение в try/catch или объявить throws сам
+    - Ничего, это необязательно
+    - Переопределить метод
+    - Вызвать метод дважды
+  correct: 0
+  hint: Это и есть смысл проверяемых исключений.
+exam:
+  - q: Чем проверяемое исключение отличается от непроверяемого?
+    options:
+      - Проверяемое компилятор заставляет обработать или объявить, непроверяемое — нет
+      - Проверяемое нельзя поймать
+      - Непроверяемое не останавливает программу
+      - Проверяемые бросает только Java, а не программист
+    correct: 0
+    explain: Наследники Exception (кроме RuntimeException) проверяются компилятором. Наследники RuntimeException — нет.
+    advice: Ожидаемые ситуации вроде «место занято» — проверяемые. Ошибки в коде — непроверяемые.
+  - q: Зачем в конструкторе SeatTakenException вызывают super(сообщение)?
+    options:
+      - Чтобы сообщение сохранилось и его вернул getMessage()
+      - Чтобы исключение бросилось
+      - Так объявляется throws
+      - Чтобы наследование заработало
+    correct: 0
+    explain: Сообщение хранит класс Exception. Передать его туда можно только через конструктор родителя.
+    advice: У своего исключения почти всегда есть конструктор с super(сообщение).
+  - q: Какой класс нужно указать в extends, чтобы исключение стало непроверяемым?
+    options:
+      - RuntimeException
+      - Exception
+      - Error
+      - Object
+    correct: 0
+    explain: Всё, что наследует RuntimeException, компилятор не проверяет.
+    advice: Error — для поломок самой JVM, например нехватки памяти. Наследовать от него не нужно.
+memory:
+  note: Момент броска исключения при повторной брони места 3.
+  stack:
+    - method: Cinema.book(int seat)
+      vars:
+        - int seat = 3
+        - this → объект Cinema
+    - method: main(String[] args)
+      vars:
+        - Cinema cinema → объект в куче
+        - int seat = 3
+  heap:
+    - obj: Cinema
+      data: taken — занято 3 и 5
+    - obj: SeatTakenException
+      data: "message = \"Место 3 уже занято\""
+tests:
+  - name: Бронь из примера
+    stdin: |
+      3 5 3 12 5 7
+    stdout: |
+      Место 3: забронировано
+      Место 5: забронировано
+      Место 3 уже занято
+      Нет места 12
+      Место 5 уже занято
+      Место 7: забронировано
+      Свободно мест: 7
+  - name: Граничные номера
+    stdin: |
+      0 1 10 11
+    stdout: |
+      Нет места 0
+      Место 1: забронировано
+      Место 10: забронировано
+      Нет места 11
+      Свободно мест: 8
+  - kind: source
+    name: Своё проверяемое исключение
+    pattern: 'class\s+SeatTakenException\s+extends\s+Exception\b'
+    message: "Объяви class SeatTakenException extends Exception"
+  - kind: source
+    name: Метод объявляет throws
+    pattern: 'book\s*\([^)]*\)\s*throws\s+SeatTakenException'
+    message: "Добавь в заголовок book: throws SeatTakenException"

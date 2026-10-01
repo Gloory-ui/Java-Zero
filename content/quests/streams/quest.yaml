@@ -1,0 +1,12 @@
+id: streams
+num: "11"
+title: Лямбды и Stream API
+subtitle: лямбды, ссылки на методы, filter, map, reduce, Collectors, Optional
+fileName: Streams.java
+order: 15
+unlockAfter: generics
+rank:
+  title: ЛЯМБДА-ВИРТУОЗ
+  icon: workflow
+  color: "#fbbf24"
+stageBadge: "ЭТАП {n} / {total}"

@@ -1,0 +1,71 @@
+id: break-continue
+title: "Управление итерацией: break и continue"
+hints:
+  - Сначала проверь стоп-число, потом пропуск, и только потом печатай. Порядок проверок важен.
+  - "`if (i == 15) break;` останавливает весь цикл, `if (i % 3 == 0) continue;` пропускает одно число."
+  - Цикл `for (int i = 1; i <= 20; i++)`, внутри две проверки, а `System.out.println(i);` последней строкой.
+quiz:
+  question: Какой оператор пропускает текущую итерацию цикла?
+  options:
+    - skip
+    - break
+    - continue
+    - pass
+  correct: 2
+  hint: Оператор continue начинает следующий круг цикла.
+exam:
+  - q: В чем ключевое различие между continue и break внутри цикла?
+    options:
+      - Разницы нет, оба оператора выходят из программы
+      - continue завершает только текущую итерацию цикла, а break прерывает выполнение всего цикла целиком
+      - break пропускает одно число, а continue завершает цикл
+      - continue используется только в switch, а break только в for
+    correct: 1
+    explain: continue перескакивает в конец тела цикла к шагу инкремента, а break передает управление первой строке за пределами цикла.
+    advice: "Запомни: continue = пропуск круга, break = экстренный стоп."
+  - q: Что выведет for (int i = 1; i <= 5; i++) { if (i == 3) continue; System.out.print(i); }?
+    options:
+      - "1245"
+      - "12"
+      - "12345"
+      - "345"
+    correct: 0
+    explain: continue пропускает только печать тройки, цикл продолжается до 5.
+    advice: continue — пропуск одного круга.
+  - q: Что выведет тот же цикл, если заменить continue на break?
+    options:
+      - "12"
+      - "1245"
+      - "123"
+      - Ничего
+    correct: 0
+    explain: На i = 3 break завершает цикл ещё до печати, поэтому остаётся 12.
+    advice: break — выход из цикла целиком.
+memory:
+  note: "Момент, когда сработал break: i равно 15, до println дело не дошло."
+  stack:
+    - method: main()
+      vars:
+        - int i = 15
+  heap: []
+tests:
+  - name: Пропускает кратные 3, останавливается на 15
+    stdout: |
+      1
+      2
+      4
+      5
+      7
+      8
+      10
+      11
+      13
+      14
+  - kind: source
+    name: Выход из цикла через break
+    pattern: \bbreak\s*;
+    message: Останови цикл оператором break
+  - kind: source
+    name: Пропуск итерации через continue
+    pattern: \bcontinue\s*;
+    message: Пропусти итерацию оператором continue

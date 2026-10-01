@@ -1,0 +1,66 @@
+id: random
+title: "Случайные числа: Random и диапазон"
+hints:
+  - "Подключи генератор: `import java.util.Random;` над классом и `Random rnd = new Random();` в main."
+  - "В цикле по массиву из 10 ячеек пиши `rolls[i] = rnd.nextInt(6) + 1;` — так получатся числа от 1 до 6."
+  - 'Печатай `System.out.print("Броски:");`, в цикле `" " + rolls[i]`, а шестёрки считай накопителем: `if (rolls[i] == 6) sixes++;`.'
+quiz:
+  question: Какие числа даёт rnd.nextInt(100)?
+  options:
+    - от 0 до 100
+    - от 1 до 100
+    - от 0 до 99
+    - от 1 до 99
+  correct: 2
+  hint: nextInt(k) возвращает k разных значений, начиная с нуля.
+exam:
+  - q: Как получить случайное число от 10 до 20 включительно?
+    options:
+      - rnd.nextInt(20)
+      - rnd.nextInt(11) + 10
+      - rnd.nextInt(10) + 10
+      - rnd.nextInt(20) + 10
+    correct: 1
+    explain: "В диапазоне 10..20 одиннадцать чисел: nextInt(11) даёт 0..10, плюс 10 — 10..20."
+    advice: "Формула для диапазона от a до b: rnd.nextInt(b - a + 1) + a."
+  - q: Что вернёт (int) Math.random() * 6?
+    options:
+      - Всегда 0
+      - Число от 0 до 5
+      - Число от 1 до 6
+      - Ошибку компиляции
+    correct: 0
+    explain: Приведение (int) срабатывает раньше умножения. Math.random() меньше 1, поэтому (int) даёт 0, а 0 * 6 = 0.
+    advice: Бери в скобки всё произведение — (int) (Math.random() * 6).
+  - q: Зачем нужен import java.util.Random?
+    options:
+      - Без него компилятор не найдёт класс Random
+      - Он делает числа случайнее
+      - Он задаёт диапазон чисел
+      - Он нужен только для Math.random()
+    correct: 0
+    explain: Random лежит в пакете java.util. import говорит компилятору, где искать класс.
+    advice: Math.random() работает без import, потому что Math лежит в java.lang.
+memory:
+  note: "Момент после заполнения массива. Числа — пример одного запуска: при следующем они будут другими."
+  stack:
+    - method: main()
+      vars:
+        - Random rnd → объект в куче
+        - int[] rolls → массив в куче
+  heap:
+    - obj: Random
+      data: Генератор случайных чисел.
+    - obj: int[10]
+      data: "3, 6, 1, 2, 6, 4, 4, 1, 6, 2"
+tests:
+  - name: 10 бросков, каждый от 1 до 6
+    stdout: '^Броски:([ \t]+[1-6]){10}[ \t]*$'
+    match: regex
+  - name: Количество шестёрок
+    stdout: '^Шестёрок:[ \t]*(10|[0-9])[ \t]*$'
+    match: regex
+  - kind: source
+    name: Случайные числа через Random или Math.random
+    pattern: new\s+Random\s*\(|Math\.random\s*\(
+    message: "Создай генератор: Random rnd = new Random(); — или используй Math.random()"

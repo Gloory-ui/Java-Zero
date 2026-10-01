@@ -1,0 +1,14 @@
+id: kt2
+num: КТ
+title: Контрольная точка 2
+subtitle: 7 заданий на массивы и таблицы
+fileName: KT2.java
+order: 6
+# Раздел «Группа»: КТ открывается по пути из content/group.yaml, а не по unlockAfter
+track: group
+unlockAfter: null
+rank:
+  title: ПОВЕЛИТЕЛЬ МАССИВОВ
+  icon: grid
+  color: "#f97316"
+stageBadge: "КТ 2 // ЗАДАНИЕ {n}"
