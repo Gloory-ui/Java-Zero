@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 
 // Регистрация и вход с подменёнными ответами Supabase: настоящих аккаунтов тест не создаёт.
@@ -74,6 +75,114 @@ test("регистрация: ник, почта, пароль, затем 6-з�
   await page.getByRole("button", { name: "Подтвердить" }).click();
   await expect.poll(() => new URL(page.url()).pathname).toBe("/course");
   expect(verified).toBe(true);
+});
+
+/** Регистрация до шага с кодом; verify отвечает успехом только на 123456 */
+async function openCodeStep(page: Page) {
+  await mockSupabase(page);
+  await page.route("**/api/auth/handle**", (route) => route.fulfill({ json: { available: true } }));
+  await page.route("**/auth/v1/signup**", (route) =>
+    route.fulfill({ json: { ...USER, identities: [{ id: USER.id, provider: "email" }] } }),
+  );
+  await page.route("**/auth/v1/verify", (route) =>
+    route.fulfill(
+      route.request().postDataJSON().token === "123456"
+        ? { json: session() }
+        : { status: 403, json: { msg: "Token has expired or is invalid" } },
+    ),
+  );
+  await openLogin(page, "?mode=signup&next=/course");
+  await page.getByLabel("Ник").fill("barsik");
+  await expect(page.getByText("Ник свободен.")).toBeVisible();
+  await page.getByLabel("Почта").fill(USER.email);
+  await page.getByLabel("Пароль", { exact: true }).fill("secret-pass-1");
+  await page.getByRole("button", { name: "Зарегистрироваться" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Подтверди почту" })).toBeVisible();
+  const input = page.getByLabel("Код из письма");
+  // Карты рисуют значение настоящего поля и лежат с ним в одном контейнере
+  return { input, deck: input.locator("..") };
+}
+
+test("код колодой карт: ввод по цифре, вставка, Enter, красные карты на неверном коде", async ({ page }) => {
+  const { input, deck } = await openCodeStep(page);
+  const submit = page.getByRole("button", { name: "Подтвердить" });
+
+  // Поле одно и настоящее: подсказка кода из письма, цифровая клавиатура, фокус сразу в нём
+  await expect(input).toBeFocused();
+  await expect(input).toHaveAttribute("autocomplete", "one-time-code");
+  await expect(input).toHaveAttribute("inputmode", "numeric");
+  await expect(input).toHaveAccessibleDescription("6 цифр. Код можно вставить целиком.");
+
+  await page.keyboard.type("12a");
+  await expect(input).toHaveValue("12");
+  await expect(deck.locator("[data-filled]")).toHaveCount(2);
+  await expect(submit).toBeDisabled();
+
+  await page.keyboard.type("9999");
+  await expect(deck.locator("[data-filled]")).toHaveCount(6);
+  await page.keyboard.press("Enter");
+  await expect(deck).toHaveAttribute("data-verdict", "bad");
+  await expect(input).toHaveAttribute("aria-invalid", "true");
+  await expect(page.getByRole("alert").filter({ hasText: "Код неверный или устарел. Запроси новый." })).toBeVisible();
+
+  // Правка кода снимает вердикт
+  await page.keyboard.press("Backspace");
+  await expect(deck).not.toHaveAttribute("data-verdict");
+  await expect(deck.locator("[data-filled]")).toHaveCount(5);
+
+  // Код из письма вставляют целиком, с пробелами и словами: остаются цифры
+  await input.fill("Код: 123 456");
+  await expect(input).toHaveValue("123456");
+  const results = await new AxeBuilder({ page }).include("main").analyze();
+  expect(results.violations.map((v) => v.id)).toEqual([]);
+
+  await page.keyboard.press("Enter");
+  await expect(deck).toHaveAttribute("data-verdict", "ok");
+  await expect.poll(() => new URL(page.url()).pathname).toBe("/course");
+});
+
+test("код восстановления колодой: при «меньше движения» карты не двигаются, линия только проявляется", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await mockSupabase(page);
+  await page.route("**/auth/v1/recover**", (route) => route.fulfill({ json: {} }));
+  let tries = 0;
+  await page.route("**/auth/v1/verify", (route) =>
+    route.fulfill(
+      ++tries === 1 ? { status: 403, json: { msg: "Token has expired or is invalid" } } : { json: session() },
+    ),
+  );
+  await openLogin(page);
+  await page.getByRole("button", { name: "Забыл пароль?" }).click();
+  await page.getByLabel("Почта").fill(USER.email);
+  await page.getByRole("button", { name: "Прислать код" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Код из письма" })).toBeVisible();
+
+  const input = page.getByLabel("Код из письма");
+  const deck = input.locator("..");
+  await page.keyboard.type("654321");
+  const motion = await deck.evaluate((el) => {
+    const card = el.querySelector("[data-filled]") as HTMLElement;
+    const style = (selector: string) => getComputedStyle(el.querySelector(selector) as Element);
+    return {
+      trace: style("svg rect").animationName,
+      comet: style("svg rect:last-child").display,
+      transition: getComputedStyle(card).transitionProperty,
+    };
+  });
+  expect(motion.trace).toContain("deck-fade");
+  expect(motion.comet).toBe("none");
+  expect(motion.transition).not.toContain("translate");
+
+  await page.getByRole("button", { name: "Подтвердить" }).click();
+  await expect(deck).toHaveAttribute("data-verdict", "bad");
+  expect(await deck.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
+
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type("1");
+  await page.getByRole("button", { name: "Подтвердить" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Новый пароль" })).toBeVisible();
 });
 
 test("регистрация: занятый ник видно сразу, кнопка неактивна", async ({ page }) => {
