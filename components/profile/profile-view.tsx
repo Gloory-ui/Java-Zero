@@ -59,7 +59,7 @@ export function ProfileView({ course: fullCourse }: { course: QuestOutline[] }) 
   const name = profile.displayName || user?.name || "Гость";
   const firstStart = Math.min(...Object.values(progress.stages).map((s) => s.startedAt ?? Number.POSITIVE_INFINITY));
   const showcase = profile.showcase.filter((id) => progress.achievements[id]);
-  const canShare = signedIn && Boolean(profile.handle) && profile.isPublic;
+  const canShare = signedIn && Boolean(profile.handle);
 
   const hero: HeroData = {
     name,
@@ -80,6 +80,8 @@ export function ProfileView({ course: fullCourse }: { course: QuestOutline[] }) 
 
   const preview: PublicView = {
     ...hero,
+    hidden: !profile.isPublic,
+    title: profile.isPublic ? profile.title : null,
     xp,
     stagesPassed,
     streakDays: streak.current,
@@ -109,7 +111,7 @@ export function ProfileView({ course: fullCourse }: { course: QuestOutline[] }) 
         variant="secondary"
         disabled={!canShare}
         onClick={() => void share()}
-        title={canShare ? undefined : "Задай ник и включи публичный профиль в настройках"}
+        title={canShare ? undefined : "Ссылка на профиль появится после входа в аккаунт"}
       >
         <Icon name={copied ? "check" : "globe"} className="size-4" />
         {copied ? "Ссылка скопирована" : "Поделиться"}
@@ -226,7 +228,7 @@ export function ProfileView({ course: fullCourse }: { course: QuestOutline[] }) 
         description={
           canShare
             ? `Так выглядит твоя страница /u/${profile.handle}`
-            : "Так будет выглядеть страница, когда откроешь профиль в настройках"
+            : "Так будет выглядеть твоя страница, когда войдёшь в аккаунт"
         }
         height="h-[95dvh]"
         width="sm:w-[min(900px,100vw)]"

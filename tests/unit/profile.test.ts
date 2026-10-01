@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { hexLine, sinceText } from "@/components/profile/profile-hero";
+import { viewFromPublic } from "@/components/profile/public-profile";
 import { loadCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
 import { achievementCatalog } from "@/lib/game/achievements";
@@ -7,7 +8,7 @@ import { ACCENTS, availableTitles, BANNERS, FRAMES, HANDLE_RE, isUnlocked, unloc
 import { profileFromRow, profileOnSignIn, profileToPatch } from "@/lib/profile/row";
 import { safeMediaUrl } from "@/lib/profile/safe-url";
 import { EMPTY_PROFILE, type ProfileData } from "@/lib/profile/store";
-import type { ProfileRow } from "@/lib/supabase/database";
+import type { ProfileRow, PublicProfile } from "@/lib/supabase/database";
 
 const course = toOutline(loadCourse());
 
@@ -136,5 +137,49 @@ describe("картинки и оформление шапки", () => {
 
   it("«С сентября 2026» — месяц в родительном падеже", () => {
     expect(sinceText("2026-09-15T12:00:00Z")).toBe("С сентября 2026");
+  });
+});
+
+describe("публичная страница", () => {
+  const publicRow = (patch: Partial<PublicProfile> = {}): PublicProfile => ({
+    handle: "anya",
+    display_name: "Аня",
+    avatar_url: null,
+    bio: "учу Java",
+    accent: "cyan",
+    frame: "neon",
+    banner: "grid",
+    banner_url: null,
+    title: "ГРОЗА СЕССИИ",
+    showcase: ["first_var"],
+    is_public: true,
+    xp_total: 1335,
+    stages_passed: 14,
+    streak_days: 5,
+    best_streak: 9,
+    created_at: "2026-09-01T10:00:00Z",
+    achievements: [{ id: "first_var", at: "2026-09-02T10:00:00Z" }],
+    ...patch,
+  });
+
+  it("новый профиль по умолчанию открыт", () => {
+    expect(EMPTY_PROFILE.isPublic).toBe(true);
+  });
+
+  it("открытый профиль показывает статистику, витрину и достижения", () => {
+    const view = viewFromPublic(publicRow(), course);
+    expect(view.hidden).toBe(false);
+    expect(view).toMatchObject({ stagesPassed: 14, streakDays: 5, title: "ГРОЗА СЕССИИ", showcase: ["first_var"] });
+    expect(view.achievementIds).toEqual(["first_var"]);
+  });
+
+  it("скрытый профиль: имя и уровень есть, статистики, титула и достижений нет — даже если база их прислала", () => {
+    const view = viewFromPublic(
+      publicRow({ is_public: false, stages_passed: null, streak_days: null, best_streak: null }),
+      course,
+    );
+    expect(view).toMatchObject({ hidden: true, name: "Аня", handle: "anya", title: null, showcase: [] });
+    expect(view.achievementIds).toEqual([]);
+    expect(view.level).toBeGreaterThan(1);
   });
 });

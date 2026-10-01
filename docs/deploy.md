@@ -1,15 +1,14 @@
-# Превью v1.0 на Render
+# Деплой на Render
 
-Превью собирается из ветки `next` отдельным сервисом. Боевой сайт `java-zero.onrender.com` (ветка `main`) не меняется до релиза.
+Боевой сайт `https://java-zero.onrender.com` — сервис `Java-Zero` на Render. Он собирается из ветки, указанной в настройках сервиса, и выкатывается автоматически после каждого пуша в неё.
 
-## Создать сервис
+До версии 1.0 сервис собирался из `next`. С версии 1.0 ветка сайта — `main`, а `next` — рабочая ветка, куда вливаются задачи.
 
-Render → **New → Web Service** → репозиторий `Gloory-ui/Java-Zero`.
+## Настройки сервиса
 
 | Поле | Значение |
 |---|---|
-| Name | `java-zero-next` (адрес будет `https://java-zero-next.onrender.com`) |
-| Branch | `next` |
+| Branch | `main` |
 | Runtime | Node |
 | Build Command | `npm ci && npm run build` |
 | Start Command | `npm start` |
@@ -19,33 +18,36 @@ Render → **New → Web Service** → репозиторий `Gloory-ui/Java-Ze
 
 ## Переменные окружения
 
-**Environment** сервиса. `NEXT_PUBLIC_*` попадают в код при сборке: после изменения нужен **Manual Deploy → Clear build cache & deploy**.
+**Environment** сервиса. Переменные `NEXT_PUBLIC_*` попадают в код при сборке. После их изменения нужен **Manual Deploy → Clear build cache & deploy**.
 
 | Переменная | Значение |
 |---|---|
 | `NODE_VERSION` | `22` |
-| `NEXT_PUBLIC_SITE_URL` | `https://java-zero-next.onrender.com` |
-| `SITE_INDEX` | `false` (превью закрыто от поиска) |
+| `NEXT_PUBLIC_SITE_URL` | `https://java-zero.onrender.com` |
+| `SITE_INDEX` | `true` — сайт виден поисковикам, `false` — закрыт |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://klnxcvkswjcidsivxlek.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | публичный anon-ключ из Supabase → Project Settings → API |
-| `GEMINI_API_KEY` | ключ Gemini (тот же, что у старого сервера) |
+| `GEMINI_API_KEY` | ключ Gemini |
+| `SUPABASE_SERVICE_ROLE_KEY` | секретный ключ Supabase: вход по нику, проверка ника |
+| `NEXT_PUBLIC_YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET` | приложение Яндекса для входа через Яндекс |
 
-Без Supabase-переменных сайт работает, но без аккаунтов. Без `GEMINI_API_KEY` ментор отвечает «пока не подключён».
+Без переменных Supabase сайт работает, но без аккаунтов. Без `GEMINI_API_KEY` ментор отвечает «пока не подключён». Настройка входа — почта, коды в письмах, Яндекс — в [docs/auth.md](auth.md).
 
-## Supabase для превью
+## Supabase
 
-1. Если ещё не сделано — выполнить миграцию из [docs/supabase.md](supabase.md), шаг 1.
-2. **Authentication → URL Configuration → Redirect URLs**: добавить `https://java-zero-next.onrender.com/auth/callback`.
+1. Миграции из `supabase/migrations` выполняются в SQL Editor по порядку, подробно — в [docs/supabase.md](supabase.md).
+2. **Authentication → URL Configuration**: Site URL — `https://java-zero.onrender.com`, в Redirect URLs — `https://java-zero.onrender.com/auth/callback`.
 
-## Что проверить на превью
+## Выпуск версии
+
+1. Все проверки зелёные: `npm run check`, `npm run content:check`, `npm run build`, `CI=1 npm run test:e2e`.
+2. `next` вливается в `main` через merge, на слиянии ставится тег `vX.Y.Z`, в `CHANGELOG.md` появляется раздел версии.
+3. Пуш `main` и тега: Render сам соберёт и выкатит сайт.
+
+## Что проверить после выкатки
 
 - Главная, карта курса, справочник, профиль, 404 (`/lab.html` ведёт на `/course`).
 - Этап: Java загружается около полуминуты (бесплатный сервер ещё и просыпается до минуты), затем «Проверить» отвечает за доли секунды.
-- Ошибка компиляции подсвечивается в редакторе, бесконечный цикл останавливается за 3 секунды.
-- Защита, звук, ачивки, AI-ментор.
-- Вход по почте на свой адрес (встроенная почта Supabase шлёт только участникам проекта).
+- Раздел «Группа» по ссылке-приглашению из `content/group.yaml`.
+- Вход, синхронизация прогресса, AI-ментор.
 - Телефон: всё без горизонтальной прокрутки.
-
-## Релиз (этап 9, после проверки превью)
-
-Переключить боевой сервис на новую сборку (те же команды и переменные, `SITE_INDEX=true`, `NEXT_PUBLIC_SITE_URL=https://java-zero.onrender.com`), слить `next` в `main`, поставить тег `v1.0.0`, удалить старые `client/` и `server/`.

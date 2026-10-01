@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AchievementBadge } from "@/components/game/achievement-badge";
 import { LevelCardView } from "@/components/game/level-card";
 import { ButtonLink } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import type { QuestOutline } from "@/lib/content/outline";
 import { achievementCatalog, RARITY_ORDER } from "@/lib/game/achievements";
 import { rankForLevel } from "@/lib/game/ranks";
@@ -17,6 +18,8 @@ import { Showcase } from "./showcase";
 import { StatCards } from "./stat-cards";
 
 export type PublicView = HeroData & {
+  /** Владелец скрыл профиль: видно имя, оформление и уровень, но не статистику и достижения */
+  hidden: boolean;
   xp: number;
   stagesPassed: number;
   streakDays: number;
@@ -29,8 +32,10 @@ export type PublicView = HeroData & {
 export function viewFromPublic(p: PublicProfile, course: QuestOutline[]): PublicView {
   const level = levelInfo(p.xp_total).level;
   const catalog = achievementCatalog(course);
-  const ids = p.achievements.map((a) => a.id).filter((id) => catalog.some((a) => a.id === id));
+  const hidden = p.is_public === false;
+  const ids = hidden ? [] : p.achievements.map((a) => a.id).filter((id) => catalog.some((a) => a.id === id));
   return {
+    hidden,
     name: p.display_name || `@${p.handle}`,
     handle: p.handle,
     avatarUrl: safeMediaUrl(p.avatar_url),
@@ -40,15 +45,15 @@ export function viewFromPublic(p: PublicProfile, course: QuestOutline[]): Public
     color: accentById(p.accent).color,
     rank: rankForLevel(level),
     level,
-    title: p.title,
+    title: hidden ? null : p.title,
     bio: p.bio ?? "",
     since: p.created_at,
     seed: p.handle ?? "guest",
     achievements: { got: ids.length, total: catalog.length },
     xp: p.xp_total,
-    stagesPassed: p.stages_passed,
-    streakDays: p.streak_days,
-    bestStreak: p.best_streak,
+    stagesPassed: p.stages_passed ?? 0,
+    streakDays: p.streak_days ?? 0,
+    bestStreak: p.best_streak ?? 0,
     showcase: (p.showcase ?? []).filter((id) => ids.includes(id)).slice(0, 4),
     achievementIds: ids,
   };
@@ -56,6 +61,26 @@ export function viewFromPublic(p: PublicProfile, course: QuestOutline[]): Public
 
 /** Профиль глазами других: шапка, уровень, статистика, витрина и все открытые достижения */
 export function PublicProfileView({ view, course }: { view: PublicView; course: QuestOutline[] }) {
+  if (view.hidden) {
+    return (
+      <div className="flex flex-col gap-8">
+        <ProfileHero data={view} />
+        <LevelCardView xp={view.xp} />
+        <section
+          aria-labelledby="hidden-profile"
+          className="flex items-start gap-4 rounded-xl border border-border bg-card p-5 text-left"
+        >
+          <Icon name="lock" className="mt-0.5 size-5 shrink-0 text-muted" />
+          <div className="flex flex-col gap-1">
+            <h2 id="hidden-profile" className="font-display text-lg font-semibold">
+              Статистика и достижения скрыты
+            </h2>
+            <p className="text-muted">Владелец профиля решил не показывать их. Уровень виден, как в таблице лидеров.</p>
+          </div>
+        </section>
+      </div>
+    );
+  }
   const stagesTotal = course.reduce((n, q) => n + q.stages.length, 0);
   const earned = achievementCatalog(course)
     .filter((a) => view.achievementIds.includes(a.id))
@@ -149,9 +174,7 @@ export function PublicProfilePage({ handle, course }: { handle: string; course: 
       <h1 className="font-display text-2xl font-semibold">
         {state.kind === "missing" ? "Профиль не найден" : "Профиль не загрузился"}
       </h1>
-      <p className="text-muted">
-        {state.kind === "missing" ? `Студента с ником @${handle} нет, или он скрыл свой профиль.` : state.message}
-      </p>
+      <p className="text-muted">{state.kind === "missing" ? `Студента с ником @${handle} нет.` : state.message}</p>
       <ButtonLink href="/leaderboard" variant="secondary">
         Открыть таблицу лидеров
       </ButtonLink>

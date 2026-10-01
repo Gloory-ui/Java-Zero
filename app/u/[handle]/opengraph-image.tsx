@@ -20,7 +20,7 @@ const font = (pkg: string, file: string) =>
 const DISPLAY = "Unbounded, Unbounded Cyrillic";
 const BODY = "Onest, Onest Cyrillic";
 
-/** Публичный профиль по нику. Закрытый, несуществующий или недоступный — null: превью без личных данных */
+/** Профиль по нику. Несуществующий или недоступный — null. У скрытого база не отдаёт статистику и достижения */
 async function loadProfile(handle: string): Promise<PublicProfile | null> {
   if (!supabaseConfig || !HANDLE_RE.test(handle)) return null;
   try {
@@ -41,14 +41,30 @@ async function loadProfile(handle: string): Promise<PublicProfile | null> {
 }
 
 /**
+ * Откуда сервер скачивает аватар: хранилище Supabase и аватары GitHub, Google и Яндекса. Ссылку на аватар студент
+ * может поменять сам, и без списка сервер ходил бы по любому адресу, который ему подсунули
+ */
+function avatarHostAllowed(url: string): boolean {
+  const host = new URL(url).hostname;
+  const storage = supabaseConfig ? new URL(supabaseConfig.url).hostname : null;
+  return (
+    host === storage ||
+    host === "avatars.githubusercontent.com" ||
+    host === "avatars.yandex.net" ||
+    host.endsWith(".googleusercontent.com")
+  );
+}
+
+/**
  * Аватар для картинки. satori рисует только PNG и JPEG, а свои аватары у нас в WebP:
  * тогда вместо фото — буква имени. Картинка встраивается data-URL, чтобы сбой чужого сервера не ронял превью.
  */
 async function loadAvatar(url: string | null): Promise<string | null> {
   const safe = safeMediaUrl(url);
-  if (!safe) return null;
+  if (!safe || !avatarHostAllowed(safe)) return null;
   try {
-    const res = await fetch(safe, { signal: AbortSignal.timeout(3000) });
+    // Без перенаправлений: иначе разрешённый адрес мог бы увести запрос на чужой
+    const res = await fetch(safe, { signal: AbortSignal.timeout(3000), redirect: "error" });
     const type = res.headers.get("content-type") ?? "";
     if (!res.ok || !/^image\/(png|jpeg)/.test(type)) return null;
     const bytes = Buffer.from(await res.arrayBuffer());
@@ -83,7 +99,8 @@ export default async function ProfileImage({ params }: { params: Promise<{ handl
   const xp = profile?.xp_total ?? 0;
   const level = levelInfo(xp).level;
   const rank = rankForLevel(level);
-  const name = profile ? profile.display_name || `@${profile.handle}` : "Профиль скрыт";
+  const name = profile ? profile.display_name || `@${profile.handle}` : "Профиль не найден";
+  const open = profile?.is_public !== false;
 
   return new ImageResponse(
     <div
@@ -173,12 +190,19 @@ export default async function ProfileImage({ params }: { params: Promise<{ handl
         </div>
       </div>
 
-      {profile ? (
+      {profile && open ? (
         <div style={{ display: "flex", gap: 72 }}>
           <Stat value={`Ур. ${level}`} label="Уровень" />
           <Stat value={xp.toLocaleString("ru-RU")} label="Опыт" />
-          <Stat value={String(profile.stages_passed)} label="Этапов сдано" />
+          <Stat value={String(profile.stages_passed ?? 0)} label="Этапов сдано" />
           <Stat value={String(profile.achievements.length)} label="Достижений" />
+        </div>
+      ) : profile ? (
+        <div style={{ display: "flex", gap: 72 }}>
+          <Stat value={`Ур. ${level}`} label="Уровень" />
+          <div style={{ display: "flex", alignItems: "flex-end", fontSize: 30, color: "#97a3b6" }}>
+            Статистика скрыта
+          </div>
         </div>
       ) : (
         <div style={{ fontSize: 30, color: "#97a3b6" }}>Java с нуля, шаг за шагом</div>

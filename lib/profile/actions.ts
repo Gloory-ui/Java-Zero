@@ -1,15 +1,15 @@
 "use client";
 
+import { HANDLE_RE, normalizeHandle } from "@/lib/account/handle";
 import { loadSupabase } from "@/lib/account/session";
 import { useAccount } from "@/lib/account/store";
-import { CUSTOM_BANNER, HANDLE_RE } from "./cosmetics";
+import { CUSTOM_BANNER } from "./cosmetics";
 import { type MediaKind, prepareImage, uploadImage } from "./media";
 import { useProfile } from "./store";
 
 export type HandleCheck = "ok" | "taken" | "invalid" | "error";
 
-/** Нормализация ника: без @, в нижнем регистре, без пробелов по краям */
-export const normalizeHandle = (raw: string) => raw.trim().replace(/^@/, "").toLowerCase();
+export { normalizeHandle };
 
 export async function checkHandle(raw: string): Promise<HandleCheck> {
   const handle = normalizeHandle(raw);
@@ -24,11 +24,14 @@ export async function checkHandle(raw: string): Promise<HandleCheck> {
   }
 }
 
-/** Ник сохраняется отдельно от остального профиля: уникальность проверяет база, занятый ник вернёт «taken» */
-export async function saveHandle(raw: string): Promise<HandleCheck> {
+/**
+ * Ник сохраняется отдельно от остального профиля: уникальность проверяет база, занятый ник вернёт «taken».
+ * uid передают явно сразу после регистрации: состояние аккаунта в этот момент ещё не обновилось
+ */
+export async function saveHandle(raw: string, userId?: string): Promise<HandleCheck> {
   const handle = normalizeHandle(raw);
   if (!HANDLE_RE.test(handle)) return "invalid";
-  const uid = useAccount.getState().user?.id;
+  const uid = userId ?? useAccount.getState().user?.id;
   if (!uid) return "error";
   try {
     const supabase = await loadSupabase();
