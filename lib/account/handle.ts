@@ -12,8 +12,21 @@ export const isEmailLogin = (login: string) => /^[^@\s]+@[^@\s]+$/.test(login.tr
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 72;
 
-/** Куда вернуть после входа: только путь этого сайта, иначе ссылку входа можно подделать для перехода на чужой сайт. */
+const SAME_ORIGIN = "https://java-zero.invalid";
+
+/**
+ * Куда вернуть после входа: только путь этого сайта, иначе ссылку входа можно подделать для перехода на чужой сайт.
+ * Путь разбирается так же, как его разберёт браузер: он выбрасывает табуляцию и переводы строк и считает обратную
+ * черту за «/», поэтому «/<табуляция>/evil.example» превратился бы в «//evil.example». Годится только адрес,
+ * который остаётся на этом сайте
+ */
 export function safeNext(raw: string | null | undefined): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) return "/course";
-  return raw;
+  if (!raw?.startsWith("/")) return "/course";
+  try {
+    const url = new URL(raw, SAME_ORIGIN);
+    if (url.origin !== SAME_ORIGIN) return "/course";
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/course";
+  }
 }

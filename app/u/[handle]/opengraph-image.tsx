@@ -41,14 +41,30 @@ async function loadProfile(handle: string): Promise<PublicProfile | null> {
 }
 
 /**
+ * Откуда сервер скачивает аватар: хранилище Supabase и аватары GitHub, Google и Яндекса. Ссылку на аватар студент
+ * может поменять сам, и без списка сервер ходил бы по любому адресу, который ему подсунули
+ */
+function avatarHostAllowed(url: string): boolean {
+  const host = new URL(url).hostname;
+  const storage = supabaseConfig ? new URL(supabaseConfig.url).hostname : null;
+  return (
+    host === storage ||
+    host === "avatars.githubusercontent.com" ||
+    host === "avatars.yandex.net" ||
+    host.endsWith(".googleusercontent.com")
+  );
+}
+
+/**
  * Аватар для картинки. satori рисует только PNG и JPEG, а свои аватары у нас в WebP:
  * тогда вместо фото — буква имени. Картинка встраивается data-URL, чтобы сбой чужого сервера не ронял превью.
  */
 async function loadAvatar(url: string | null): Promise<string | null> {
   const safe = safeMediaUrl(url);
-  if (!safe) return null;
+  if (!safe || !avatarHostAllowed(safe)) return null;
   try {
-    const res = await fetch(safe, { signal: AbortSignal.timeout(3000) });
+    // Без перенаправлений: иначе разрешённый адрес мог бы увести запрос на чужой
+    const res = await fetch(safe, { signal: AbortSignal.timeout(3000), redirect: "error" });
     const type = res.headers.get("content-type") ?? "";
     if (!res.ok || !/^image\/(png|jpeg)/.test(type)) return null;
     const bytes = Buffer.from(await res.arrayBuffer());

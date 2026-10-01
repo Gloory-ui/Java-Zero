@@ -127,4 +127,19 @@ describe("адрес возврата после входа", () => {
     expect(safeNext("https://evil.example")).toBe("/course");
     expect(safeNext(null)).toBe("/course");
   });
+
+  it("не пропускает обходы: браузер выбрасывает табуляцию и переводы строк и считает обратную черту за «/»", () => {
+    const tricks = [
+      "/\t/evil.example",
+      "/\n/evil.example",
+      "/\r\n/evil.example",
+      "/\\/evil.example",
+      "/\t\\evil.example",
+    ];
+    for (const trick of tricks) {
+      expect(safeNext(trick), JSON.stringify(trick)).toBe("/course");
+    }
+    expect(safeNext("/learn/basics/input?tab=theory#quiz")).toBe("/learn/basics/input?tab=theory#quiz");
+    expect(safeNext("/%09/evil.example")).toBe("/%09/evil.example");
+  });
 });
