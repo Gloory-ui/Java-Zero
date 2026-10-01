@@ -100,6 +100,11 @@ export async function loadOverrides(): Promise<Overrides> {
   return cached.value;
 }
 
+/** Забыть прочитанные правки: после сохранения в админке страницы пересобираются уже с новыми */
+export function forgetOverrides(): void {
+  cached = undefined;
+}
+
 /** Курс с правками админки — для страниц, которые показывают тексты квестов и этапов */
 export async function getCourseWithOverrides(): Promise<Quest[]> {
   const overrides = await loadOverrides();
