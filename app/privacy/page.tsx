@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Какие данные хранит Java-Zero, где они лежат и как их удалить.",
 };
 
-const UPDATED = "29 сентября 2026";
+const UPDATED = "1 октября 2026";
 const ISSUES_URL = "https://github.com/Gloory-ui/Java-Zero/issues";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
             items={[
               "Supabase — хранение аккаунта, прогресса, профиля и загруженных картинок;",
               "Google (Gemini API) — ответы AI-ментора;",
-              "GitHub и Google — только подтверждение входа, если ты выбрал этот способ;",
+              "GitHub, Google и Яндекс — только подтверждение входа, если ты выбрал этот способ;",
               "Render — хостинг сайта, хранит технические журналы запросов.",
             ]}
           />
