@@ -41,7 +41,7 @@ const errorText = (e: unknown) => describeAuthError(e instanceof Error ? e.messa
 
 function GitHubIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="size-5" fill="currentColor" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="size-6 shrink-0" fill="currentColor" aria-hidden="true">
       <path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z" />
     </svg>
   );
@@ -49,7 +49,7 @@ function GitHubIcon() {
 
 function YandexIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="size-6 shrink-0" aria-hidden="true">
       <circle cx="12" cy="12" r="12" fill="#FC3F1D" />
       <path
         fill="#fff"
@@ -61,7 +61,7 @@ function YandexIcon() {
 
 function GoogleIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="size-6 shrink-0" aria-hidden="true">
       <path
         fill="#4285F4"
         d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.5 5.5 0 0 1-2.4 3.6v3h3.9c2.2-2.1 3.5-5.1 3.5-8.7Z"
@@ -606,17 +606,32 @@ export function LoginForm() {
             {methods.email ? "или через" : "войти через"}
             <span className="h-px flex-1 bg-border" />
           </div>
-          <div className="flex flex-wrap gap-2 [&>*]:min-w-28 [&>*]:flex-1">
+          {/* Логотипы в ряд, как на макете: название — в подсказке и для экранного диктора */}
+          <div className="grid grid-cols-3 gap-2">
             {methods.github && (
-              <Button variant="secondary" size="lg" onClick={() => withProvider("github")} disabled={busy}>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => withProvider("github")}
+                disabled={busy}
+                aria-label="Войти через GitHub"
+                title="GitHub"
+                className={cn(pending === "github" && "animate-pulse")}
+              >
                 <GitHubIcon />
-                {pending === "github" ? "Переходим…" : "GitHub"}
               </Button>
             )}
             {methods.google && (
-              <Button variant="secondary" size="lg" onClick={() => withProvider("google")} disabled={busy}>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => withProvider("google")}
+                disabled={busy}
+                aria-label="Войти через Google"
+                title="Google"
+                className={cn(pending === "google" && "animate-pulse")}
+              >
                 <GoogleIcon />
-                {pending === "google" ? "Переходим…" : "Google"}
               </Button>
             )}
             {YANDEX_ENABLED && (
@@ -624,13 +639,15 @@ export function LoginForm() {
                 variant="secondary"
                 size="lg"
                 disabled={busy}
+                aria-label="Войти через Яндекс"
+                title="Яндекс"
+                className={cn(pending === "yandex" && "animate-pulse")}
                 onClick={() => {
                   setPending("yandex");
                   window.location.assign(`/api/auth/yandex?next=${encodeURIComponent(nextFromUrl())}`);
                 }}
               >
                 <YandexIcon />
-                {pending === "yandex" ? "Переходим…" : "Яндекс"}
               </Button>
             )}
           </div>
