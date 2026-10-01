@@ -16,8 +16,21 @@ const SECURITY_HEADERS = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
 ];
 
+// Публичные настройки можно задать и без приставки NEXT_: на Render они заведены как PUBLIC_SUPABASE_URL и т. п.
+// В браузер Next сам передаёт только NEXT_PUBLIC_*, поэтому короткое имя подставляется под полным при сборке.
+// Если задано полное имя, главное оно
+const PUBLIC_ENV = ["SITE_URL", "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_PUBLISHABLE_KEY", "YANDEX_CLIENT_ID"];
+
+const publicEnv = Object.fromEntries(
+  PUBLIC_ENV.map((name) => [
+    `NEXT_PUBLIC_${name}`,
+    process.env[`NEXT_PUBLIC_${name}`] || process.env[`PUBLIC_${name}`] || undefined,
+  ]),
+);
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  env: publicEnv,
 
   // Jar Java-движка (4 МБ) CheerpJ читает кусками через Range. Без кэша каждый кусок при каждом заходе
   // заново сверяется с сервером; сутки храним, ещё неделю отдаём из кэша, обновляя в фоне.

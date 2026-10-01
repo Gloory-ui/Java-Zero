@@ -31,6 +31,8 @@
 | `SUPABASE_SERVICE_ROLE_KEY` | секретный ключ Supabase: вход по нику, проверка ника |
 | `NEXT_PUBLIC_YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET` | приложение Яндекса для входа через Яндекс |
 
+Публичные переменные можно завести и без `NEXT_`: `PUBLIC_SITE_URL`, `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_YANDEX_CLIENT_ID`. `next.config.ts` подставит их под полными именами при сборке, а если заданы оба имени, главное полное. На боевом сервисе они заведены именно так.
+
 Без переменных Supabase сайт работает, но без аккаунтов. Без `GEMINI_API_KEY` ментор отвечает «пока не подключён». Настройка входа — почта, коды в письмах, Яндекс — в [docs/auth.md](auth.md).
 
 ## Supabase
