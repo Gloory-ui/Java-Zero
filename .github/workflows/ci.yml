@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [next, main]
 
+# Проверкам нужен только код: токен GitHub без права записи
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
