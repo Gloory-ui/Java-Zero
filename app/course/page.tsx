@@ -4,15 +4,19 @@ import { DailyQuests } from "@/components/game/daily-quests";
 import { LevelCard } from "@/components/game/level-card";
 import { JavaPrewarm } from "@/components/lab/java-prewarm";
 import { SiteFooter, SiteHeader } from "@/components/site/site-header";
-import { getCourse } from "@/lib/content/load";
 import { toOutline } from "@/lib/content/outline";
+import { getCourseWithOverrides } from "@/lib/content/overrides";
 
 export const metadata: Metadata = {
   title: "Карта курса",
   description: "Все квесты курса «Java с нуля» по порядку: от первой программы до циклов, методов и массивов.",
 };
 
-export default function CoursePage() {
+// Названия квестов и этапов могут прийти правкой из админки: карта пересобирается не чаще раза в минуту
+export const revalidate = 60;
+
+export default async function CoursePage() {
+  const course = toOutline(await getCourseWithOverrides());
   return (
     <>
       <SiteHeader />
@@ -23,7 +27,7 @@ export default function CoursePage() {
         </div>
         <LevelCard />
         <DailyQuests />
-        <CourseMap course={toOutline(getCourse())} />
+        <CourseMap course={course} />
         <JavaPrewarm />
       </main>
       <SiteFooter />
