@@ -97,8 +97,6 @@ export const questSchema = z.object({
 export const groupSchema = z.object({
   title: z.string().min(1),
   subtitle: z.string().min(1),
-  /** Код ссылки-приглашения /group?join=<код> */
-  invite: z.string().regex(/^[a-z0-9]{4,32}$/, "латиница в нижнем регистре и цифры, от 4 до 32 символов"),
   steps: z.array(z.object({ prep: z.array(slug).min(1), kt: slug })).min(1),
 });
 

@@ -20,7 +20,7 @@ export function CourseMap({ course }: { course: QuestOutline[] }) {
   const next = nextStage(progress, course, path);
   // «Новый» — только этапы, добавленные позади студента: для новичка новое всё
   const skipped = new Set(skippedNewStages(progress, path));
-  const member = isGroupMember(progress, course);
+  const member = isGroupMember(progress);
 
   return (
     <div className="flex flex-col gap-8">

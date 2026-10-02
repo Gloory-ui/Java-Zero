@@ -128,7 +128,8 @@ describe("два раздела: «Java с нуля» и «Группа»", () =
     course.filter((q) => ids.includes(q.id)).flatMap((q) => q.stages.map((s) => `${q.id}/${s.id}`));
   /** Прошёл «Фундамент» и «Циклы» */
   const loopsDone = passed(...stagesOf("basics", "loops_prep"));
-  const member = (p: ReturnType<typeof passed>) => ({ ...p, stats: { group: 1 } });
+  /** Участник группы: так ответил сервер (groupMember в браузере ставит lib/group/access.ts) */
+  const member = (p: ReturnType<typeof passed>) => ({ ...p, groupMember: true });
 
   it("общий курс — без КТ; путь группы — подготовка, потом КТ", () => {
     expect(coursePath(course).map((q) => q.id)).toEqual(MAIN);
@@ -144,7 +145,7 @@ describe("два раздела: «Java с нуля» и «Группа»", () =
   });
 
   it("гость раздела не видит КТ, и она у него не открывается; «Калькулятор» открыт после «Циклов»", () => {
-    expect(isGroupMember(loopsDone, course)).toBe(false);
+    expect(isGroupMember(loopsDone)).toBe(false);
     expect(visibleCourse(loopsDone, course).map((q) => q.id)).toEqual(MAIN);
     expect(isQuestUnlocked(loopsDone, course, quest("kt1"))).toBe(false);
     expect(isQuestUnlocked(loopsDone, course, quest("calc"))).toBe(true);
@@ -169,10 +170,13 @@ describe("два раздела: «Java с нуля» и «Группа»", () =
     expect(pathFor(loopsDone, course, "loops_prep")).toBe("course");
   });
 
-  it("кто уже сдавал задания КТ 1, в группе без приглашения", () => {
+  it("сданный в браузере этап КТ доступа к группе не даёт: членство решает сервер", () => {
     const oldStudent = passed("kt1/multiplication-table");
-    expect(isGroupMember(oldStudent, course)).toBe(true);
-    expect(isQuestUnlocked(oldStudent, course, quest("kt1"))).toBe(true);
+    expect(isGroupMember(oldStudent)).toBe(false);
+    expect(visibleCourse(oldStudent, course).map((q) => q.id)).toEqual(MAIN);
+    // Старая отметка stats.group из браузера тоже не в счёт
+    expect(isGroupMember({ ...oldStudent, stats: { group: 1 } } as ReturnType<typeof passed>)).toBe(false);
+    expect(isGroupMember(member(oldStudent))).toBe(true);
   });
 
   it("«Выпускник» — за общий курс: задания КТ для него не нужны", () => {
@@ -191,13 +195,13 @@ describe("два раздела: «Java с нуля» и «Группа»", () =
   });
 
   it("«Массивы»: в общем курсе — после «Калькулятора», у группы — сразу после КТ 1; КТ 2 — после «Массивов»", () => {
-    const kt1Done = passed(...stagesOf("basics", "loops_prep", "kt1"));
+    const kt1Done = member(passed(...stagesOf("basics", "loops_prep", "kt1")));
     expect(isQuestUnlocked(kt1Done, course, quest("arrays_prep"))).toBe(true);
     expect(isQuestUnlocked(member(loopsDone), course, quest("arrays_prep"))).toBe(false);
     expect(isQuestUnlocked(kt1Done, course, quest("kt2"))).toBe(false);
     expect(nextStage(kt1Done, course, groupPath(course))).toEqual({ questId: "arrays_prep", stageId: "array-basics" });
 
-    const arraysDone = passed(...stagesOf("basics", "loops_prep", "kt1", "arrays_prep"));
+    const arraysDone = member(passed(...stagesOf("basics", "loops_prep", "kt1", "arrays_prep")));
     expect(isQuestUnlocked(arraysDone, course, quest("kt2"))).toBe(true);
     // Гость, прошедший «Калькулятор», идёт в «Массивы» по общему курсу
     const calcDone = passed(...stagesOf("basics", "loops_prep", "calc"));
@@ -206,12 +210,12 @@ describe("два раздела: «Java с нуля» и «Группа»", () =
   });
 
   it("«Классы»: у группы — после КТ 2, КТ 3 — после «Классов»; «Наследование» — только в общем курсе", () => {
-    const kt2Done = passed(...stagesOf("basics", "loops_prep", "kt1", "arrays_prep", "kt2"));
+    const kt2Done = member(passed(...stagesOf("basics", "loops_prep", "kt1", "arrays_prep", "kt2")));
     expect(isQuestUnlocked(kt2Done, course, quest("oop_prep"))).toBe(true);
     expect(isQuestUnlocked(kt2Done, course, quest("kt3"))).toBe(false);
     expect(nextStage(kt2Done, course, groupPath(course))).toEqual({ questId: "oop_prep", stageId: "class-object" });
 
-    const oopDone = passed(...stagesOf("basics", "loops_prep", "kt1", "arrays_prep", "kt2", "oop_prep"));
+    const oopDone = member(passed(...stagesOf("basics", "loops_prep", "kt1", "arrays_prep", "kt2", "oop_prep")));
     expect(isQuestUnlocked(oopDone, course, quest("kt3"))).toBe(true);
     expect(isQuestUnlocked(oopDone, course, quest("inheritance"))).toBe(true);
     expect(quest("inheritance").groupAfter).toBeUndefined();
