@@ -17,6 +17,7 @@ import type { IconName } from "@/lib/icons";
 export const ADMIN_TABS: { href: string; label: string; icon: IconName }[] = [
   { href: "/admin/leaderboard", label: "Лидерборд", icon: "trophy" },
   { href: "/admin/quests", label: "Квесты", icon: "book-open" },
+  { href: "/admin/group", label: "Группа", icon: "graduation-cap" },
 ];
 
 function Notice({ icon, title, children }: { icon: IconName; title: string; children?: ReactNode }) {
