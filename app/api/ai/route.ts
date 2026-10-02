@@ -4,6 +4,7 @@ import { buildContents, systemInstruction } from "@/lib/ai/prompt";
 import { clientIp, RateLimiter } from "@/lib/ai/rate-limit";
 import { mentorRequestSchema } from "@/lib/ai/schema";
 import { findStage } from "@/lib/content/load";
+import { checkGroupAccess } from "@/lib/group/server";
 import { supabaseConfig } from "@/lib/supabase/config";
 
 // Сначала новая модель, при ошибке или перегрузке — следующая; лёгкая lite-модель — последний запасной вариант.
@@ -109,6 +110,11 @@ export async function POST(request: Request) {
   const [questId, stageId] = req.stageKey.split("/");
   const found = findStage(questId, stageId);
   if (!found) return fail(400, "Неизвестный этап.");
+  // Задание КТ ментор видит целиком: о нём спрашивает только тот, кому задание доступно
+  if (found.quest.track === "group") {
+    const access = await checkGroupAccess(request);
+    if (!access.ok) return fail(access.status, access.error);
+  }
 
   let opened: Opened;
   try {

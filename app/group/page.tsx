@@ -22,7 +22,7 @@ export default function GroupPage() {
           <h1 className="font-display text-3xl font-semibold">{group.title}</h1>
           <p className="mt-1 text-muted">{group.subtitle}</p>
         </div>
-        <GroupMap course={toOutline(getCourse())} group={{ invite: group.invite, steps: group.steps }} />
+        <GroupMap course={toOutline(getCourse())} steps={group.steps} />
         <JavaPrewarm />
       </main>
       <SiteFooter />

@@ -4,8 +4,6 @@ import { AccountMenu } from "@/components/account/account-menu";
 import { LevelChip } from "@/components/game/level-chip";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/cn";
-import { getCourse } from "@/lib/content/load";
-import { toOutline } from "@/lib/content/outline";
 import { BrandLogo } from "./brand-logo";
 import { GroupNavLink } from "./group-nav-link";
 
@@ -25,7 +23,6 @@ const LINK =
   "h-11 items-center rounded-md px-2.5 text-sm text-muted transition-colors duration-150 ease-snappy hover:bg-card hover:text-text sm:h-auto sm:px-3 sm:py-1.5";
 
 export function SiteHeader() {
-  const groupQuests = toOutline(getCourse()).filter((q) => q.track === "group");
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-5xl items-center gap-2 px-4">
@@ -36,9 +33,7 @@ export function SiteHeader() {
               <Link href={item.href} className={cn(LINK, item.from)}>
                 {item.label}
               </Link>
-              {item.href === "/course" && (
-                <GroupNavLink groupQuests={groupQuests} className={cn(LINK, "hidden lg:flex")} />
-              )}
+              {item.href === "/course" && <GroupNavLink className={cn(LINK, "hidden lg:flex")} />}
             </Fragment>
           ))}
         </nav>

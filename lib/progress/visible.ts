@@ -5,10 +5,10 @@ import type { QuestOutline } from "@/lib/content/outline";
 import { coursePath, isGroupMember } from "./selectors";
 import { useProgress, useProgressHydrated } from "./store";
 
-/** Участник ли группы этот браузер. До загрузки прогресса — нет: так HTML сервера и клиента совпадают */
-export function useGroupMember(course: QuestOutline[]): boolean {
+/** Участник ли группы этот аккаунт (по ответу сервера). До загрузки прогресса — нет: так HTML сервера и клиента совпадают */
+export function useGroupMember(): boolean {
   const hydrated = useProgressHydrated();
-  const member = useProgress((s) => isGroupMember(s, course));
+  const member = useProgress(isGroupMember);
   return hydrated && member;
 }
 
@@ -17,6 +17,6 @@ export function useGroupMember(course: QuestOutline[]): boolean {
  * каталог достижений кэшируется по объекту курса.
  */
 export function useVisibleCourse(course: QuestOutline[]): QuestOutline[] {
-  const member = useGroupMember(course);
+  const member = useGroupMember();
   return useMemo(() => (member ? course : coursePath(course)), [member, course]);
 }

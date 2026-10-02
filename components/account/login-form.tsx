@@ -1,8 +1,9 @@
 "use client";
 
-import { AtSign, Eye, EyeOff, KeyRound, Lock, Mail, User } from "lucide-react";
+import { AtSign, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, type ReactNode, useEffect, useId, useState } from "react";
+import { CodeDeck, type CodeVerdict } from "@/components/account/code-deck";
 import { Button, ButtonLink } from "@/components/ui/button";
 import {
   type AuthMethods,
@@ -26,6 +27,12 @@ import { useAccount } from "@/lib/account/store";
 import { cn } from "@/lib/cn";
 
 const RESEND_SECONDS = 60;
+
+/** Длина кода из письма: Supabase → Authentication → Email OTP Length (docs/auth.md) */
+const CODE_LENGTH = 6;
+
+/** Верный код: зелёные карты успевают показаться, прежде чем страница сменится */
+const pauseOnSuccess = () => new Promise((resolve) => setTimeout(resolve, 450));
 
 /** Вход через Яндекс идёт через наш сервер; кнопка есть, только если на сборке задан ID приложения Яндекса */
 const YANDEX_ENABLED = Boolean(process.env.NEXT_PUBLIC_YANDEX_CLIENT_ID);
@@ -179,6 +186,7 @@ export function LoginForm() {
   const [handle, setHandle] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
+  const [verdict, setVerdict] = useState<CodeVerdict>(null);
   const [handleState, setHandleState] = useState<HandleAvailability | "checking" | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -260,6 +268,21 @@ export function LoginForm() {
     setError(null);
     setNotice(null);
     setCode("");
+    setVerdict(null);
+  };
+
+  /** Проверка кода: карты краснеют на ошибке и зеленеют на верном коде */
+  const verify = async <T,>(check: () => Promise<T>): Promise<T> => {
+    let result: T;
+    try {
+      result = await check();
+    } catch (e) {
+      setVerdict("bad");
+      throw e;
+    }
+    setVerdict("ok");
+    await pauseOnSuccess();
+    return result;
   };
 
   /** Обёртка действия: крутилка на кнопке, ошибка по-русски */
@@ -324,7 +347,7 @@ export function LoginForm() {
   const onConfirm = (event: FormEvent) => {
     event.preventDefault();
     void run("confirm", async () => {
-      const { saved, handle: actual } = await confirmSignup(email.trim(), code, handle);
+      const { saved, handle: actual } = await verify(() => confirmSignup(email.trim(), code, handle));
       if (saved === "ok") {
         router.replace(nextFromUrl());
         return;
@@ -358,7 +381,7 @@ export function LoginForm() {
   const onReset = (event: FormEvent) => {
     event.preventDefault();
     void run("reset", async () => {
-      await confirmPasswordReset(email.trim(), code);
+      await verify(() => confirmPasswordReset(email.trim(), code));
       setPassword("");
       go("password");
     });
@@ -420,22 +443,17 @@ export function LoginForm() {
   const oauth = (methods.github || methods.google || YANDEX_ENABLED) && (mode === "signin" || mode === "signup");
 
   const codeField = (
-    <Field label="Код из письма" icon={<KeyRound className="size-4" />}>
-      {(id) => (
-        <input
-          id={id}
-          required
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          pattern="[0-9 ]{6,12}"
-          maxLength={12}
-          value={code}
-          onChange={(e) => setCode(e.target.value.replace(/[^\d ]/g, ""))}
-          placeholder="123456"
-          className={cn(inputClass, "font-mono tracking-[0.3em]")}
-        />
-      )}
-    </Field>
+    <CodeDeck
+      label="Код из письма"
+      value={code}
+      length={CODE_LENGTH}
+      onChange={(next) => {
+        setCode(next);
+        setVerdict(null);
+      }}
+      verdict={verdict ?? (pending === mode ? "checking" : null)}
+      hint={`${CODE_LENGTH} цифр. Код можно вставить целиком.`}
+    />
   );
 
   const resend = (
@@ -543,7 +561,7 @@ export function LoginForm() {
       {(mode === "confirm" || mode === "reset") && (
         <form onSubmit={mode === "confirm" ? onConfirm : onReset} className="flex flex-col gap-4">
           {codeField}
-          <Button type="submit" size="lg" disabled={busy || code.replace(/\s/g, "").length < 6}>
+          <Button type="submit" size="lg" disabled={busy || code.length < CODE_LENGTH}>
             {pending === mode ? "Проверяем…" : "Подтвердить"}
           </Button>
           <div className="flex flex-wrap gap-2">
