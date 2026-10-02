@@ -1,0 +1,179 @@
+/* Цвета и метки графиков «Обзора». Палитра проверена scripts/validate_palette.js из скилла dataviz
+   на фоне карточек обеих тем: полоса светлоты, порог насыщенности, различимость пар при дальтонизме, контраст 3:1.
+   Серии: активные — фирменный красный, новые — синий; сданные этапы — фиолетовый, неудачи — оранжевый.
+   Воронка — две ступени одного синего: «открыли» светлее, «сдали» ярче. Цвета статуса (зелёный, красный) не заняты */
+
+.root {
+  --series-active: #f43f5e;
+  --series-new: #3987e5;
+  --series-passed: #9085e9;
+  --series-fails: #d95926;
+  --funnel-reached: #184f95;
+  --funnel-passed: #6da7ec;
+}
+
+[data-theme="light"] .root {
+  --series-active: #e11d48;
+  --series-new: #2a78d6;
+  --series-passed: #4a3aa7;
+  --series-fails: #eb6834;
+  --funnel-reached: #86b6ef;
+  --funnel-passed: #256abf;
+}
+
+.seriesActive {
+  --tone: var(--series-active);
+}
+
+.seriesNew {
+  --tone: var(--series-new);
+}
+
+.seriesPassed {
+  --tone: var(--series-passed);
+}
+
+.seriesFails {
+  --tone: var(--series-fails);
+}
+
+.funnelReached {
+  --tone: var(--funnel-reached);
+}
+
+.funnelPassed {
+  --tone: var(--funnel-passed);
+}
+
+.axis text {
+  fill: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.crosshair {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.line {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Точка с кольцом цвета фона: видна там, где пересекает другую линию */
+.dot {
+  fill: var(--tone);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.bar {
+  fill: var(--tone);
+  transition: opacity 150ms var(--ease-snappy);
+}
+
+.barActive {
+  opacity: 0.75;
+}
+
+.endLabel {
+  fill: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ключ серии в легенде и подсказке: у линий — короткая линия, у столбцов и полос — прямоугольник */
+.key {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--tone);
+}
+
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--tone);
+}
+
+/* Цель для мыши и клавиатуры поверх графика */
+.hit {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+
+.hit:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  translate: -50% 0;
+  min-width: 9rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Воронка: дорожка «открыли» и полоса «сдали» поверх неё */
+.track {
+  position: relative;
+  height: 10px;
+  border-radius: 0 4px 4px 0;
+  background: var(--funnel-reached);
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 0 4px 4px 0;
+  background: var(--funnel-passed);
+  /* Зазор цвета фона между полосой и остатком дорожки */
+  box-shadow: 2px 0 0 var(--surface);
+}
+
+.meter {
+  height: 8px;
+  border-radius: 0 4px 4px 0;
+  background: var(--tone);
+}
+
+/* Обновление данных: прежние графики остаются, только бледнеют, без мигания */
+.refreshing {
+  opacity: 0.55;
+  transition: opacity 150ms var(--ease-snappy);
+}
+
+@media (forced-colors: active) {
+  .line,
+  .bar,
+  .track,
+  .fill,
+  .meter {
+    forced-color-adjust: none;
+  }
+}
