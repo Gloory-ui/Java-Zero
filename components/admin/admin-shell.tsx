@@ -11,8 +11,7 @@ import type { IconName } from "@/lib/icons";
 
 /**
  * Разделы админки. Каждый живёт в своей папке app/admin/<раздел> и components/admin/<раздел>; вкладка
- * добавляется сюда вместе со своей страницей. Следующие: «Обзор» (/admin/overview, icon gauge)
- * и «Группа» (/admin/group, icon graduation-cap)
+ * добавляется сюда вместе со своей страницей. Первая вкладка — та, куда ведёт /admin (next.config.ts)
  */
 export const ADMIN_TABS: { href: string; label: string; icon: IconName }[] = [
   { href: "/admin/overview", label: "Обзор", icon: "gauge" },
