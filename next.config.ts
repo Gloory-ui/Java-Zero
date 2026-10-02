@@ -45,13 +45,15 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Адреса сайта до v1.0: старые ссылки и закладки продолжают работать
   async redirects() {
     return [
+      // Адреса сайта до v1.0: старые ссылки и закладки продолжают работать
       { source: "/index.html", destination: "/", permanent: true },
       { source: "/lab.html", destination: "/course", permanent: true },
       { source: "/profile.html", destination: "/profile", permanent: true },
       { source: "/handbook.html", destination: "/handbook", permanent: true },
+      // Админка открывается с первого раздела; редирект временный — когда появится «Обзор», первым станет он
+      { source: "/admin", destination: "/admin/leaderboard", permanent: false },
     ];
   },
 };
