@@ -10,9 +10,8 @@ import { Button, ButtonLink, buttonClasses } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { useMentor } from "@/lib/ai/client";
 import { cn } from "@/lib/cn";
+import type { LabStage } from "@/lib/content/lab-stage";
 import type { QuestOutline } from "@/lib/content/outline";
-import type { Stage } from "@/lib/content/schema";
-import type { DuelQuestion } from "@/lib/game/duel";
 import { checkFinished, runFinished } from "@/lib/game/events";
 import type { XpPart } from "@/lib/game/xp";
 import { EngineRestartedError, getEngine, useEngine } from "@/lib/java/engine";
@@ -39,23 +38,7 @@ import { Mentor, type MentorContext } from "./mentor";
 import { Quiz } from "./quiz";
 import { type Outcome, ResultsPanel } from "./results-panel";
 
-export type LabStage = Pick<
-  Stage,
-  | "id"
-  | "title"
-  | "badge"
-  | "hints"
-  | "sampleInput"
-  | "quiz"
-  | "memory"
-  | "loopTracer"
-  | "tests"
-  | "starter"
-  | "solution"
-> & {
-  /** Вопросы защиты: этого этапа и предыдущих этапов квеста */
-  duel: DuelQuestion[];
-};
+export type { LabStage };
 
 type Props = {
   course: QuestOutline[];
@@ -336,7 +319,7 @@ export function Lab({ course, questId, stageIndex, stage, theory, pitfalls }: Pr
   );
 
   // Задания КТ — только для одногруппников: остальным объясняем, где раздел и как в него попасть
-  if (hydrated && quest.track === "group" && !isGroupMember(progress, course)) {
+  if (hydrated && quest.track === "group" && !isGroupMember(progress)) {
     return (
       <main id="main" className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-4 px-4">
         <p className="font-mono text-xs tracking-widest text-gold uppercase">{stage.badge}</p>

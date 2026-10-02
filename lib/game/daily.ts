@@ -123,7 +123,7 @@ export type DailyContext = { remainingStages: number; ktOpen: boolean };
 
 /** Квесты группы (КТ) считаются только у участника группы: остальным они не видны */
 export function dailyContext(
-  p: Pick<ProgressData, "stages"> & Partial<Pick<ProgressData, "stats">>,
+  p: Pick<ProgressData, "stages"> & { groupMember?: boolean },
   course: QuestOutline[],
 ): DailyContext {
   let remainingStages = 0;

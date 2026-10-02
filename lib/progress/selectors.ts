@@ -1,8 +1,8 @@
 import type { QuestOutline } from "@/lib/content/outline";
 import { type ProgressData, stageKey } from "./types";
 
-/** Счётчики нужны только для отметки «участник группы»: без них студент считается гостем раздела */
-type Progress = Pick<ProgressData, "stages"> & Partial<Pick<ProgressData, "stats">>;
+/** groupMember — ответ сервера, участник ли группы этот аккаунт; без него студент считается гостем раздела */
+type Progress = Pick<ProgressData, "stages"> & { groupMember?: boolean };
 
 export function isStagePassed(p: Progress, questId: string, stageId: string): boolean {
   return Boolean(p.stages[stageKey(questId, stageId)]?.passedAt);
@@ -13,12 +13,11 @@ export function isQuestCompleted(p: Progress, quest: QuestOutline): boolean {
 }
 
 /**
- * Участник группы: вошёл по ссылке-приглашению или уже сдавал задания КТ. Второе — одногруппники,
- * которые учились до появления раздела «Группа»: их не нужно приглашать заново.
+ * Участник группы: так ответил сервер (вход по ссылке-приглашению или доступ от админа). Сданный этап КТ
+ * доступа больше не даёт: прогресс в браузере студент может записать сам
  */
-export function isGroupMember(p: Progress, course: QuestOutline[]): boolean {
-  if ((p.stats?.group ?? 0) > 0) return true;
-  return course.some((q) => q.track === "group" && q.stages.some((s) => isStagePassed(p, q.id, s.id)));
+export function isGroupMember(p: Progress): boolean {
+  return p.groupMember === true;
 }
 
 /** Общий курс «Java с нуля»: квесты для всех по порядку */
@@ -40,7 +39,7 @@ export function groupPath(course: QuestOutline[]): QuestOutline[] {
 
 /** Что показывать студенту: участнику группы — весь курс, остальным — только общий курс */
 export function visibleCourse(p: Progress, course: QuestOutline[]): QuestOutline[] {
-  return isGroupMember(p, course) ? course : coursePath(course);
+  return isGroupMember(p) ? course : coursePath(course);
 }
 
 /**
@@ -56,7 +55,7 @@ export function isQuestUnlocked(p: Progress, course: QuestOutline[], quest: Ques
     return prev ? isQuestCompleted(p, prev) : false;
   };
   if (quest.track === "course" && closed(quest.unlockAfter)) return true;
-  return quest.groupAfter !== undefined && isGroupMember(p, course) && closed(quest.groupAfter);
+  return quest.groupAfter !== undefined && isGroupMember(p) && closed(quest.groupAfter);
 }
 
 /** Этап открыт, если открыт квест и сдан предыдущий этап. Сданные этапы всегда открыты для повтора. */
@@ -123,7 +122,7 @@ export function nextStage(
  * (после «Циклов» — КТ 1), остальные — по общему курсу (после «Циклов» — «Калькулятор»).
  */
 export function pathFor(p: Progress, course: QuestOutline[], questId?: string): "course" | "group" {
-  if (!isGroupMember(p, course)) return "course";
+  if (!isGroupMember(p)) return "course";
   const quest = questId === undefined ? undefined : course.find((q) => q.id === questId);
   if (quest === undefined) return "group";
   return quest.groupAfter !== undefined ? "group" : "course";

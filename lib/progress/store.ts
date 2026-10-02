@@ -24,6 +24,11 @@ type Ownership = {
   owner: string | null;
   /** Прогресс перенесён со старой системы наград: один раз показать, сколько опыта начислено */
   upgradeNotice?: boolean;
+  /**
+   * Участник ли группы: так ответил сервер для аккаунта owner (lib/group/access.ts). С аккаунтом не синхронизируется —
+   * доступ к заданиям КТ всё равно проверяет сервер, а здесь только подсказка интерфейсу
+   */
+  groupMember?: boolean;
 };
 
 type Actions = {
@@ -46,8 +51,8 @@ type Actions = {
   /** События дня. seen — ключ разового события: второй раз за день не засчитывается */
   bumpDaily: (metrics: DailyMetric[], seen?: string) => void;
   addStats: (delta: GameStats) => void;
-  /** Вход по ссылке-приглашению: студент становится участником группы */
-  joinGroup: () => void;
+  /** Ответ сервера: участник ли группы этот аккаунт */
+  setGroupMember: (member: boolean) => void;
   completeDaily: (done: Record<string, { at: number; xp: number }>) => void;
   dismissUpgradeNotice: () => void;
   setPersona: (persona: Persona) => void;
@@ -195,7 +200,7 @@ export const useProgress = create<ProgressData & Ownership & Actions>()(
           return { stats };
         }),
 
-      joinGroup: () => set((s) => ({ stats: { ...s.stats, group: 1 } })),
+      setGroupMember: (groupMember) => set({ groupMember }),
 
       completeDaily: (done) => set((s) => ({ dailyDone: { ...s.dailyDone, ...done } })),
 
@@ -219,6 +224,7 @@ export const useProgress = create<ProgressData & Ownership & Actions>()(
           sound: s.sound,
           lastStage: undefined,
           owner: null,
+          groupMember: false,
         })),
 
       resetQuest: (questId) =>
@@ -245,6 +251,7 @@ export const useProgress = create<ProgressData & Ownership & Actions>()(
         lastStage: s.lastStage,
         owner: s.owner,
         upgradeNotice: s.upgradeNotice,
+        groupMember: s.groupMember,
       }),
     },
   ),

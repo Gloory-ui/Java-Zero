@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { loadCourse, loadGroupPath } from "@/lib/content/load";
 import { groupSchema, questSchema, stageSchema } from "@/lib/content/schema";
@@ -68,7 +69,8 @@ describe("курс из content/quests", () => {
       { prep: ["arrays_prep"], kt: "kt2" },
       { prep: ["oop_prep"], kt: "kt3" },
     ]);
-    expect(group.invite).toMatch(/^[a-z0-9]{4,32}$/);
+    // Код приглашения хранится только в базе (group_settings): в git его быть не должно
+    expect(readFileSync("content/group.yaml", "utf8")).not.toMatch(/^invite:/m);
   });
 
   it("139 этапов; у каждого есть теория, стартовый код, решение и тесты", () => {
@@ -137,13 +139,12 @@ describe("схема контента", () => {
     expect(questSchema.safeParse({ ...quest, rank, fileName: "kt2.java" }).success).toBe(false);
   });
 
-  it("квест без track — из общего курса; путь группы требует хотя бы один шаг и код из латиницы", () => {
+  it("квест без track — из общего курса; путь группы требует хотя бы один шаг", () => {
     const quest = { id: "arrays", num: "03", title: "Массивы", subtitle: "…", order: 5, unlockAfter: "calc" };
     const rank = { title: "Ранг", icon: "star", color: "#ffffff" };
     expect(questSchema.parse({ ...quest, rank, fileName: "Arrays.java" }).track).toBe("course");
-    const group = { title: "Группа", subtitle: "КТ", invite: "abc123", steps: [{ prep: ["basics"], kt: "kt1" }] };
+    const group = { title: "Группа", subtitle: "КТ", steps: [{ prep: ["basics"], kt: "kt1" }] };
     expect(groupSchema.safeParse(group).success).toBe(true);
     expect(groupSchema.safeParse({ ...group, steps: [] }).success).toBe(false);
-    expect(groupSchema.safeParse({ ...group, invite: "Код группы" }).success).toBe(false);
   });
 });
