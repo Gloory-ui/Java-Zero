@@ -70,9 +70,9 @@ const ROWS = [
   },
 ];
 
-test("/admin ведёт в обзор", async ({ page }) => {
+test("/admin ведёт в первый раздел", async ({ page }) => {
   await page.goto("/admin");
-  await expect.poll(() => new URL(page.url()).pathname).toBe("/admin/overview");
+  await expect.poll(() => new URL(page.url()).pathname).toBe("/admin/leaderboard");
 });
 
 test("админка без входа просит войти", async ({ page }) => {

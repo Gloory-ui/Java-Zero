@@ -9,12 +9,14 @@ import { useAdminStatus } from "@/lib/admin/client";
 import { cn } from "@/lib/cn";
 import type { IconName } from "@/lib/icons";
 
-/** Разделы админки. Каждый живёт в своей папке app/admin/<раздел> и components/admin/<раздел> */
+/**
+ * Разделы админки. Каждый живёт в своей папке app/admin/<раздел> и components/admin/<раздел>; вкладка
+ * добавляется сюда вместе со своей страницей. Следующие: «Обзор» (/admin/overview, icon gauge)
+ * и «Группа» (/admin/group, icon graduation-cap)
+ */
 export const ADMIN_TABS: { href: string; label: string; icon: IconName }[] = [
-  { href: "/admin/overview", label: "Обзор", icon: "gauge" },
-  { href: "/admin/quests", label: "Квесты", icon: "book-open" },
   { href: "/admin/leaderboard", label: "Лидерборд", icon: "trophy" },
-  { href: "/admin/group", label: "Группа", icon: "graduation-cap" },
+  { href: "/admin/quests", label: "Квесты", icon: "book-open" },
 ];
 
 function Notice({ icon, title, children }: { icon: IconName; title: string; children?: ReactNode }) {

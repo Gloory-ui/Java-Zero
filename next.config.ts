@@ -52,8 +52,8 @@ const nextConfig: NextConfig = {
       { source: "/lab.html", destination: "/course", permanent: true },
       { source: "/profile.html", destination: "/profile", permanent: true },
       { source: "/handbook.html", destination: "/handbook", permanent: true },
-      // Админка открывается с обзора; временный редирект — первый раздел может смениться
-      { source: "/admin", destination: "/admin/overview", permanent: false },
+      // Админка открывается с первого раздела; редирект временный — когда появится «Обзор», первым станет он
+      { source: "/admin", destination: "/admin/leaderboard", permanent: false },
     ];
   },
 };
