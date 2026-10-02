@@ -72,7 +72,7 @@ const ROWS = [
 
 test("/admin ведёт в первый раздел", async ({ page }) => {
   await page.goto("/admin");
-  await expect.poll(() => new URL(page.url()).pathname).toBe("/admin/leaderboard");
+  await expect.poll(() => new URL(page.url()).pathname).toBe("/admin/overview");
 });
 
 test("админка без входа просит войти", async ({ page }) => {
